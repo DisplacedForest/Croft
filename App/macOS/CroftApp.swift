@@ -4,7 +4,8 @@ import SwiftUI
 struct CroftApp: App {
     var body: some Scene {
         WindowGroup {
-            PlaceholderView()
+            CroftShell()
         }
+        .defaultSize(width: 1040, height: 700)
     }
 }

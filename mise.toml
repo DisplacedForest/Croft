@@ -23,8 +23,16 @@ run = "swift test --package-path Core/CroftCore"
 dir = "Core/CroftCore"
 run = "xcodebuild test -scheme CroftCore-Package -destination 'platform=iOS Simulator,name=iPhone 17' -quiet"
 
+[tasks."test-ui"]
+depends = ["generate"]
+run = "xcodebuild test -project Croft.xcodeproj -scheme Croft-iOS -destination 'platform=iOS Simulator,name=iPhone 17' -quiet"
+
 [tasks.test]
-depends = ["test-macos", "test-ios"]
+run = [
+  "mise run test-macos",
+  "mise run test-ios",
+  "mise run test-ui",
+]
 
 [tasks.build]
 depends = ["generate"]
