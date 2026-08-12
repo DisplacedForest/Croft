@@ -188,6 +188,40 @@ struct DiseaseMigrationTests {
         return queue
     }
 
+    @Test func provenanceRequiredEdgesSurviveTheRelationshipRebuild() throws {
+        let queue = try seededQueue()
+        try queue.write { db in
+            try db.execute(sql: "INSERT INTO entity (id, entity_type) VALUES ('p2', 'plant')")
+            try db.execute(
+                sql: """
+                    INSERT INTO relationship
+                        (id, from_entity_id, relationship_type, to_entity_id,
+                         source, source_type, confidence, notes)
+                    VALUES ('e3', 'p1', 'COMPANION_WITH', 'p2',
+                            'trial notes', 'reference', 0.4, 'paired well')
+                    """
+            )
+        }
+        try MigrationHarness.migrateToHead(queue)
+        let row = try queue.read { db in
+            try Row.fetchOne(db, sql: "SELECT * FROM relationship WHERE id = 'e3'")
+        }
+        #expect(row?["relationship_type"] == "COMPANION_WITH")
+        #expect(row?["source"] == "trial notes")
+        #expect(row?["source_type"] == "reference")
+        #expect(throws: DatabaseError.self) {
+            try queue.write { db in
+                try db.execute(
+                    sql: """
+                        INSERT INTO relationship
+                            (id, from_entity_id, relationship_type, to_entity_id)
+                        VALUES ('e4', 'p2', 'COMPANION_WITH', 'p1')
+                        """
+                )
+            }
+        }
+    }
+
     @Test func edgesAndProvenanceSurviveTheRelationshipRebuild() throws {
         let queue = try seededQueue()
         try MigrationHarness.migrateToHead(queue)
