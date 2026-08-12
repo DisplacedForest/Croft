@@ -1,5 +1,6 @@
 import Domain
 import GRDB
+import Graph
 
 struct PlantFamilyRecord: Codable, FetchableRecord, PersistableRecord {
     static let databaseTableName = "plant_family"
@@ -166,8 +167,9 @@ struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord {
     }
 }
 
-struct CultivarRecord: Codable, FetchableRecord, PersistableRecord {
+struct CultivarRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
     static let databaseTableName = "cultivar"
+    static var entityType: EntityType { .plant }
 
     var id: String
     var speciesID: String
@@ -178,6 +180,8 @@ struct CultivarRecord: Codable, FetchableRecord, PersistableRecord {
     var spacingMin: Double?
     var spacingMax: Double?
     var growthHabit: String?
+
+    var entityID: String { id }
 
     enum CodingKeys: String, CodingKey {
         case id

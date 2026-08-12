@@ -11,6 +11,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.predatedBy.rawValue == "PREDATED_BY")
         #expect(RelationshipType.causedBy.rawValue == "CAUSED_BY")
         #expect(RelationshipType.favoredBy.rawValue == "FAVORED_BY")
+        #expect(RelationshipType.lotOf.rawValue == "LOT_OF")
+        #expect(RelationshipType.sownFrom.rawValue == "SOWN_FROM")
     }
 
     @Test(arguments: RelationshipType.allCases)
@@ -27,6 +29,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.predatedBy.deleteRule == .cascade)
         #expect(RelationshipType.causedBy.deleteRule == .cascade)
         #expect(RelationshipType.favoredBy.deleteRule == .cascade)
+        #expect(RelationshipType.lotOf.deleteRule == .cascade)
+        #expect(RelationshipType.sownFrom.deleteRule == .cascade)
     }
 }
 
@@ -43,6 +47,7 @@ struct EntityTypeTests {
         #expect(EntityType.bed.rawValue == "bed")
         #expect(EntityType.pathogen.rawValue == "pathogen")
         #expect(EntityType.environmentalCondition.rawValue == "environmental_condition")
+        #expect(EntityType.starterBatch.rawValue == "starter_batch")
     }
 
     @Test(arguments: EntityType.allCases)
