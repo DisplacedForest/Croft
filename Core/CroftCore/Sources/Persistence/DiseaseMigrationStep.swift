@@ -89,6 +89,7 @@ extension SchemaMigrations {
                             'SUSCEPTIBLE_TO', 'HOST_OF',
                             'COMPANION_WITH', 'LOCATED_IN',
                             'PARASITIZED_BY', 'PREDATED_BY',
+                            'ANTAGONISTIC_TO', 'ROTATE_AWAY_FROM',
                             'CAUSED_BY', 'FAVORED_BY'
                         )
                     ),
@@ -102,7 +103,13 @@ extension SchemaMigrations {
                     ),
                     confidence REAL CHECK (confidence BETWEEN 0.0 AND 1.0),
                     notes TEXT,
-                    UNIQUE (from_entity_id, relationship_type, to_entity_id)
+                    UNIQUE (from_entity_id, relationship_type, to_entity_id),
+                    CHECK (
+                        relationship_type NOT IN (
+                            'COMPANION_WITH', 'ANTAGONISTIC_TO', 'ROTATE_AWAY_FROM'
+                        )
+                        OR (source IS NOT NULL AND source_type IS NOT NULL)
+                    )
                 )
                 """
         )

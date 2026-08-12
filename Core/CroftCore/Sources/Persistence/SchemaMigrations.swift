@@ -7,6 +7,7 @@ public enum SchemaMigrations {
         ("v003-taxonomy", applyTaxonomy),
         ("v004-garden-structure", applyGardenStructure),
         ("v005-pests", applyPests),
+        ("v006-plant-relationships", applyPlantRelationships),
         ("v007-diseases", applyDiseases),
     ]
 

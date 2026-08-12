@@ -42,6 +42,14 @@ public enum GraphStore {
         provenance: Provenance = Provenance(),
         in db: Database
     ) throws -> Edge {
+        let attributed = provenance.source != nil && provenance.sourceType != nil
+        if type.requiresProvenance && !attributed {
+            throw GraphError.missingProvenance(type)
+        }
+        var effective = provenance
+        if effective.confidence == nil, let confidence = type.defaultConfidence {
+            effective.confidence = confidence
+        }
         let id = UUID().uuidString
         try db.execute(
             sql: """
@@ -52,11 +60,11 @@ public enum GraphStore {
                 """,
             arguments: [
                 id, source.id, type.rawValue, target.id,
-                provenance.source, provenance.sourceType?.rawValue,
-                provenance.confidence, provenance.notes,
+                effective.source, effective.sourceType?.rawValue,
+                effective.confidence, effective.notes,
             ]
         )
-        return Edge(id: id, source: source, type: type, target: target, provenance: provenance)
+        return Edge(id: id, source: source, type: type, target: target, provenance: effective)
     }
 
     public static func unrelate(edgeID: String, in db: Database) throws {

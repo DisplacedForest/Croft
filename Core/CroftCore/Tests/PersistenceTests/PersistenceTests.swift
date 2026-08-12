@@ -150,7 +150,7 @@ struct MigrationPreservationTests {
         #expect(
             SchemaMigrations.identifiers == [
                 "v001-baseline", "v002-graph", "v003-taxonomy", "v004-garden-structure",
-                "v005-pests", "v007-diseases",
+                "v005-pests", "v006-plant-relationships", "v007-diseases",
             ])
     }
 
