@@ -77,40 +77,79 @@ public struct AppDatabase: Sendable {
         }
     }
 
+    private struct WALHeader {
+        let pageSize: Int
+        let bigEndianWords: Bool
+        let salt: Data
+        let checksum: (UInt32, UInt32)
+    }
+
     private static func walApplicationID(at target: URL) -> Int? {
         guard let handle = openRegularFile(atPath: target.path + "-wal") else {
             return nil
         }
         defer { try? handle.close() }
-        guard let walHeader = try? handle.read(upToCount: 32), walHeader.count == 32 else {
+        guard
+            let bytes = try? handle.read(upToCount: 32), bytes.count == 32,
+            let header = validWALHeader(bytes)
+        else {
             return nil
         }
-        let magic = headerField(walHeader, at: 0)
+        return committedPageOneApplicationID(handle, header)
+    }
+
+    private static func validWALHeader(_ bytes: Data) -> WALHeader? {
+        let magic = headerField(bytes, at: 0)
         guard magic == 0x377F_0682 || magic == 0x377F_0683 else {
             return nil
         }
+        guard headerField(bytes, at: 4) == 3_007_000 else {
+            return nil
+        }
         let bigEndianWords = magic & 1 == 1
-        let pageSize = Int(headerField(walHeader, at: 8))
+        let pageSize = Int(headerField(bytes, at: 8))
         guard pageSize >= 512, pageSize <= 65536, pageSize & (pageSize - 1) == 0 else {
             return nil
         }
-        var checksum = walChecksum((0, 0), walHeader.prefix(24), bigEndianWords)
-        guard checksum == (headerField(walHeader, at: 24), headerField(walHeader, at: 28)) else {
+        let checksum = walChecksum((0, 0), bytes.prefix(24), bigEndianWords)
+        guard checksum == (headerField(bytes, at: 24), headerField(bytes, at: 28)) else {
             return nil
         }
-        let salt = walHeader.dropFirst(16).prefix(8)
+        return WALHeader(
+            pageSize: pageSize,
+            bigEndianWords: bigEndianWords,
+            salt: bytes.dropFirst(16).prefix(8),
+            checksum: checksum
+        )
+    }
+
+    private static func committedPageOneApplicationID(
+        _ handle: FileHandle,
+        _ header: WALHeader
+    ) -> Int? {
+        let frameSize = 24 + header.pageSize
+        var checksum = header.checksum
         var latest: Int?
         var committed: Int?
-        while let frame = try? handle.read(upToCount: 24 + pageSize), frame.count == 24 + pageSize {
-            guard frame.dropFirst(8).prefix(8).elementsEqual(salt) else {
+        var bytesScanned = 32
+        while let frame = try? handle.read(upToCount: frameSize), frame.count == frameSize {
+            bytesScanned += frameSize
+            guard bytesScanned <= walScanLimit else {
                 break
             }
-            checksum = walChecksum(checksum, frame.prefix(8), bigEndianWords)
-            checksum = walChecksum(checksum, frame.dropFirst(24), bigEndianWords)
+            guard frame.dropFirst(8).prefix(8).elementsEqual(header.salt) else {
+                break
+            }
+            let pageNumber = headerField(frame, at: 0)
+            guard pageNumber != 0 else {
+                break
+            }
+            checksum = walChecksum(checksum, frame.prefix(8), header.bigEndianWords)
+            checksum = walChecksum(checksum, frame.dropFirst(24), header.bigEndianWords)
             guard checksum == (headerField(frame, at: 16), headerField(frame, at: 20)) else {
                 break
             }
-            if headerField(frame, at: 0) == 1 {
+            if pageNumber == 1 {
                 latest = Int(headerField(frame, at: 24 + 68))
             }
             if headerField(frame, at: 4) != 0 {
@@ -120,17 +159,15 @@ public struct AppDatabase: Sendable {
         return committed
     }
 
+    private static let walScanLimit = 64 * 1024 * 1024
+
     private static func openRegularFile(atPath path: String) -> FileHandle? {
         let descriptor = Darwin.open(path, O_RDONLY | O_NONBLOCK)
         guard descriptor >= 0 else {
             return nil
         }
         var info = stat()
-        guard
-            fstat(descriptor, &info) == 0,
-            info.st_mode & S_IFMT == S_IFREG,
-            info.st_size <= 64 * 1024 * 1024
-        else {
+        guard fstat(descriptor, &info) == 0, info.st_mode & S_IFMT == S_IFREG else {
             Darwin.close(descriptor)
             return nil
         }

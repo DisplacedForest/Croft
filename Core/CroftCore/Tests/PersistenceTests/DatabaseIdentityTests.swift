@@ -192,6 +192,45 @@ struct DatabaseIdentityRecoveryTests {
         #expect(stamped == SchemaMigrations.databaseApplicationID)
     }
 
+    @Test func oversizedWALStillProvidesOwnershipEvidence() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try makeUncheckpointedCroftCopy(at: url)
+        let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: url.path + "-wal"))
+        try handle.seekToEnd()
+        try handle.write(contentsOf: Data(count: 70 * 1024 * 1024))
+        try handle.close()
+        let database = try AppDatabase.open(at: url)
+        let stamped = try database.writer.read {
+            try Int.fetchOne($0, sql: "PRAGMA application_id")
+        }
+        #expect(stamped == SchemaMigrations.databaseApplicationID)
+    }
+
+    @Test func pageZeroFrameEndsTheScanWithoutStrandingACroftDatabase() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try makeUncheckpointedCroftCopy(at: url)
+        let walURL = URL(fileURLWithPath: url.path + "-wal")
+        var wal = try Data(contentsOf: walURL)
+        let pageSize = Int(wal[8]) << 24 | Int(wal[9]) << 16 | Int(wal[10]) << 8 | Int(wal[11])
+        var zeroPageFrame = Data(count: 24 + pageSize)
+        zeroPageFrame[7] = 1
+        zeroPageFrame.replaceSubrange(8..<16, with: wal[16..<24])
+        var wrongIDFrame = Data(count: 24 + pageSize)
+        wrongIDFrame[3] = 1
+        wrongIDFrame[7] = 1
+        wrongIDFrame.replaceSubrange(8..<16, with: wal[16..<24])
+        wal.append(zeroPageFrame)
+        wal.append(wrongIDFrame)
+        try wal.write(to: walURL)
+        let database = try AppDatabase.open(at: url)
+        let stamped = try database.writer.read {
+            try Int.fetchOne($0, sql: "PRAGMA application_id")
+        }
+        #expect(stamped == SchemaMigrations.databaseApplicationID)
+    }
+
     @Test func walWithABrokenChecksumChainIsNotOwnershipEvidence() throws {
         let url = temporaryDatabaseURL()
         defer { removeDatabaseDirectory(url) }
