@@ -165,6 +165,75 @@ public enum SchemaMigrations {
                 try db.execute(sql: "CREATE INDEX cultivar_on_species_id ON cultivar(species_id)")
             }
         ),
+        (
+            "v004-garden-structure",
+            { db in
+                for table in ["property", "garden", "growing_area"] {
+                    try db.execute(
+                        sql: """
+                            CREATE TABLE \(table) (
+                                id TEXT PRIMARY KEY NOT NULL,
+                                name TEXT NOT NULL,
+                                notes TEXT,
+                                archived INTEGER NOT NULL DEFAULT 0
+                            )
+                            """
+                    )
+                }
+                try db.execute(
+                    sql: """
+                        CREATE TABLE bed (
+                            id TEXT PRIMARY KEY NOT NULL,
+                            name TEXT NOT NULL,
+                            kind TEXT NOT NULL CHECK (
+                                kind IN ('raised', 'in_ground', 'container')
+                            ),
+                            notes TEXT,
+                            archived INTEGER NOT NULL DEFAULT 0
+                        )
+                        """
+                )
+                try db.execute(
+                    sql: """
+                        CREATE TABLE entity_new (
+                            id TEXT PRIMARY KEY NOT NULL,
+                            entity_type TEXT NOT NULL CHECK (
+                                entity_type IN (
+                                    'plant', 'pest', 'disease', 'seed_lot', 'planting',
+                                    'property', 'garden', 'growing_area', 'bed'
+                                )
+                            )
+                        )
+                        """
+                )
+                try db.execute(
+                    sql: "INSERT INTO entity_new SELECT id, entity_type FROM entity")
+                try db.execute(sql: "DROP TABLE entity")
+                try db.execute(sql: "ALTER TABLE entity_new RENAME TO entity")
+                try db.execute(
+                    sql: """
+                        CREATE TRIGGER entity_located_in_restrict
+                        BEFORE DELETE ON entity
+                        FOR EACH ROW
+                        WHEN EXISTS (
+                            SELECT 1 FROM relationship
+                            WHERE to_entity_id = OLD.id
+                            AND relationship_type = 'LOCATED_IN'
+                        )
+                        BEGIN
+                            SELECT RAISE(ABORT, 'entity is a LOCATED_IN target');
+                        END
+                        """
+                )
+                try db.execute(
+                    sql: """
+                        CREATE UNIQUE INDEX relationship_single_located_in_parent
+                        ON relationship(from_entity_id)
+                        WHERE relationship_type = 'LOCATED_IN'
+                        """
+                )
+            }
+        ),
     ]
 
     public static let identifiers: [String] = migrations.map(\.identifier)
