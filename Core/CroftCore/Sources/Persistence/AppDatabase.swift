@@ -34,6 +34,7 @@ public struct AppDatabase: Sendable {
         }
         defer { try? handle.close() }
         guard let header = try handle.read(upToCount: 100), header.count == 100 else {
+            try requireNoPendingJournal(at: url)
             return
         }
         guard header.prefix(16).elementsEqual(sqliteHeaderMagic) else {
@@ -47,13 +48,24 @@ public struct AppDatabase: Sendable {
         let changeCounter = headerField(header, at: 24)
         let versionValidFor = headerField(header, at: 92)
         if applicationID == 0 && changeCounter == versionValidFor && pageCount <= 1 {
+            try requireNoPendingJournal(at: url)
             return
         }
         throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
     }
 
-    static func verifyOpenedIdentity(of reader: some DatabaseReader, path: String) throws {
-        let (applicationID, userTableCount) = try reader.read { db in
+    private static func requireNoPendingJournal(at url: URL) throws {
+        for suffix in ["-wal", "-journal"] {
+            let sidecar = url.path + suffix
+            let attributes = try? FileManager.default.attributesOfItem(atPath: sidecar)
+            if let size = attributes?[.size] as? Int, size > 0 {
+                throw DatabaseIdentityError(path: url.path, applicationID: 0)
+            }
+        }
+    }
+
+    static func verifyOpenedIdentity(of writer: some DatabaseWriter, path: String) throws {
+        let (applicationID, userTableCount) = try writer.writeWithoutTransaction { db in
             (
                 try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
                 try Int.fetchOne(

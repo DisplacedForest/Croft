@@ -146,6 +146,42 @@ struct DatabaseIdentityTests {
         #expect(siblingsAfter.sorted() == siblingsBefore.sorted())
     }
 
+    @Test func crashedWALForeignDatabaseIsRejectedWithEveryFileUntouched() throws {
+        let sourceURL = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(sourceURL) }
+        try FileManager.default.createDirectory(
+            at: sourceURL.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let foreign = try DatabaseQueue(path: sourceURL.path)
+        try foreign.inDatabase { db in
+            try db.execute(sql: "PRAGMA journal_mode = WAL")
+            try db.execute(sql: "CREATE TABLE ledger (id TEXT PRIMARY KEY NOT NULL)")
+        }
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        for suffix in ["", "-wal", "-shm"] {
+            try FileManager.default.copyItem(
+                atPath: sourceURL.path + suffix,
+                toPath: url.path + suffix
+            )
+        }
+        try foreign.close()
+        let contents = { (suffix: String) in
+            try Data(contentsOf: URL(fileURLWithPath: url.path + suffix))
+        }
+        let before = try ["", "-wal", "-shm"].map(contents)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            _ = try AppDatabase.open(at: url)
+        }
+        let after = try ["", "-wal", "-shm"].map(contents)
+        #expect(before == after)
+    }
+
     @Test func foreignDatabaseSwappedInAfterTheHeaderCheckIsStillRejected() throws {
         let url = temporaryDatabaseURL()
         defer { removeDatabaseDirectory(url) }
