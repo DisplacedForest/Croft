@@ -22,21 +22,38 @@ public struct AppDatabase: Sendable {
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
-        try verifyIdentity(at: url)
+        try verifyHeader(at: url)
         let pool = try DatabasePool(path: url.path, configuration: makeConfiguration())
+        try verifyOpenedIdentity(of: pool, path: url.path)
         return try AppDatabase(pool)
     }
 
-    private static func verifyIdentity(at url: URL) throws {
-        let attributes = try? FileManager.default.attributesOfItem(atPath: url.path)
-        guard let size = attributes?[.size] as? Int, size > 0 else {
+    static func verifyHeader(at url: URL) throws {
+        guard let handle = try? FileHandle(forReadingFrom: url) else {
             return
         }
-        var configuration = Configuration()
-        configuration.readonly = true
-        let queue = try DatabaseQueue(path: url.path, configuration: configuration)
-        defer { try? queue.close() }
-        let (applicationID, userTableCount) = try queue.read { db in
+        defer { try? handle.close() }
+        guard let header = try handle.read(upToCount: 100), header.count == 100 else {
+            return
+        }
+        guard header.prefix(16).elementsEqual(sqliteHeaderMagic) else {
+            return
+        }
+        let applicationID = Int(headerField(header, at: 68))
+        if applicationID == SchemaMigrations.databaseApplicationID {
+            return
+        }
+        let pageCount = headerField(header, at: 28)
+        let changeCounter = headerField(header, at: 24)
+        let versionValidFor = headerField(header, at: 92)
+        if applicationID == 0 && changeCounter == versionValidFor && pageCount <= 1 {
+            return
+        }
+        throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
+    }
+
+    static func verifyOpenedIdentity(of reader: some DatabaseReader, path: String) throws {
+        let (applicationID, userTableCount) = try reader.read { db in
             (
                 try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
                 try Int.fetchOne(
@@ -54,7 +71,13 @@ public struct AppDatabase: Sendable {
         if applicationID == 0 && userTableCount == 0 {
             return
         }
-        throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
+        throw DatabaseIdentityError(path: path, applicationID: applicationID)
+    }
+
+    private static let sqliteHeaderMagic = Array("SQLite format 3".utf8) + [0]
+
+    private static func headerField(_ header: Data, at offset: Int) -> UInt32 {
+        header.dropFirst(offset).prefix(4).reduce(0) { ($0 << 8) | UInt32($1) }
     }
 
     public static func inMemory() throws -> AppDatabase {

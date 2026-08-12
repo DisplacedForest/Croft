@@ -115,6 +115,53 @@ struct DatabaseIdentityTests {
         }
         let after = try Data(contentsOf: url)
         #expect(before == after)
+        let siblings = try FileManager.default.contentsOfDirectory(
+            atPath: url.deletingLastPathComponent().path
+        )
+        #expect(siblings == [url.lastPathComponent])
+    }
+
+    @Test func walModeForeignDatabaseIsRejectedWithoutSideFiles() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let foreign = try DatabaseQueue(path: url.path)
+        try foreign.inDatabase { db in
+            try db.execute(sql: "PRAGMA journal_mode = WAL")
+            try db.execute(sql: "CREATE TABLE ledger (id TEXT PRIMARY KEY NOT NULL)")
+        }
+        try foreign.close()
+        let directory = url.deletingLastPathComponent().path
+        let siblingsBefore = try FileManager.default.contentsOfDirectory(atPath: directory)
+        let before = try Data(contentsOf: url)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            _ = try AppDatabase.open(at: url)
+        }
+        let after = try Data(contentsOf: url)
+        #expect(before == after)
+        let siblingsAfter = try FileManager.default.contentsOfDirectory(atPath: directory)
+        #expect(siblingsAfter.sorted() == siblingsBefore.sorted())
+    }
+
+    @Test func foreignDatabaseSwappedInAfterTheHeaderCheckIsStillRejected() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let foreign = try DatabaseQueue(path: url.path)
+        try foreign.write { db in
+            try db.execute(sql: "CREATE TABLE ledger (id TEXT PRIMARY KEY NOT NULL)")
+        }
+        try foreign.close()
+        let pool = try DatabasePool(path: url.path)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            try AppDatabase.verifyOpenedIdentity(of: pool, path: url.path)
+        }
     }
 
     @Test func foreignApplicationIDIsRejected() throws {
