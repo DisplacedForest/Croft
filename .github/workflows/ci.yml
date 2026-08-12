@@ -25,7 +25,5 @@ jobs:
           xcodebuild -version
       - name: Install tools
         run: mise install xcodegen swiftlint
-      - name: Ensure simulator
-        run: xcrun simctl list devices available | grep -q "iPhone 17 (" || xcrun simctl create "iPhone 17" "iPhone 17"
       - name: Verify
         run: mise run ci
