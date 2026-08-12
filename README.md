@@ -1,6 +1,6 @@
 <img src=".github/assets/readme_header.png" alt="Croft: organize, plan, grow with purpose" width="100%">
 
-Open-source, local-first garden operating system built on a horticultural knowledge graph. Native Swift and SwiftUI for macOS and iOS.
+Open-source, local-first garden operating system built on a horticultural knowledge graph. Native Swift and SwiftUI for macOS.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ open Croft.xcodeproj
 
 The Xcode project is generated from `project.yml` with XcodeGen and is not checked in. Regenerate it after changing `project.yml`.
 
-Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `Persistence`, `Graph`, and `Knowledge` modules. The app targets are `Croft-macOS` and `Croft-iOS`.
+Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `Persistence`, `Graph`, and `Knowledge` modules. The app target is `Croft-macOS`.
 
 ## Verify
 
@@ -25,7 +25,7 @@ Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `
 mise run check
 ```
 
-Runs formatting, lint, and the test suites for macOS and iOS. `mise run ci` adds full builds of both apps and is what CI runs.
+Runs formatting, lint, and the test suites. `mise run ci` adds full app builds and is what CI runs.
 
 ## License
 
