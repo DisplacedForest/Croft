@@ -167,6 +167,33 @@ struct GardenStructureMutationTests {
         #expect(try fixture.repository.properties() == [fixture.home])
     }
 
+    @Test func archivedChildrenAreHiddenFromListingsUnlessRequested() throws {
+        let fixture = try Fixture()
+        let patch = GrowingArea(name: "Patch")
+        try fixture.repository.create(patch, in: fixture.backGarden.id)
+        let bed = Bed(name: "Bed", kind: .raised)
+        try fixture.repository.create(bed, in: .growingArea(patch.id))
+
+        try fixture.repository.setGardenArchived(fixture.backGarden.id, true)
+        try fixture.repository.setGrowingAreaArchived(patch.id, true)
+        try fixture.repository.setBedArchived(bed.id, true)
+
+        #expect(try fixture.repository.gardens(in: fixture.home.id).isEmpty)
+        #expect(try fixture.repository.growingAreas(in: fixture.backGarden.id).isEmpty)
+        #expect(try fixture.repository.beds(in: .growingArea(patch.id)).isEmpty)
+
+        #expect(
+            try fixture.repository.gardens(in: fixture.home.id, includeArchived: true)
+                .map(\.id) == [fixture.backGarden.id])
+        #expect(
+            try fixture.repository.growingAreas(
+                in: fixture.backGarden.id, includeArchived: true
+            ).map(\.id) == [patch.id])
+        #expect(
+            try fixture.repository.beds(in: .growingArea(patch.id), includeArchived: true)
+                .map(\.id) == [bed.id])
+    }
+
     @Test func renamingAMissingStructureThrows() throws {
         let fixture = try Fixture()
         #expect(throws: GardenStructureError.structureNotFound("missing")) {
@@ -240,6 +267,25 @@ struct GardenStructureMigrationTests {
                 )
             }
         }
+    }
+
+    @Test func aTamperedPlaceholderRowBlocksTheRebuildAtomically() throws {
+        let queue = try MigrationHarness.database(through: "v003-taxonomy")
+        try queue.write { db in
+            try db.execute(
+                sql: "INSERT INTO entity (id, entity_type) VALUES ('x', 'garden_location')")
+        }
+        #expect(throws: DatabaseError.self) {
+            try MigrationHarness.migrateToHead(queue)
+        }
+        let kept = try queue.read {
+            try String.fetchOne($0, sql: "SELECT entity_type FROM entity WHERE id = 'x'")
+        }
+        #expect(kept == "garden_location")
+        let applied = try queue.read {
+            try SchemaMigrations.migrator().appliedIdentifiers($0)
+        }
+        #expect(applied == Set(["v001-baseline", "v002-graph", "v003-taxonomy"]))
     }
 
     @Test func theRetiredPlaceholderEntityTypeIsRejectedAfterTheRebuild() throws {

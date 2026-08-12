@@ -128,29 +128,44 @@ public struct GardenStructureRepository: Sendable {
         }
     }
 
-    public func gardens(in propertyID: Property.ID) throws -> [Garden] {
+    public func gardens(
+        in propertyID: Property.ID,
+        includeArchived: Bool = false
+    ) throws -> [Garden] {
         try writer.read { db in
-            try children(GardenRecord.self, of: propertyID.rawValue, in: db)
-                .map { $0.model() }
+            try children(
+                GardenRecord.self, of: propertyID.rawValue,
+                includeArchived: includeArchived, in: db
+            )
+            .map { $0.model() }
         }
     }
 
-    public func growingAreas(in gardenID: Garden.ID) throws -> [GrowingArea] {
+    public func growingAreas(
+        in gardenID: Garden.ID,
+        includeArchived: Bool = false
+    ) throws -> [GrowingArea] {
         try writer.read { db in
-            try children(GrowingAreaRecord.self, of: gardenID.rawValue, in: db)
-                .map { $0.model() }
+            try children(
+                GrowingAreaRecord.self, of: gardenID.rawValue,
+                includeArchived: includeArchived, in: db
+            )
+            .map { $0.model() }
         }
     }
 
-    public func beds(in parent: BedParent) throws -> [Bed] {
+    public func beds(in parent: BedParent, includeArchived: Bool = false) throws -> [Bed] {
         try writer.read { db in
             let parentID: String =
                 switch parent {
                 case .garden(let id): id.rawValue
                 case .growingArea(let id): id.rawValue
                 }
-            return try children(BedRecord.self, of: parentID, in: db)
-                .map { try $0.model() }
+            return try children(
+                BedRecord.self, of: parentID,
+                includeArchived: includeArchived, in: db
+            )
+            .map { try $0.model() }
         }
     }
 
@@ -240,11 +255,13 @@ public struct GardenStructureRepository: Sendable {
     private func children<Record: StructureRecord>(
         _ record: Record.Type,
         of parentID: String,
+        includeArchived: Bool,
         in db: Database
     ) throws -> [Record] {
         let refs = try GraphStore.incoming(to: parentID, via: .locatedIn, in: db)
             .map(\.source)
         return try GraphStore.resolve(refs, as: Record.self, in: db)
+            .filter { includeArchived || !$0.archived }
             .sorted { $0.name < $1.name }
     }
 }
