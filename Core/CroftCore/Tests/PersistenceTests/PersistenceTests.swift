@@ -147,7 +147,10 @@ struct MigrationPreservationTests {
     }
 
     @Test func registeredIdentifiersStayInOrder() {
-        #expect(SchemaMigrations.identifiers == ["v001-baseline", "v002-graph", "v003-taxonomy"])
+        #expect(
+            SchemaMigrations.identifiers == [
+                "v001-baseline", "v002-graph", "v003-taxonomy", "v004-garden-structure",
+            ])
     }
 
     @Test func graphRowsSurviveMigrationToHead() throws {
