@@ -8,6 +8,8 @@ public enum EntityType: String, CaseIterable, Codable, Hashable, Sendable {
     case garden
     case growingArea = "growing_area"
     case bed
+    case pathogen
+    case environmentalCondition = "environmental_condition"
 }
 
 public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable {
@@ -19,6 +21,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     case predatedBy = "PREDATED_BY"
     case antagonisticTo = "ANTAGONISTIC_TO"
     case rotateAwayFrom = "ROTATE_AWAY_FROM"
+    case causedBy = "CAUSED_BY"
+    case favoredBy = "FAVORED_BY"
 
     public enum DeleteRule: Hashable, Sendable {
         case cascade
@@ -28,7 +32,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     public var deleteRule: DeleteRule {
         switch self {
         case .susceptibleTo, .hostOf, .companionWith, .parasitizedBy, .predatedBy,
-            .antagonisticTo, .rotateAwayFrom:
+            .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy:
             .cascade
         case .locatedIn:
             .restrictTarget
@@ -39,7 +43,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
         switch self {
         case .companionWith, .antagonisticTo, .rotateAwayFrom:
             true
-        case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy:
+        case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
+            .causedBy, .favoredBy:
             false
         }
     }
@@ -49,7 +54,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
         case .companionWith:
             0.3
         case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
-            .antagonisticTo, .rotateAwayFrom:
+            .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy:
             nil
         }
     }
