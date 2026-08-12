@@ -16,16 +16,34 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Detect docs-only change
+        id: diff
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.sha }}"
+            changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD)
+          else
+            git fetch --no-tags --deepen=1 origin
+            changed=$(git diff --name-only HEAD~1 HEAD)
+          fi
+          echo "$changed"
+          if [ -n "$changed" ] && echo "$changed" | grep -qvE '(^docs/|^LICENSE$|\.md$)'; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          fi
       - uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654
+        if: steps.diff.outputs.code == 'true'
         with:
           install: false
       - name: Pin Xcode
+        if: steps.diff.outputs.code == 'true'
         run: |
           sudo xcode-select -s /Applications/Xcode_26.6.app || { ls /Applications | grep -i xcode; exit 1; }
           xcodebuild -version
       - name: Install tools
+        if: steps.diff.outputs.code == 'true'
         run: mise install xcodegen swiftlint
-      - name: Ensure simulator
-        run: xcrun simctl list devices available | grep -q "iPhone 17 (" || xcrun simctl create "iPhone 17" "iPhone 17"
       - name: Verify
+        if: steps.diff.outputs.code == 'true'
         run: mise run ci

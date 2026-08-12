@@ -28,6 +28,9 @@ depends = ["generate"]
 run = "xcodebuild test -project Croft.xcodeproj -scheme Croft-iOS -destination 'platform=iOS Simulator,name=iPhone 17' -quiet"
 
 [tasks.test]
+run = ["mise run test-macos"]
+
+[tasks."test-all"]
 run = [
   "mise run test-macos",
   "mise run test-ios",
@@ -38,6 +41,11 @@ run = [
 depends = ["generate"]
 run = [
   "xcodebuild build -project Croft.xcodeproj -scheme Croft-macOS -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -quiet",
+]
+
+[tasks."build-ios"]
+depends = ["generate"]
+run = [
   "xcodebuild build -project Croft.xcodeproj -scheme Croft-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet",
 ]
 
