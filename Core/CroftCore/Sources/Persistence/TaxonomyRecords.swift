@@ -123,28 +123,44 @@ struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord {
     }
 
     func model() throws -> Species {
-        Species(
+        let decoder = TaxonomyRowDecoder(table: Self.databaseTableName)
+        return Species(
             id: Species.ID(rawValue: id),
             genusID: Genus.ID(rawValue: genusID),
             scientificName: scientificName,
             commonNames: try TaxonomyCoding.decodeList(String.self, from: commonNames),
-            lifeCycle: lifeCycle.flatMap(LifeCycle.init(rawValue:)),
-            growthHabit: growthHabit.flatMap(GrowthHabit.init(rawValue:)),
-            sunExposure: sunExposure.flatMap(SunExposure.init(rawValue:)),
-            waterNeed: waterNeed.flatMap(WaterNeed.init(rawValue:)),
-            soilPH: TaxonomyCoding.range(lower: soilPHMin, upper: soilPHMax),
-            spacingCentimeters: TaxonomyCoding.range(lower: spacingMin, upper: spacingMax),
-            daysToMaturity: TaxonomyCoding.range(
+            lifeCycle: try decoder.enumValue(LifeCycle.self, from: lifeCycle, column: "life_cycle"),
+            growthHabit: try decoder.enumValue(
+                GrowthHabit.self,
+                from: growthHabit,
+                column: "growth_habit"
+            ),
+            sunExposure: try decoder.enumValue(
+                SunExposure.self,
+                from: sunExposure,
+                column: "sun_exposure"
+            ),
+            waterNeed: try decoder.enumValue(WaterNeed.self, from: waterNeed, column: "water_need"),
+            soilPH: try decoder.range(lower: soilPHMin, upper: soilPHMax, column: "soil_ph"),
+            spacingCentimeters: try decoder.range(
+                lower: spacingMin,
+                upper: spacingMax,
+                column: "spacing_cm"
+            ),
+            daysToMaturity: try decoder.range(
                 lower: daysToMaturityMin,
-                upper: daysToMaturityMax
+                upper: daysToMaturityMax,
+                column: "days_to_maturity"
             ),
-            hardinessZones: TaxonomyCoding.range(
+            hardinessZones: try decoder.range(
                 lower: hardinessZoneMin,
-                upper: hardinessZoneMax
+                upper: hardinessZoneMax,
+                column: "hardiness_zone"
             ),
-            harvestableParts: try TaxonomyCoding.decodeList(
+            harvestableParts: try decoder.enumList(
                 HarvestablePart.self,
-                from: harvestableParts
+                from: harvestableParts,
+                column: "harvestable_parts"
             )
         )
     }
@@ -190,17 +206,27 @@ struct CultivarRecord: Codable, FetchableRecord, PersistableRecord {
     }
 
     func model() throws -> Cultivar {
-        Cultivar(
+        let decoder = TaxonomyRowDecoder(table: Self.databaseTableName)
+        return Cultivar(
             id: Cultivar.ID(rawValue: id),
             speciesID: Species.ID(rawValue: speciesID),
             name: name,
             commonNames: try TaxonomyCoding.decodeList(String.self, from: commonNames),
-            daysToMaturity: TaxonomyCoding.range(
+            daysToMaturity: try decoder.range(
                 lower: daysToMaturityMin,
-                upper: daysToMaturityMax
+                upper: daysToMaturityMax,
+                column: "days_to_maturity"
             ),
-            spacingCentimeters: TaxonomyCoding.range(lower: spacingMin, upper: spacingMax),
-            growthHabit: growthHabit.flatMap(GrowthHabit.init(rawValue:))
+            spacingCentimeters: try decoder.range(
+                lower: spacingMin,
+                upper: spacingMax,
+                column: "spacing_cm"
+            ),
+            growthHabit: try decoder.enumValue(
+                GrowthHabit.self,
+                from: growthHabit,
+                column: "growth_habit"
+            )
         )
     }
 }

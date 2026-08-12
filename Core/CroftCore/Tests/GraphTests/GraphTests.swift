@@ -4,20 +4,6 @@ import Graph
 import Persistence
 import Testing
 
-private struct FixturePlant: Codable, Equatable, FetchableRecord, PersistableRecord, GraphEntity {
-    static let databaseTableName = "fixture_plant"
-    static var entityType: EntityType { .plant }
-
-    var id: String
-    var name: String
-
-    var entityID: String { id }
-}
-
-private func makeDatabase() throws -> AppDatabase {
-    try AppDatabase.inMemory()
-}
-
 struct EntityRegistryTests {
     @Test func registerAssignsStableIdentityAndType() throws {
         let database = try makeDatabase()
@@ -164,7 +150,8 @@ struct DeleteSemanticsTests {
         try database.writer.write { db in
             try GraphStore.register(source, in: db)
             try GraphStore.register(target, in: db)
-            try GraphStore.relate(from: source, type, to: target, in: db)
+            try GraphStore.relate(
+                from: source, type, to: target, provenance: attribution(for: type), in: db)
         }
         switch type.deleteRule {
         case .cascade:
@@ -196,7 +183,8 @@ struct DeleteSemanticsTests {
         try database.writer.write { db in
             try GraphStore.register(source, in: db)
             try GraphStore.register(target, in: db)
-            try GraphStore.relate(from: source, type, to: target, in: db)
+            try GraphStore.relate(
+                from: source, type, to: target, provenance: attribution(for: type), in: db)
             try GraphStore.deleteEntity(source.id, in: db)
         }
         let edges = try database.writer.read { db in
@@ -243,8 +231,12 @@ struct QueryAPITests {
             try GraphStore.register(basil, in: db)
             try GraphStore.register(blight, in: db)
             try GraphStore.relate(from: tomato, .susceptibleTo, to: blight, in: db)
-            try GraphStore.relate(from: tomato, .companionWith, to: basil, in: db)
-            try GraphStore.relate(from: basil, .companionWith, to: tomato, in: db)
+            try GraphStore.relate(
+                from: tomato, .companionWith, to: basil,
+                provenance: attribution(for: .companionWith), in: db)
+            try GraphStore.relate(
+                from: basil, .companionWith, to: tomato,
+                provenance: attribution(for: .companionWith), in: db)
         }
         return FixtureGraph(database: database, tomato: tomato, basil: basil, blight: blight)
     }
@@ -316,7 +308,8 @@ struct QueryAPITests {
             try GraphStore.register(tomato.entityRef, in: db)
             try GraphStore.register(basil.entityRef, in: db)
             try GraphStore.relate(
-                from: tomato.entityRef, .companionWith, to: basil.entityRef, in: db)
+                from: tomato.entityRef, .companionWith, to: basil.entityRef,
+                provenance: attribution(for: .companionWith), in: db)
         }
         let resolved = try database.writer.read { db in
             let edges = try GraphStore.outgoing(from: tomato.id, via: .companionWith, in: db)
