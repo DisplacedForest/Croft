@@ -6,3 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- SQLite persistence foundation: versioned forward-only migrations, foreign
+  key enforcement, and a migration test harness that proves user data
+  survives schema changes.

@@ -1,5 +1,10 @@
 disabled_rules:
   - trailing_comma
+identifier_name:
+  excluded:
+    - db
+    - id
+    - url
 included:
   - App
   - Core
