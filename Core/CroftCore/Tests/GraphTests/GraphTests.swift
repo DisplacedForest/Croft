@@ -160,7 +160,7 @@ struct DeleteSemanticsTests {
     func deletingTheTargetFollowsTheDeclaredRule(type: RelationshipType) throws {
         let database = try makeDatabase()
         let source = EntityRef(id: "source", type: .plant)
-        let target = EntityRef(id: "target", type: .gardenLocation)
+        let target = EntityRef(id: "target", type: .bed)
         try database.writer.write { db in
             try GraphStore.register(source, in: db)
             try GraphStore.register(target, in: db)
@@ -192,7 +192,7 @@ struct DeleteSemanticsTests {
     func deletingTheSourceAlwaysCascadesItsEdges(type: RelationshipType) throws {
         let database = try makeDatabase()
         let source = EntityRef(id: "source", type: .planting)
-        let target = EntityRef(id: "target", type: .gardenLocation)
+        let target = EntityRef(id: "target", type: .bed)
         try database.writer.write { db in
             try GraphStore.register(source, in: db)
             try GraphStore.register(target, in: db)
@@ -208,7 +208,7 @@ struct DeleteSemanticsTests {
     @Test func restrictedTargetBecomesDeletableOnceEdgesAreRemoved() throws {
         let database = try makeDatabase()
         let planting = EntityRef(id: "planting-1", type: .planting)
-        let bed = EntityRef(id: "bed-1", type: .gardenLocation)
+        let bed = EntityRef(id: "bed-1", type: .bed)
         let edge = try database.writer.write { db in
             try GraphStore.register(planting, in: db)
             try GraphStore.register(bed, in: db)

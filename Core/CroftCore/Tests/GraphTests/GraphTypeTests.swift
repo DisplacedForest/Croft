@@ -27,9 +27,12 @@ struct EntityTypeTests {
         #expect(EntityType.plant.rawValue == "plant")
         #expect(EntityType.pest.rawValue == "pest")
         #expect(EntityType.disease.rawValue == "disease")
-        #expect(EntityType.gardenLocation.rawValue == "garden_location")
         #expect(EntityType.seedLot.rawValue == "seed_lot")
         #expect(EntityType.planting.rawValue == "planting")
+        #expect(EntityType.property.rawValue == "property")
+        #expect(EntityType.garden.rawValue == "garden")
+        #expect(EntityType.growingArea.rawValue == "growing_area")
+        #expect(EntityType.bed.rawValue == "bed")
     }
 
     @Test(arguments: EntityType.allCases)
