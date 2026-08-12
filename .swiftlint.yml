@@ -5,6 +5,9 @@ identifier_name:
     - db
     - id
     - url
+type_name:
+  excluded:
+    - ID
 included:
   - App
   - Core
