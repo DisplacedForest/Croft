@@ -1,6 +1,6 @@
 import Foundation
 
-enum TaxonomyCodingError: Error, Equatable {
+public enum TaxonomyCodingError: Error, Equatable {
     case unreadableListEncoding
     case unknownRawValue(table: String, column: String, value: String)
     case invalidRange(table: String, column: String, lower: String?, upper: String?)

@@ -111,48 +111,77 @@ struct TaxonomyDecodeTests {
         }
     }
 
-    @Test func halfSpecifiedSpeciesRangeFailsFetch() throws {
+    @Test(arguments: [
+        ("spacing_cm_min = 30.0", Optional("30.0"), String?.none),
+        ("spacing_cm_max = 30.0", String?.none, Optional("30.0")),
+    ])
+    func halfSpecifiedSpeciesRangeFailsFetch(
+        assignments: String,
+        lower: String?,
+        upper: String?
+    ) throws {
         let context = try CorruptibleTaxonomy()
-        try context.corruptSpecies("spacing_cm_min = 30.0")
+        try context.corruptSpecies(assignments)
         #expect(
             throws: TaxonomyCodingError.invalidRange(
                 table: "species",
                 column: "spacing_cm",
-                lower: "30.0",
-                upper: nil
+                lower: lower,
+                upper: upper
             )
         ) {
             try SpeciesRepository(context.database).fetch(id: context.species.id)
         }
     }
 
-    @Test func invertedCultivarRangeFailsFetch() throws {
+    @Test(arguments: [
+        ("days_to_maturity_min = 90, days_to_maturity_max = 30", "days_to_maturity", "90", "30"),
+        ("spacing_cm_min = 60.0, spacing_cm_max = 30.0", "spacing_cm", "60.0", "30.0"),
+    ])
+    func invertedCultivarRangeFailsFetch(
+        assignments: String,
+        column: String,
+        lower: String,
+        upper: String
+    ) throws {
         let context = try CorruptibleTaxonomy()
-        try context.corruptCultivar("days_to_maturity_min = 90, days_to_maturity_max = 30")
+        try context.corruptCultivar(assignments)
         #expect(
             throws: TaxonomyCodingError.invalidRange(
                 table: "cultivar",
-                column: "days_to_maturity",
-                lower: "90",
-                upper: "30"
+                column: column,
+                lower: lower,
+                upper: upper
             )
         ) {
             try CultivarRepository(context.database).fetch(id: context.cultivar.id)
         }
     }
 
-    @Test func corruptRowFailsFetchAll() throws {
+    @Test func corruptRowFailsEverySpeciesFetchPath() throws {
         let context = try CorruptibleTaxonomy()
         try context.corruptSpecies("water_need = 'bogus'")
-        #expect(
-            throws: TaxonomyCodingError.unknownRawValue(
-                table: "species",
-                column: "water_need",
-                value: "bogus"
-            )
-        ) {
-            try SpeciesRepository(context.database).fetchAll()
-        }
+        let repository = SpeciesRepository(context.database)
+        let expected = TaxonomyCodingError.unknownRawValue(
+            table: "species",
+            column: "water_need",
+            value: "bogus"
+        )
+        #expect(throws: expected) { try repository.fetchAll() }
+        #expect(throws: expected) { try repository.species(inGenus: context.species.genusID) }
+    }
+
+    @Test func corruptRowFailsEveryCultivarFetchPath() throws {
+        let context = try CorruptibleTaxonomy()
+        try context.corruptCultivar("growth_habit = 'bogus'")
+        let repository = CultivarRepository(context.database)
+        let expected = TaxonomyCodingError.unknownRawValue(
+            table: "cultivar",
+            column: "growth_habit",
+            value: "bogus"
+        )
+        #expect(throws: expected) { try repository.fetchAll() }
+        #expect(throws: expected) { try repository.cultivars(ofSpecies: context.species.id) }
     }
 
     @Test func nullColumnsStillDecodeAsNil() throws {
