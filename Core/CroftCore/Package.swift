@@ -14,9 +14,15 @@ let package = Package(
         .library(name: "Graph", targets: ["Graph"]),
         .library(name: "Knowledge", targets: ["Knowledge"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0")
+    ],
     targets: [
         .target(name: "Domain"),
-        .target(name: "Persistence"),
+        .target(
+            name: "Persistence",
+            dependencies: [.product(name: "GRDB", package: "GRDB.swift")]
+        ),
         .target(name: "Graph"),
         .target(name: "Knowledge"),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
