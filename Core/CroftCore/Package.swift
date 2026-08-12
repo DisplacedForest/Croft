@@ -23,11 +23,14 @@ let package = Package(
             name: "Persistence",
             dependencies: ["Domain", .product(name: "GRDB", package: "GRDB.swift")]
         ),
-        .target(name: "Graph"),
+        .target(
+            name: "Graph",
+            dependencies: [.product(name: "GRDB", package: "GRDB.swift")]
+        ),
         .target(name: "Knowledge"),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "Domain"]),
-        .testTarget(name: "GraphTests", dependencies: ["Graph"]),
+        .testTarget(name: "GraphTests", dependencies: ["Graph", "Persistence"]),
         .testTarget(name: "KnowledgeTests", dependencies: ["Knowledge"]),
     ]
 )

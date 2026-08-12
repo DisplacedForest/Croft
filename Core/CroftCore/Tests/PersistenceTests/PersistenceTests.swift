@@ -145,4 +145,34 @@ struct MigrationPreservationTests {
         }
         #expect(kept == "keep-me")
     }
+
+    @Test func registeredIdentifiersStayInOrder() {
+        #expect(SchemaMigrations.identifiers == ["v001-baseline", "v002-graph", "v003-taxonomy"])
+    }
+
+    @Test func graphRowsSurviveMigrationToHead() throws {
+        let queue = try MigrationHarness.database(through: "v002-graph")
+        try queue.write { db in
+            try db.execute(
+                sql: "INSERT INTO entity (id, entity_type) VALUES ('p1', 'plant')")
+            try db.execute(
+                sql: "INSERT INTO entity (id, entity_type) VALUES ('d1', 'disease')")
+            try db.execute(
+                sql: """
+                    INSERT INTO relationship
+                        (id, from_entity_id, relationship_type, to_entity_id,
+                         source, source_type, confidence, notes)
+                    VALUES ('e1', 'p1', 'SUSCEPTIBLE_TO', 'd1',
+                            'field notes', 'observation', 0.9, 'seen in June')
+                    """
+            )
+        }
+        try MigrationHarness.migrateToHead(queue)
+        let edge = try queue.read {
+            try Row.fetchOne($0, sql: "SELECT * FROM relationship WHERE id = 'e1'")
+        }
+        #expect(edge?["from_entity_id"] == "p1")
+        #expect(edge?["confidence"] == 0.9)
+        #expect(edge?["notes"] == "seen in June")
+    }
 }
