@@ -4,6 +4,7 @@ public enum TaxonomyCodingError: Error, Equatable {
     case unreadableListEncoding
     case unknownRawValue(table: String, column: String, value: String)
     case invalidRange(table: String, column: String, lower: String?, upper: String?)
+    case malformedList(table: String, column: String)
 }
 
 enum TaxonomyCoding {
@@ -57,8 +58,16 @@ struct TaxonomyRowDecoder {
         from text: String,
         column: String
     ) throws -> [Value] where Value.RawValue == String {
-        try TaxonomyCoding.decodeList(String.self, from: text).map {
+        try stringList(from: text, column: column).map {
             try requiredEnumValue(type, from: $0, column: column)
+        }
+    }
+
+    func stringList(from text: String, column: String) throws -> [String] {
+        do {
+            return try TaxonomyCoding.decodeList(String.self, from: text)
+        } catch {
+            throw TaxonomyCodingError.malformedList(table: table, column: column)
         }
     }
 

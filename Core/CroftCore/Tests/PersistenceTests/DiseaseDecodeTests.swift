@@ -55,6 +55,17 @@ struct DiseaseDecodeTests {
         }
     }
 
+    @Test(arguments: ["affected_plant_parts", "prevention", "management"])
+    func malformedListJSONFailsFetch(column: String) throws {
+        let context = try CorruptibleDisease()
+        try context.corrupt("\(column) = 'not json ['")
+        #expect(
+            throws: TaxonomyCodingError.malformedList(table: "disease", column: column)
+        ) {
+            try DiseaseRepository(context.database).fetch(id: context.disease.id)
+        }
+    }
+
     @Test func corruptRowFailsEveryDiseaseFetchPath() throws {
         let context = try CorruptibleDisease()
         try context.corrupt("pathogen_type = 'bogus'")

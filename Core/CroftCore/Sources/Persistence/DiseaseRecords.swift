@@ -60,8 +60,8 @@ struct DiseaseRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
                 column: "affected_plant_parts"
             ),
             transmission: transmission,
-            prevention: try TaxonomyCoding.decodeList(String.self, from: prevention),
-            management: try TaxonomyCoding.decodeList(String.self, from: management)
+            prevention: try decoder.stringList(from: prevention, column: "prevention"),
+            management: try decoder.stringList(from: management, column: "management")
         )
     }
 }

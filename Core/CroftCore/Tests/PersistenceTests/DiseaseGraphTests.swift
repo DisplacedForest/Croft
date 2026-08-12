@@ -88,6 +88,48 @@ struct DiseaseRelationshipTests {
         #expect(try fixture.pathogens.fetch(id: pathogen.id) != nil)
     }
 
+    @Test func deletingThePathogenDropsOnlyItsCausedByEdges() throws {
+        let fixture = try DiseaseFixture()
+        try fixture.repository.insert(earlyBlight)
+        let pathogen = Pathogen(name: "Alternaria solani")
+        try fixture.pathogens.insert(pathogen)
+        let condition = EnvironmentalCondition(name: "warm humid conditions")
+        try fixture.environmentalConditions.insert(condition)
+        let diseaseRef = EntityRef(id: earlyBlight.id.rawValue, type: .disease)
+        let pathogenRef = EntityRef(id: pathogen.id.rawValue, type: .pathogen)
+        let conditionRef = EntityRef(
+            id: condition.id.rawValue,
+            type: .environmentalCondition
+        )
+        try fixture.relate(diseaseRef, .causedBy, pathogenRef)
+        try fixture.relate(diseaseRef, .favoredBy, conditionRef)
+
+        try fixture.pathogens.delete(id: pathogen.id)
+
+        #expect(try fixture.edgeCount(referencing: pathogenRef.id) == 0)
+        #expect(try fixture.edgeCount(referencing: conditionRef.id) == 1)
+        #expect(try fixture.repository.fetch(id: earlyBlight.id) != nil)
+    }
+
+    @Test func deletingTheConditionDropsItsFavoredByEdges() throws {
+        let fixture = try DiseaseFixture()
+        try fixture.repository.insert(earlyBlight)
+        let condition = EnvironmentalCondition(name: "warm humid conditions")
+        try fixture.environmentalConditions.insert(condition)
+        let diseaseRef = EntityRef(id: earlyBlight.id.rawValue, type: .disease)
+        let conditionRef = EntityRef(
+            id: condition.id.rawValue,
+            type: .environmentalCondition
+        )
+        try fixture.relate(diseaseRef, .favoredBy, conditionRef)
+
+        try fixture.environmentalConditions.delete(id: condition.id)
+
+        #expect(try fixture.edgeCount(referencing: conditionRef.id) == 0)
+        #expect(try fixture.edgeCount(referencing: diseaseRef.id) == 0)
+        #expect(try fixture.repository.fetch(id: earlyBlight.id) != nil)
+    }
+
     @Test func deletingThePlantEntityLeavesNoEdgesBehind() throws {
         let fixture = try DiseaseFixture()
         let tomato = EntityRef(id: "tomato", type: .plant)
