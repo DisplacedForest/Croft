@@ -44,6 +44,14 @@ struct TaxonomyRowDecoder {
         return try requiredEnumValue(type, from: raw, column: column)
     }
 
+    func enumValue<Value: RawRepresentable>(
+        _ type: Value.Type,
+        from raw: String,
+        column: String
+    ) throws -> Value where Value.RawValue == String {
+        try requiredEnumValue(type, from: raw, column: column)
+    }
+
     func enumList<Value: RawRepresentable>(
         _ type: Value.Type,
         from text: String,
