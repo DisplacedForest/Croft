@@ -17,7 +17,7 @@ open Croft.xcodeproj
 
 The Xcode project is generated from `project.yml` with XcodeGen and is not checked in. Regenerate it after changing `project.yml`.
 
-Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `Persistence`, `Graph`, and `Knowledge` modules. The app target is `Croft-macOS`.
+Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `Persistence`, `Graph`, and `Knowledge` modules. The macOS app target is `Croft-macOS`.
 
 ## Verify
 
