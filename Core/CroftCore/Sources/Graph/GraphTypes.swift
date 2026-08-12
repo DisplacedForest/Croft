@@ -2,9 +2,12 @@ public enum EntityType: String, CaseIterable, Codable, Hashable, Sendable {
     case plant
     case pest
     case disease
-    case gardenLocation = "garden_location"
     case seedLot = "seed_lot"
     case planting
+    case property
+    case garden
+    case growingArea = "growing_area"
+    case bed
 }
 
 public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable {
