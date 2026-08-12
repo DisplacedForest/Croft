@@ -8,6 +8,7 @@ public enum SchemaMigrations {
         ("v004-garden-structure", applyGardenStructure),
         ("v005-pests", applyPests),
         ("v006-plant-relationships", applyPlantRelationships),
+        ("v007-diseases", applyDiseases),
     ]
 
     public static let identifiers: [String] = migrations.map(\.identifier)

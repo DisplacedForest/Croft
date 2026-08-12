@@ -9,6 +9,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.locatedIn.rawValue == "LOCATED_IN")
         #expect(RelationshipType.parasitizedBy.rawValue == "PARASITIZED_BY")
         #expect(RelationshipType.predatedBy.rawValue == "PREDATED_BY")
+        #expect(RelationshipType.causedBy.rawValue == "CAUSED_BY")
+        #expect(RelationshipType.favoredBy.rawValue == "FAVORED_BY")
     }
 
     @Test(arguments: RelationshipType.allCases)
@@ -23,6 +25,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.locatedIn.deleteRule == .restrictTarget)
         #expect(RelationshipType.parasitizedBy.deleteRule == .cascade)
         #expect(RelationshipType.predatedBy.deleteRule == .cascade)
+        #expect(RelationshipType.causedBy.deleteRule == .cascade)
+        #expect(RelationshipType.favoredBy.deleteRule == .cascade)
     }
 }
 
@@ -37,6 +41,8 @@ struct EntityTypeTests {
         #expect(EntityType.garden.rawValue == "garden")
         #expect(EntityType.growingArea.rawValue == "growing_area")
         #expect(EntityType.bed.rawValue == "bed")
+        #expect(EntityType.pathogen.rawValue == "pathogen")
+        #expect(EntityType.environmentalCondition.rawValue == "environmental_condition")
     }
 
     @Test(arguments: EntityType.allCases)
