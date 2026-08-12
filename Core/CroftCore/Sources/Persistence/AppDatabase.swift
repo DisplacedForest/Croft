@@ -37,7 +37,7 @@ public struct AppDatabase: Sendable {
         }
         defer { try? handle.close() }
         guard let header = try handle.read(upToCount: 100), header.count == 100 else {
-            try requireNoPendingJournal(at: target, reportedPath: url.path)
+            try requireOwnershipEvidence(at: target, reportedPath: url.path)
             return
         }
         guard header.prefix(16).elementsEqual(sqliteHeaderMagic) else {
@@ -51,13 +51,16 @@ public struct AppDatabase: Sendable {
         let changeCounter = headerField(header, at: 24)
         let versionValidFor = headerField(header, at: 92)
         if applicationID == 0 && changeCounter == versionValidFor && pageCount <= 1 {
-            try requireNoPendingJournal(at: target, reportedPath: url.path)
+            try requireOwnershipEvidence(at: target, reportedPath: url.path)
             return
         }
         throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
     }
 
-    private static func requireNoPendingJournal(at target: URL, reportedPath: String) throws {
+    private static func requireOwnershipEvidence(at target: URL, reportedPath: String) throws {
+        if walApplicationID(at: target) == SchemaMigrations.databaseApplicationID {
+            return
+        }
         for suffix in ["-wal", "-journal"] {
             let sidecar = target.path + suffix
             let attributes = try? FileManager.default.attributesOfItem(atPath: sidecar)
@@ -65,6 +68,32 @@ public struct AppDatabase: Sendable {
                 throw DatabaseIdentityError(path: reportedPath, applicationID: 0)
             }
         }
+    }
+
+    private static func walApplicationID(at target: URL) -> Int? {
+        let walURL = URL(fileURLWithPath: target.path + "-wal")
+        guard let handle = try? FileHandle(forReadingFrom: walURL) else {
+            return nil
+        }
+        defer { try? handle.close() }
+        guard let walHeader = try? handle.read(upToCount: 32), walHeader.count == 32 else {
+            return nil
+        }
+        let pageSize = Int(headerField(walHeader, at: 8))
+        guard pageSize >= 512, pageSize <= 65536, pageSize & (pageSize - 1) == 0 else {
+            return nil
+        }
+        let salt = walHeader.dropFirst(16).prefix(8)
+        var applicationID: Int?
+        while let frame = try? handle.read(upToCount: 24 + pageSize), frame.count == 24 + pageSize {
+            guard frame.dropFirst(8).prefix(8).elementsEqual(salt) else {
+                break
+            }
+            if headerField(frame, at: 0) == 1 {
+                applicationID = Int(headerField(frame, at: 24 + 68))
+            }
+        }
+        return applicationID
     }
 
     static func verifyOpenedIdentity(of writer: some DatabaseWriter, path: String) throws {
