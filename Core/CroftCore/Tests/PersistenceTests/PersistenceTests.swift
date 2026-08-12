@@ -85,6 +85,100 @@ struct AppDatabaseTests {
     }
 }
 
+struct DatabaseIdentityTests {
+    private func temporaryDatabaseURL() -> URL {
+        FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString, isDirectory: true)
+            .appendingPathComponent("croft.sqlite", isDirectory: false)
+    }
+
+    private func removeDatabaseDirectory(_ url: URL) {
+        try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
+    }
+
+    @Test func foreignDatabaseIsRejectedAndLeftByteIdentical() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let foreign = try DatabaseQueue(path: url.path)
+        try foreign.write { db in
+            try db.execute(sql: "CREATE TABLE ledger (id TEXT PRIMARY KEY NOT NULL)")
+            try db.execute(sql: "INSERT INTO ledger (id) VALUES ('entry')")
+        }
+        try foreign.close()
+        let before = try Data(contentsOf: url)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            _ = try AppDatabase.open(at: url)
+        }
+        let after = try Data(contentsOf: url)
+        #expect(before == after)
+    }
+
+    @Test func foreignApplicationIDIsRejected() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let foreign = try DatabaseQueue(path: url.path)
+        try foreign.write { db in
+            try db.execute(sql: "PRAGMA application_id = 0x1234")
+            try db.execute(sql: "CREATE TABLE ledger (id TEXT PRIMARY KEY NOT NULL)")
+        }
+        try foreign.close()
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0x1234)) {
+            _ = try AppDatabase.open(at: url)
+        }
+    }
+
+    @Test func zeroLengthFileIsAdopted() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+        let database = try AppDatabase.open(at: url)
+        let applied = try database.writer.read {
+            try SchemaMigrations.migrator().appliedIdentifiers($0)
+        }
+        #expect(applied == Set(SchemaMigrations.identifiers))
+    }
+
+    @Test func existingCroftDatabaseReopens() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        _ = try AppDatabase.open(at: url)
+        let reopened = try AppDatabase.open(at: url)
+        let stamped = try reopened.writer.read {
+            try Int.fetchOne($0, sql: "PRAGMA application_id")
+        }
+        #expect(stamped == SchemaMigrations.databaseApplicationID)
+    }
+
+    @Test func croftDatabaseWithFutureMigrationFailsThroughHistory() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let queue = try DatabaseQueue(path: url.path)
+        var migrator = SchemaMigrations.migrator()
+        migrator.registerMigration("v999-future") { _ in }
+        try migrator.migrate(queue)
+        try queue.close()
+        #expect(throws: MigrationError.unknownApplied(["v999-future"])) {
+            _ = try AppDatabase.open(at: url)
+        }
+    }
+}
+
 struct MigrationHistoryTests {
     @Test func emptyHistoryIsValid() throws {
         try MigrationHistory.validate(applied: [], registered: ["a", "b"])

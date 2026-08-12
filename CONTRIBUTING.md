@@ -26,5 +26,5 @@ Formats with swift-format, lints with swift-format and SwiftLint, and runs the p
 Use a dedicated branch and pull request. Keep changes focused, review the diff,
 and merge only after required GitHub Actions checks pass.
 
-Changes are rejected when they fail `mise run ci`, include unrelated work, add
-code comments, or leave documentation stale.
+Changes are rejected when they fail `mise run ci`, include unrelated work, or
+leave documentation stale.
