@@ -34,7 +34,7 @@ jobs:
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: chetan/git-restore-mtime-action@eea05a1e9e49a08f407a4ff6ada9fce81903c816
+      - uses: chetan/git-restore-mtime-action@d186aca54f8760da4dec55313195e51ed3ebb0b3
         if: steps.diff.outputs.code == 'true'
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
         if: steps.diff.outputs.code == 'true'
