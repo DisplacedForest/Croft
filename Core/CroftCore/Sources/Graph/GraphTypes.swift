@@ -17,6 +17,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     case locatedIn = "LOCATED_IN"
     case parasitizedBy = "PARASITIZED_BY"
     case predatedBy = "PREDATED_BY"
+    case antagonisticTo = "ANTAGONISTIC_TO"
+    case rotateAwayFrom = "ROTATE_AWAY_FROM"
 
     public enum DeleteRule: Hashable, Sendable {
         case cascade
@@ -25,10 +27,30 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
 
     public var deleteRule: DeleteRule {
         switch self {
-        case .susceptibleTo, .hostOf, .companionWith, .parasitizedBy, .predatedBy:
+        case .susceptibleTo, .hostOf, .companionWith, .parasitizedBy, .predatedBy,
+            .antagonisticTo, .rotateAwayFrom:
             .cascade
         case .locatedIn:
             .restrictTarget
+        }
+    }
+
+    public var requiresProvenance: Bool {
+        switch self {
+        case .companionWith, .antagonisticTo, .rotateAwayFrom:
+            true
+        case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy:
+            false
+        }
+    }
+
+    public var defaultConfidence: Double? {
+        switch self {
+        case .companionWith:
+            0.3
+        case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
+            .antagonisticTo, .rotateAwayFrom:
+            nil
         }
     }
 }
@@ -94,4 +116,5 @@ public enum GraphError: Error, Hashable {
     case unknownSourceType(String)
     case unresolvedEntity(String)
     case entityTypeMismatch(id: String, stored: EntityType, requested: EntityType)
+    case missingProvenance(RelationshipType)
 }
