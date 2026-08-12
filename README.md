@@ -1,4 +1,4 @@
-# Croft
+<img src=".github/assets/readme_header.png" alt="Croft: organize, plan, grow with purpose" width="100%">
 
 Open-source, local-first garden operating system built on a horticultural knowledge graph. Native Swift and SwiftUI for macOS and iOS.
 

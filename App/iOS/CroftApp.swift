@@ -4,7 +4,7 @@ import SwiftUI
 struct CroftApp: App {
     var body: some Scene {
         WindowGroup {
-            PlaceholderView()
+            CroftShell()
         }
     }
 }
