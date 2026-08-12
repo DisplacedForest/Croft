@@ -1,1 +1,7 @@
 .worktrees/
+.build/
+DerivedData/
+Croft.xcodeproj/
+xcuserdata/
+*.xcuserstate
+.DS_Store
