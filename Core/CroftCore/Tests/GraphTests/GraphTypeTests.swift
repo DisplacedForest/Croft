@@ -7,6 +7,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.hostOf.rawValue == "HOST_OF")
         #expect(RelationshipType.companionWith.rawValue == "COMPANION_WITH")
         #expect(RelationshipType.locatedIn.rawValue == "LOCATED_IN")
+        #expect(RelationshipType.parasitizedBy.rawValue == "PARASITIZED_BY")
+        #expect(RelationshipType.predatedBy.rawValue == "PREDATED_BY")
     }
 
     @Test(arguments: RelationshipType.allCases)
@@ -19,6 +21,8 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.hostOf.deleteRule == .cascade)
         #expect(RelationshipType.companionWith.deleteRule == .cascade)
         #expect(RelationshipType.locatedIn.deleteRule == .restrictTarget)
+        #expect(RelationshipType.parasitizedBy.deleteRule == .cascade)
+        #expect(RelationshipType.predatedBy.deleteRule == .cascade)
     }
 }
 

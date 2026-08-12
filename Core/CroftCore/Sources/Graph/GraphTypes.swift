@@ -15,6 +15,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     case hostOf = "HOST_OF"
     case companionWith = "COMPANION_WITH"
     case locatedIn = "LOCATED_IN"
+    case parasitizedBy = "PARASITIZED_BY"
+    case predatedBy = "PREDATED_BY"
 
     public enum DeleteRule: Hashable, Sendable {
         case cascade
@@ -23,7 +25,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
 
     public var deleteRule: DeleteRule {
         switch self {
-        case .susceptibleTo, .hostOf, .companionWith:
+        case .susceptibleTo, .hostOf, .companionWith, .parasitizedBy, .predatedBy:
             .cascade
         case .locatedIn:
             .restrictTarget
