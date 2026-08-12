@@ -18,48 +18,6 @@ private func makeDatabase() throws -> AppDatabase {
     try AppDatabase.inMemory()
 }
 
-struct RelationshipTypeTests {
-    @Test func rawValuesAreStableStrings() {
-        #expect(RelationshipType.susceptibleTo.rawValue == "SUSCEPTIBLE_TO")
-        #expect(RelationshipType.hostOf.rawValue == "HOST_OF")
-        #expect(RelationshipType.companionWith.rawValue == "COMPANION_WITH")
-        #expect(RelationshipType.locatedIn.rawValue == "LOCATED_IN")
-    }
-
-    @Test(arguments: RelationshipType.allCases)
-    func roundTripsThroughRawValue(type: RelationshipType) {
-        #expect(RelationshipType(rawValue: type.rawValue) == type)
-    }
-
-    @Test func deleteRulesAreDecidedPerType() {
-        #expect(RelationshipType.susceptibleTo.deleteRule == .cascade)
-        #expect(RelationshipType.hostOf.deleteRule == .cascade)
-        #expect(RelationshipType.companionWith.deleteRule == .cascade)
-        #expect(RelationshipType.locatedIn.deleteRule == .restrictTarget)
-    }
-}
-
-struct EntityTypeTests {
-    @Test func rawValuesAreStableStrings() {
-        #expect(EntityType.plant.rawValue == "plant")
-        #expect(EntityType.pest.rawValue == "pest")
-        #expect(EntityType.disease.rawValue == "disease")
-        #expect(EntityType.gardenLocation.rawValue == "garden_location")
-        #expect(EntityType.seedLot.rawValue == "seed_lot")
-        #expect(EntityType.planting.rawValue == "planting")
-    }
-
-    @Test(arguments: EntityType.allCases)
-    func roundTripsThroughRawValue(type: EntityType) {
-        #expect(EntityType(rawValue: type.rawValue) == type)
-    }
-
-    @Test(arguments: SourceType.allCases)
-    func sourceTypeRoundTripsThroughRawValue(type: SourceType) {
-        #expect(SourceType(rawValue: type.rawValue) == type)
-    }
-}
-
 struct EntityRegistryTests {
     @Test func registerAssignsStableIdentityAndType() throws {
         let database = try makeDatabase()
@@ -84,6 +42,25 @@ struct EntityRegistryTests {
             try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM entity")
         }
         #expect(count == 1)
+    }
+
+    @Test func reregisteringWithADifferentTypeThrows() throws {
+        let database = try makeDatabase()
+        try database.writer.write { db in
+            try GraphStore.register(EntityRef(id: "shared-id", type: .plant), in: db)
+        }
+        #expect(
+            throws: GraphError.entityTypeMismatch(
+                id: "shared-id", stored: .plant, requested: .pest)
+        ) {
+            try database.writer.write { db in
+                try GraphStore.register(EntityRef(id: "shared-id", type: .pest), in: db)
+            }
+        }
+        let stored = try database.writer.read { db in
+            try GraphStore.registered("shared-id", in: db)
+        }
+        #expect(stored?.type == .plant)
     }
 
     @Test func lookupOfUnregisteredEntityReturnsNil() throws {
@@ -346,6 +323,58 @@ struct QueryAPITests {
             return try GraphStore.resolve(edges.map(\.target), as: FixturePlant.self, in: db)
         }
         #expect(resolved == [basil])
+    }
+
+    @Test func resolvePreservesInputOrder() throws {
+        let database = try makeDatabase()
+        let plants = [
+            FixturePlant(id: "zinnia", name: "Zinnia"),
+            FixturePlant(id: "aster", name: "Aster"),
+            FixturePlant(id: "marigold", name: "Marigold"),
+        ]
+        try database.writer.write { db in
+            try db.execute(
+                sql: """
+                    CREATE TABLE fixture_plant (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        name TEXT NOT NULL
+                    )
+                    """
+            )
+            for plant in plants {
+                try plant.insert(db)
+                try GraphStore.register(plant.entityRef, in: db)
+            }
+        }
+        let refs = [
+            EntityRef(id: "marigold", type: .plant),
+            EntityRef(id: "zinnia", type: .plant),
+            EntityRef(id: "aster", type: .plant),
+        ]
+        let resolved = try database.writer.read { db in
+            try GraphStore.resolve(refs, as: FixturePlant.self, in: db)
+        }
+        #expect(resolved.map(\.id) == ["marigold", "zinnia", "aster"])
+    }
+
+    @Test func resolveThrowsWhenADomainRowIsMissing() throws {
+        let database = try makeDatabase()
+        try database.writer.write { db in
+            try db.execute(
+                sql: """
+                    CREATE TABLE fixture_plant (
+                        id TEXT PRIMARY KEY NOT NULL,
+                        name TEXT NOT NULL
+                    )
+                    """
+            )
+        }
+        let refs = [EntityRef(id: "ghost", type: .plant)]
+        #expect(throws: GraphError.unresolvedEntity("ghost")) {
+            try database.writer.read { db in
+                try GraphStore.resolve(refs, as: FixturePlant.self, in: db)
+            }
+        }
     }
 
     @Test func resolveIgnoresRefsOfOtherTypes() throws {

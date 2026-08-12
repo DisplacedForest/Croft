@@ -30,7 +30,9 @@ let edges = try GraphStore.outgoing(from: plant.id, via: .susceptibleTo, in: db)
 let diseases = try GraphStore.resolve(edges.map(\.target), as: Disease.self, in: db)
 ```
 
-`resolve` works for any endpoint type that is also a GRDB record (`FetchableRecord & TableRecord`) keyed by its entity id.
+`resolve` works for any endpoint type that is also a GRDB record (`FetchableRecord & TableRecord`) keyed by its entity id. It returns models in the same order as the refs you pass in, skips refs of other entity types, and throws `GraphError.unresolvedEntity` if a matching ref has no domain row, so a registry entry without its domain row surfaces as an error instead of a silently shorter result.
+
+Registering the same id twice with the same type is a no-op. Registering an existing id with a different type throws `GraphError.entityTypeMismatch` rather than silently keeping the original, so colliding ids from different domain writers surface immediately.
 
 ## Delete semantics
 

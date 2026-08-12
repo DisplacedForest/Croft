@@ -87,4 +87,6 @@ public enum GraphError: Error, Hashable {
     case unknownEntityType(String)
     case unknownRelationshipType(String)
     case unknownSourceType(String)
+    case unresolvedEntity(String)
+    case entityTypeMismatch(id: String, stored: EntityType, requested: EntityType)
 }

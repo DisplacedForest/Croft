@@ -7,6 +7,11 @@ public enum GraphStore {
             sql: "INSERT OR IGNORE INTO entity (id, entity_type) VALUES (?, ?)",
             arguments: [ref.id, ref.type.rawValue]
         )
+        guard let stored = try registered(ref.id, in: db), stored.type != ref.type else {
+            return
+        }
+        throw GraphError.entityTypeMismatch(
+            id: ref.id, stored: stored.type, requested: ref.type)
     }
 
     public static func registered(_ id: String, in db: Database) throws -> EntityRef? {
@@ -63,11 +68,7 @@ public enum GraphStore {
         via type: RelationshipType,
         in db: Database
     ) throws -> [Edge] {
-        try edges(
-            matching: "r.from_entity_id = ? AND r.relationship_type = ?",
-            arguments: [id, type.rawValue],
-            in: db
-        )
+        try edges(anchoredAt: .source, id: id, type: type, in: db)
     }
 
     public static func incoming(
@@ -75,11 +76,7 @@ public enum GraphStore {
         via type: RelationshipType,
         in db: Database
     ) throws -> [Edge] {
-        try edges(
-            matching: "r.to_entity_id = ? AND r.relationship_type = ?",
-            arguments: [id, type.rawValue],
-            in: db
-        )
+        try edges(anchoredAt: .target, id: id, type: type, in: db)
     }
 
     public static func resolve<Model>(
@@ -91,12 +88,35 @@ public enum GraphStore {
         guard !ids.isEmpty else {
             return []
         }
-        return try Model.fetchAll(db, keys: ids)
+        let fetched = try Model.fetchAll(db, keys: ids)
+        let modelsByID = Dictionary(
+            fetched.map { ($0.entityID, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        return try ids.map { id in
+            guard let model = modelsByID[id] else {
+                throw GraphError.unresolvedEntity(id)
+            }
+            return model
+        }
+    }
+
+    private enum Endpoint {
+        case source
+        case target
+
+        var column: String {
+            switch self {
+            case .source: "from_entity_id"
+            case .target: "to_entity_id"
+            }
+        }
     }
 
     private static func edges(
-        matching condition: String,
-        arguments: StatementArguments,
+        anchoredAt endpoint: Endpoint,
+        id: String,
+        type: RelationshipType,
         in db: Database
     ) throws -> [Edge] {
         let rows = try Row.fetchAll(
@@ -116,10 +136,10 @@ public enum GraphStore {
                 FROM relationship r
                 JOIN entity ef ON ef.id = r.from_entity_id
                 JOIN entity et ON et.id = r.to_entity_id
-                WHERE \(condition)
+                WHERE r.\(endpoint.column) = ? AND r.relationship_type = ?
                 ORDER BY r.id
                 """,
-            arguments: arguments
+            arguments: [id, type.rawValue]
         )
         return try rows.map(edge(from:))
     }
