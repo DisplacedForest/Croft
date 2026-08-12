@@ -1,0 +1,50 @@
+[tools]
+xcodegen = "2.46.0"
+swiftlint = "0.65.0"
+lefthook = "2.1.10"
+semgrep = "1.172.0"
+
+[tasks.generate]
+run = "xcodegen generate"
+
+[tasks.fmt]
+run = "xcrun swift-format format --in-place --recursive App Core"
+
+[tasks.lint]
+run = [
+  "xcrun swift-format lint --strict --recursive App Core",
+  "swiftlint lint --strict --quiet",
+]
+
+[tasks."test-macos"]
+run = "swift test --package-path Core/CroftCore"
+
+[tasks."test-ios"]
+dir = "Core/CroftCore"
+run = "xcodebuild test -scheme CroftCore-Package -destination 'platform=iOS Simulator,name=iPhone 17' -quiet"
+
+[tasks.test]
+depends = ["test-macos", "test-ios"]
+
+[tasks.build]
+depends = ["generate"]
+run = [
+  "xcodebuild build -project Croft.xcodeproj -scheme Croft-macOS -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -quiet",
+  "xcodebuild build -project Croft.xcodeproj -scheme Croft-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet",
+]
+
+[tasks.check]
+run = [
+  "mise run fmt",
+  "mise run lint",
+  "mise run test",
+]
+
+[tasks.ci]
+run = [
+  "mise run check",
+  "mise run build",
+]
+
+[tasks.security]
+run = "semgrep scan --config auto --error"

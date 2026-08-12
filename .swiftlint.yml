@@ -1,0 +1,7 @@
+disabled_rules:
+  - trailing_comma
+included:
+  - App
+  - Core
+excluded:
+  - Core/CroftCore/.build
