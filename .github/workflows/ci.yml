@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
       - name: Detect docs-only change
         id: diff
         run: |
@@ -32,6 +34,8 @@ jobs:
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
           fi
+      - uses: chetan/git-restore-mtime-action@eea05a1e9e49a08f407a4ff6ada9fce81903c816
+        if: steps.diff.outputs.code == 'true'
       - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
         if: steps.diff.outputs.code == 'true'
         with:
@@ -46,17 +50,21 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: Core/CroftCore/.build
-          key: spm-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved') }}
+          key: spm-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved') }}-${{ github.sha }}
           restore-keys: |
+            spm-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved') }}-
             spm-${{ runner.os }}-xcode-26.6-
       - name: Cache DerivedData
         if: steps.diff.outputs.code == 'true'
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: deriveddata-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved', 'project.yml') }}
+          key: deriveddata-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved', 'project.yml') }}-${{ github.sha }}
           restore-keys: |
+            deriveddata-${{ runner.os }}-xcode-26.6-${{ hashFiles('Core/CroftCore/Package.resolved', 'project.yml') }}-
             deriveddata-${{ runner.os }}-xcode-26.6-
       - name: Verify
         if: steps.diff.outputs.code == 'true'
+        env:
+          MISE_TASK_RUN_AUTO_INSTALL: "false"
         run: mise run ci
