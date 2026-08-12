@@ -4,17 +4,17 @@ import Testing
 
 @testable import Persistence
 
-struct DatabaseIdentityTests {
-    private func temporaryDatabaseURL() -> URL {
-        FileManager.default.temporaryDirectory
-            .appendingPathComponent(UUID().uuidString, isDirectory: true)
-            .appendingPathComponent("croft.sqlite", isDirectory: false)
-    }
+private func temporaryDatabaseURL() -> URL {
+    FileManager.default.temporaryDirectory
+        .appendingPathComponent(UUID().uuidString, isDirectory: true)
+        .appendingPathComponent("croft.sqlite", isDirectory: false)
+}
 
-    private func removeDatabaseDirectory(_ url: URL) {
-        try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
-    }
+private func removeDatabaseDirectory(_ url: URL) {
+    try? FileManager.default.removeItem(at: url.deletingLastPathComponent())
+}
 
+struct DatabaseIdentityRejectionTests {
     @Test func foreignDatabaseIsRejectedAndLeftByteIdentical() throws {
         let url = temporaryDatabaseURL()
         defer { removeDatabaseDirectory(url) }
@@ -131,8 +131,10 @@ struct DatabaseIdentityTests {
         let after = try ["", "-wal", "-shm"].map(contents)
         #expect(before == after)
     }
+}
 
-    @Test func croftDatabaseWithAnUncheckpointedWALIsStillAdopted() throws {
+struct DatabaseIdentityRecoveryTests {
+    private func makeUncheckpointedCroftCopy(at url: URL) throws {
         let sourceURL = temporaryDatabaseURL()
         defer { removeDatabaseDirectory(sourceURL) }
         try FileManager.default.createDirectory(
@@ -141,8 +143,6 @@ struct DatabaseIdentityTests {
         )
         let sourcePool = try DatabasePool(path: sourceURL.path)
         try SchemaMigrations.migrator().migrate(sourcePool)
-        let url = temporaryDatabaseURL()
-        defer { removeDatabaseDirectory(url) }
         try FileManager.default.createDirectory(
             at: url.deletingLastPathComponent(),
             withIntermediateDirectories: true
@@ -159,11 +159,68 @@ struct DatabaseIdentityTests {
                 atPath: url.path + "-wal"
             )[.size] as? Int
         #expect((walSize ?? 0) > 0)
+    }
+
+    @Test func croftDatabaseWithAnUncheckpointedWALIsStillAdopted() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try makeUncheckpointedCroftCopy(at: url)
         let database = try AppDatabase.open(at: url)
         let stamped = try database.writer.read {
             try Int.fetchOne($0, sql: "PRAGMA application_id")
         }
         #expect(stamped == SchemaMigrations.databaseApplicationID)
+    }
+
+    @Test func corruptTrailingWALFrameDoesNotStrandACroftDatabase() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try makeUncheckpointedCroftCopy(at: url)
+        let walURL = URL(fileURLWithPath: url.path + "-wal")
+        var wal = try Data(contentsOf: walURL)
+        let pageSize = Int(wal[8]) << 24 | Int(wal[9]) << 16 | Int(wal[10]) << 8 | Int(wal[11])
+        var fake = Data(count: 24 + pageSize)
+        fake[3] = 1
+        fake[7] = 1
+        fake.replaceSubrange(8..<16, with: wal[16..<24])
+        wal.append(fake)
+        try wal.write(to: walURL)
+        let database = try AppDatabase.open(at: url)
+        let stamped = try database.writer.read {
+            try Int.fetchOne($0, sql: "PRAGMA application_id")
+        }
+        #expect(stamped == SchemaMigrations.databaseApplicationID)
+    }
+
+    @Test func walWithABrokenChecksumChainIsNotOwnershipEvidence() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try makeUncheckpointedCroftCopy(at: url)
+        let walURL = URL(fileURLWithPath: url.path + "-wal")
+        var wal = try Data(contentsOf: walURL)
+        wal[32 + 16] ^= 0xFF
+        try wal.write(to: walURL)
+        let mainBefore = try Data(contentsOf: url)
+        let walBefore = try Data(contentsOf: walURL)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            _ = try AppDatabase.open(at: url)
+        }
+        #expect(try Data(contentsOf: url) == mainBefore)
+        #expect(try Data(contentsOf: walURL) == walBefore)
+    }
+
+    @Test func nonRegularWALSidecarIsRejectedWithoutBlocking() throws {
+        let url = temporaryDatabaseURL()
+        defer { removeDatabaseDirectory(url) }
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        FileManager.default.createFile(atPath: url.path, contents: nil)
+        #expect(mkfifo(url.path + "-wal", 0o644) == 0)
+        #expect(throws: DatabaseIdentityError(path: url.path, applicationID: 0)) {
+            _ = try AppDatabase.open(at: url)
+        }
     }
 
     @Test func firstOpenStampsTheMainHeaderImmediately() throws {

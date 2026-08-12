@@ -63,37 +63,104 @@ public struct AppDatabase: Sendable {
         }
         for suffix in ["-wal", "-journal"] {
             let sidecar = target.path + suffix
-            let attributes = try? FileManager.default.attributesOfItem(atPath: sidecar)
-            if let size = attributes?[.size] as? Int, size > 0 {
+            guard
+                let attributes = try? FileManager.default.attributesOfItem(atPath: sidecar)
+            else {
+                continue
+            }
+            guard attributes[.type] as? FileAttributeType == .typeRegular else {
+                throw DatabaseIdentityError(path: reportedPath, applicationID: 0)
+            }
+            if let size = attributes[.size] as? Int, size > 0 {
                 throw DatabaseIdentityError(path: reportedPath, applicationID: 0)
             }
         }
     }
 
     private static func walApplicationID(at target: URL) -> Int? {
-        let walURL = URL(fileURLWithPath: target.path + "-wal")
-        guard let handle = try? FileHandle(forReadingFrom: walURL) else {
+        guard let handle = openRegularFile(atPath: target.path + "-wal") else {
             return nil
         }
         defer { try? handle.close() }
         guard let walHeader = try? handle.read(upToCount: 32), walHeader.count == 32 else {
             return nil
         }
+        let magic = headerField(walHeader, at: 0)
+        guard magic == 0x377F_0682 || magic == 0x377F_0683 else {
+            return nil
+        }
+        let bigEndianWords = magic & 1 == 1
         let pageSize = Int(headerField(walHeader, at: 8))
         guard pageSize >= 512, pageSize <= 65536, pageSize & (pageSize - 1) == 0 else {
             return nil
         }
+        var checksum = walChecksum((0, 0), walHeader.prefix(24), bigEndianWords)
+        guard checksum == (headerField(walHeader, at: 24), headerField(walHeader, at: 28)) else {
+            return nil
+        }
         let salt = walHeader.dropFirst(16).prefix(8)
-        var applicationID: Int?
+        var latest: Int?
+        var committed: Int?
         while let frame = try? handle.read(upToCount: 24 + pageSize), frame.count == 24 + pageSize {
             guard frame.dropFirst(8).prefix(8).elementsEqual(salt) else {
                 break
             }
+            checksum = walChecksum(checksum, frame.prefix(8), bigEndianWords)
+            checksum = walChecksum(checksum, frame.dropFirst(24), bigEndianWords)
+            guard checksum == (headerField(frame, at: 16), headerField(frame, at: 20)) else {
+                break
+            }
             if headerField(frame, at: 0) == 1 {
-                applicationID = Int(headerField(frame, at: 24 + 68))
+                latest = Int(headerField(frame, at: 24 + 68))
+            }
+            if headerField(frame, at: 4) != 0 {
+                committed = latest ?? committed
             }
         }
-        return applicationID
+        return committed
+    }
+
+    private static func openRegularFile(atPath path: String) -> FileHandle? {
+        let descriptor = Darwin.open(path, O_RDONLY | O_NONBLOCK)
+        guard descriptor >= 0 else {
+            return nil
+        }
+        var info = stat()
+        guard
+            fstat(descriptor, &info) == 0,
+            info.st_mode & S_IFMT == S_IFREG,
+            info.st_size <= 64 * 1024 * 1024
+        else {
+            Darwin.close(descriptor)
+            return nil
+        }
+        return FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
+    }
+
+    private static func walChecksum(
+        _ seed: (UInt32, UInt32),
+        _ data: Data,
+        _ bigEndianWords: Bool
+    ) -> (UInt32, UInt32) {
+        let bytes = [UInt8](data)
+        var sum1 = seed.0
+        var sum2 = seed.1
+        var index = 0
+        while index + 8 <= bytes.count {
+            sum1 = sum1 &+ walWord(bytes, index, bigEndianWords) &+ sum2
+            sum2 = sum2 &+ walWord(bytes, index + 4, bigEndianWords) &+ sum1
+            index += 8
+        }
+        return (sum1, sum2)
+    }
+
+    private static func walWord(_ bytes: [UInt8], _ offset: Int, _ bigEndian: Bool) -> UInt32 {
+        let ordered =
+            bigEndian
+            ? (bytes[offset], bytes[offset + 1], bytes[offset + 2], bytes[offset + 3])
+            : (bytes[offset + 3], bytes[offset + 2], bytes[offset + 1], bytes[offset])
+        return UInt32(ordered.0) << 24 | UInt32(ordered.1) << 16
+            | UInt32(ordered.2) << 8 | UInt32(ordered.3)
     }
 
     static func verifyOpenedIdentity(of writer: some DatabaseWriter, path: String) throws {
