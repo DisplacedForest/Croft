@@ -4,14 +4,9 @@ import SwiftUI
 
 struct AppStores: Sendable {
     let database: AppDatabase
-    let knowledgeDatabase: AppDatabase?
 
     var plantPages: PlantPageLoader {
-        if let knowledgeDatabase {
-            PlantPageLoader(knowledge: knowledgeDatabase, personal: database)
-        } else {
-            PlantPageLoader(database)
-        }
+        PlantPageLoader(database)
     }
 
     static func open() -> AppStores? {
@@ -20,10 +15,7 @@ struct AppStores: Sendable {
         else {
             return nil
         }
-        return AppStores(
-            database: database,
-            knowledgeDatabase: KnowledgeStore.openBundled()?.database
-        )
+        return AppStores(database: database)
     }
 }
 

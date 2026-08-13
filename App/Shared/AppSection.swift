@@ -1,3 +1,4 @@
+import Design
 import SwiftUI
 
 enum AppSection: String, CaseIterable, Identifiable, Hashable {
@@ -19,6 +20,13 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         switch self {
         case .garden: "tree"
         case .plants: "leaf"
+        }
+    }
+
+    var domainColor: Color {
+        switch self {
+        case .garden: .domainGarden
+        case .plants: .domainGarden
         }
     }
 

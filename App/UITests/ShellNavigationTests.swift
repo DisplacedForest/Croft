@@ -7,7 +7,7 @@ final class ShellNavigationTests: XCTestCase {
         let plantsTab = app.tabBars.buttons["Plants"]
         XCTAssertTrue(plantsTab.waitForExistence(timeout: 5))
         plantsTab.tap()
-        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["No plants yet"].waitForExistence(timeout: 5))
         let gardenTab = app.tabBars.buttons["Garden"]
         gardenTab.tap()
         XCTAssertTrue(app.staticTexts["Where your garden takes root."].waitForExistence(timeout: 5))
