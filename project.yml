@@ -28,6 +28,7 @@ targets:
           - Persistence
           - Graph
           - Knowledge
+          - GardenModel
     settings:
       base:
         PRODUCT_NAME: Croft
@@ -46,6 +47,7 @@ targets:
           - Persistence
           - Graph
           - Knowledge
+          - GardenModel
     settings:
       base:
         PRODUCT_NAME: Croft

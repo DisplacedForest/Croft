@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CroftShell: View {
     @State private var selection: AppSection? = .garden
+    @State private var gardenStore = GardenStore.live()
 
     var body: some View {
         #if os(macOS)
@@ -32,6 +33,7 @@ struct CroftShell: View {
 
     private func sectionStack(for section: AppSection) -> some View {
         SectionStack(section: section)
+            .environment(gardenStore)
     }
 }
 
@@ -46,7 +48,9 @@ private struct SectionStack: View {
             }
             .navigationTitle(section.title)
             .navigationDestination(for: SectionRoute.self) { route in
-                SectionDetailView(route: route)
+                SectionDetailView(route: route) { next in
+                    path.append(next)
+                }
             }
         }
     }
