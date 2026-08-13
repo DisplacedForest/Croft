@@ -1,5 +1,6 @@
 import Domain
 import GRDB
+import Graph
 
 public struct CultivarRepository: Sendable {
     private let writer: any DatabaseWriter
@@ -10,7 +11,10 @@ public struct CultivarRepository: Sendable {
 
     public func insert(_ cultivar: Cultivar) throws {
         let record = try CultivarRecord(cultivar)
-        try writer.write { try record.insert($0) }
+        try writer.write { db in
+            try record.insert(db)
+            try GraphStore.register(record.entityRef, in: db)
+        }
     }
 
     public func update(_ cultivar: Cultivar) throws {
@@ -46,7 +50,8 @@ public struct CultivarRepository: Sendable {
     @discardableResult
     public func delete(id: Cultivar.ID) throws -> Bool {
         try writer.write { db in
-            try CultivarRecord.deleteOne(db, key: id.rawValue)
+            try GraphStore.deleteEntity(id.rawValue, in: db)
+            return try CultivarRecord.deleteOne(db, key: id.rawValue)
         }
     }
 }
