@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -121,7 +122,7 @@ struct BedDetailView: View {
             }
             .padding(CroftTheme.space(3))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
+            .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
             .contentShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)

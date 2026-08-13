@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -32,7 +33,7 @@ struct BedCardView<MenuItems: View>: View {
             }
             .padding(CroftTheme.space(4))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 12))
             .contentShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
