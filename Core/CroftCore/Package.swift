@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "Graph", targets: ["Graph"]),
         .library(name: "Knowledge", targets: ["Knowledge"]),
+        .library(name: "GardenModel", targets: ["GardenModel"]),
         .library(name: "Design", targets: ["Design"]),
         .library(name: "PlantCatalog", targets: ["PlantCatalog"]),
         .library(name: "Today", targets: ["Today"]),
@@ -43,6 +44,7 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ]
         ),
+        .target(name: "GardenModel", dependencies: ["Domain", "Persistence"]),
         .target(
             name: "PlantCatalog",
             dependencies: [
@@ -66,5 +68,9 @@ let package = Package(
             dependencies: ["PlantCatalog", "Domain", "Persistence", "Graph"]
         ),
         .testTarget(name: "TodayTests", dependencies: ["Today"]),
+        .testTarget(
+            name: "GardenModelTests",
+            dependencies: ["GardenModel", "Domain", "Persistence"]
+        ),
     ]
 )

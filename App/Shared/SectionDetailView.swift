@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SectionDetailView: View {
     let route: SectionRoute
+    let navigate: (SectionRoute) -> Void
 
     var body: some View {
         switch route {
@@ -16,6 +17,10 @@ struct SectionDetailView: View {
             .padding(CroftTheme.space(8))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Preview")
+        case .bed(let bedID):
+            BedDetailView(bedID: bedID, navigate: navigate)
+        case .planting(let plantingID):
+            PlantingDetailView(plantingID: plantingID)
         case .plant(let identity):
             PlantPageView(identity: identity)
         }
