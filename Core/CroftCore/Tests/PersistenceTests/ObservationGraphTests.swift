@@ -128,7 +128,7 @@ struct ObservationMigrationTests {
         let identifiers = SchemaMigrations.identifiers
         let index = try #require(identifiers.firstIndex(of: observationIdentifier))
         try #require(index > 0)
-        #expect(identifiers[index - 1] == "v010-cultivation-profile")
+        #expect(identifiers[index - 1] == "v011-knowledge-types")
         let queue = try MigrationHarness.database(through: identifiers[index - 1])
         try queue.write { db in
             try db.execute(sql: "INSERT INTO entity (id, entity_type) VALUES ('b1', 'bed')")

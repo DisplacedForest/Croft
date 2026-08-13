@@ -137,6 +137,7 @@ extension SchemaMigrations {
                             'CAUSED_BY', 'FAVORED_BY',
                             'LOT_OF', 'SOWN_FROM',
                             'INSTANCE_OF', 'PLANTED_FROM',
+                            'VECTOR_OF', 'RESISTANT_TO',
                             'OBSERVED_ON'
                         )
                     ),

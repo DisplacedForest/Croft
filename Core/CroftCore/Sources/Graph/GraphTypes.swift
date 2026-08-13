@@ -29,6 +29,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     case sownFrom = "SOWN_FROM"
     case instanceOf = "INSTANCE_OF"
     case plantedFrom = "PLANTED_FROM"
+    case vectorOf = "VECTOR_OF"
+    case resistantTo = "RESISTANT_TO"
     case observedOn = "OBSERVED_ON"
 
     public enum DeleteRule: Hashable, Sendable {
@@ -40,7 +42,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
         switch self {
         case .susceptibleTo, .hostOf, .companionWith, .parasitizedBy, .predatedBy,
             .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy, .lotOf, .sownFrom,
-            .instanceOf, .plantedFrom:
+            .instanceOf, .plantedFrom, .vectorOf, .resistantTo:
             .cascade
         case .locatedIn, .observedOn:
             .restrictTarget
@@ -53,7 +55,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
             true
         case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
             .causedBy, .favoredBy, .lotOf, .sownFrom, .instanceOf, .plantedFrom,
-            .observedOn:
+            .vectorOf, .resistantTo, .observedOn:
             false
         }
     }
@@ -64,7 +66,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
             0.3
         case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
             .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy, .lotOf, .sownFrom,
-            .instanceOf, .plantedFrom, .observedOn:
+            .instanceOf, .plantedFrom, .vectorOf, .resistantTo, .observedOn:
             nil
         }
     }
