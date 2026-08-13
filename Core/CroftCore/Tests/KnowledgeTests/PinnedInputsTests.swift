@@ -14,13 +14,39 @@ struct PinnedInputsTests {
             .appendingPathComponent("knowledge/inputs", isDirectory: true)
     }
 
+    private var imagesDirectory: URL {
+        inputsDirectory
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("App/Shared/Resources/PlantImages", isDirectory: true)
+    }
+
+    private var importer: KnowledgeImporter {
+        KnowledgeImporter(inputDirectory: inputsDirectory, imagesDirectory: imagesDirectory)
+    }
+
+    private var manifestImageCount: Int {
+        get throws {
+            let url = inputsDirectory.appendingPathComponent(KnowledgeImporter.plantImagesFile)
+            let manifest = try JSONDecoder().decode(
+                PlantImagesFile.self, from: try Data(contentsOf: url))
+            return manifest.images.count
+        }
+    }
+
     @Test func theCommittedInputsMatchTheirPins() throws {
         let lock = try InputsLock.load(from: inputsDirectory)
-        #expect(lock.pinned.count == 3)
+        #expect(lock.pinned.count == 4)
         for (name, _) in lock.pinned.sorted(by: { $0.key < $1.key }) {
             let data = try Data(contentsOf: inputsDirectory.appendingPathComponent(name))
             try lock.verify(fileName: name, data: data)
         }
+    }
+
+    @Test func theCommittedLockIsWhatPinWouldWrite() throws {
+        let committed = try InputsLock.load(from: inputsDirectory)
+        let regenerated = try InputsLock.regenerated(in: inputsDirectory)
+        #expect(committed == regenerated)
     }
 
     @Test(arguments: [KnowledgeImporter.catalogFile, KnowledgeImporter.pestDiseaseFile])
@@ -33,7 +59,6 @@ struct PinnedInputsTests {
     }
 
     @Test func thePinnedInputsBuildADeterministicSnapshot() throws {
-        let importer = KnowledgeImporter(inputDirectory: inputsDirectory)
         let base = FileManager.default.temporaryDirectory
             .appendingPathComponent("pinned-\(UUID().uuidString)", isDirectory: true)
         let first = base.appendingPathComponent("one.sqlite")
@@ -47,6 +72,7 @@ struct PinnedInputsTests {
         #expect(summary.counts["pests"] == 31)
         #expect(summary.counts["diseases"] == 37)
         #expect((summary.counts["cultivars"] ?? 0) > 1000)
+        #expect(try summary.counts["images"] == manifestImageCount)
 
         let dump = try KnowledgeSnapshot.logicalDump(at: first)
         for leak in ["cdn.shopify.com", "edenbrothers.com", "migardener.com", "flavor_profile"] {
@@ -58,7 +84,6 @@ struct PinnedInputsTests {
     }
 
     @Test func knownFactsSurviveTheRealImport() throws {
-        let importer = KnowledgeImporter(inputDirectory: inputsDirectory)
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("facts-\(UUID().uuidString).sqlite")
         _ = try importer.buildSnapshot(at: output)

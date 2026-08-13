@@ -21,6 +21,42 @@ enum KnowledgeSnapshotTables {
                 )
                 """
         )
+        try db.execute(
+            sql: """
+                CREATE TABLE knowledge_image (
+                    owner_kind TEXT NOT NULL,
+                    owner_id TEXT NOT NULL,
+                    related_id TEXT,
+                    kind TEXT NOT NULL,
+                    file TEXT NOT NULL,
+                    sha256 TEXT NOT NULL,
+                    license TEXT NOT NULL,
+                    license_url TEXT,
+                    artist TEXT,
+                    source_page_url TEXT NOT NULL,
+                    source_file_url TEXT NOT NULL,
+                    PRIMARY KEY (owner_kind, owner_id, kind, file)
+                )
+                """
+        )
+    }
+
+    static func writeImages(_ images: [MappedImage], in db: Database) throws {
+        for image in images {
+            try db.execute(
+                sql: """
+                    INSERT INTO knowledge_image (
+                        owner_kind, owner_id, related_id, kind, file, sha256,
+                        license, license_url, artist, source_page_url, source_file_url
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                arguments: [
+                    image.ownerKind, image.ownerID, image.relatedID, image.kind, image.file,
+                    image.sha256, image.license, image.licenseURL, image.artist,
+                    image.sourcePageURL, image.sourceFileURL,
+                ]
+            )
+        }
     }
 
     static func writeMeta(_ meta: [String: String], in db: Database) throws {

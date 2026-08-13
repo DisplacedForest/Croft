@@ -51,6 +51,13 @@ private struct PlantPageContent: View {
     }
 
     private var header: some View {
+        VStack(alignment: .leading, spacing: CroftTheme.space(4)) {
+            PlantHeaderImage(image: page.image)
+            headerText
+        }
+    }
+
+    private var headerText: some View {
         VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
             Text(page.displayName)
                 .font(CroftTheme.display)

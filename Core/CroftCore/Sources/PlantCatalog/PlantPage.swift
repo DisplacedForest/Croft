@@ -113,6 +113,7 @@ public struct PlantPage: Equatable, Sendable {
     public var threats: [PlantThreat]
     public var currentPlantings: [CurrentPlanting]
     public var activity: [ActivityEvent]
+    public var image: PlantImage?
 
     public init(
         identity: PlantIdentity,
@@ -122,7 +123,8 @@ public struct PlantPage: Equatable, Sendable {
         conditions: GrowingConditions,
         threats: [PlantThreat] = [],
         currentPlantings: [CurrentPlanting] = [],
-        activity: [ActivityEvent] = []
+        activity: [ActivityEvent] = [],
+        image: PlantImage? = nil
     ) {
         self.identity = identity
         self.displayName = displayName
@@ -132,5 +134,6 @@ public struct PlantPage: Equatable, Sendable {
         self.threats = threats
         self.currentPlantings = currentPlantings
         self.activity = activity
+        self.image = image
     }
 }

@@ -37,9 +37,12 @@ run = [
   "mise run test-ui",
 ]
 
+[tasks.pin]
+run = "swift run --package-path Core/CroftCore -c release knowledge-importer pin knowledge/inputs"
+
 [tasks.knowledge]
 run = [
-  "swift run --package-path Core/CroftCore -c release knowledge-importer build knowledge/inputs App/Shared/Resources/knowledge.sqlite",
+  "swift run --package-path Core/CroftCore -c release knowledge-importer build knowledge/inputs App/Shared/Resources/PlantImages App/Shared/Resources/knowledge.sqlite",
   "swift run --package-path Core/CroftCore -c release knowledge-importer attribution App/Shared/Resources/knowledge.sqlite knowledge/ATTRIBUTION.md",
 ]
 
