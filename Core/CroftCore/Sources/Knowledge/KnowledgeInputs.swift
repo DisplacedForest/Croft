@@ -130,11 +130,14 @@ public struct PlantImageInput: Decodable, Sendable {
     public enum OwnerKind: String, Decodable, Sendable {
         case species
         case cultivar
+        case pest
+        case disease
     }
 
     public let slug: String
     public let ownerKind: OwnerKind
     public let kind: String
+    public let relatedSlug: String?
     public let file: String?
     public let sha256: String?
     public let sourceTitle: String?
@@ -148,6 +151,7 @@ public struct PlantImageInput: Decodable, Sendable {
         case slug
         case ownerKind = "owner_kind"
         case kind
+        case relatedSlug = "related_slug"
         case file
         case sha256
         case sourceTitle = "source_title"

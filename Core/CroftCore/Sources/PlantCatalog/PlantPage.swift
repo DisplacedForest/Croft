@@ -32,6 +32,7 @@ public struct PlantThreat: Equatable, Hashable, Sendable, Identifiable {
     public var agentName: String?
     public var summary: String?
     public var affectedParts: [PlantPart]
+    public var image: PlantImage?
 
     public init(
         id: String,
@@ -39,7 +40,8 @@ public struct PlantThreat: Equatable, Hashable, Sendable, Identifiable {
         name: String,
         agentName: String? = nil,
         summary: String? = nil,
-        affectedParts: [PlantPart] = []
+        affectedParts: [PlantPart] = [],
+        image: PlantImage? = nil
     ) {
         self.id = id
         self.kind = kind
@@ -47,6 +49,7 @@ public struct PlantThreat: Equatable, Hashable, Sendable, Identifiable {
         self.agentName = agentName
         self.summary = summary
         self.affectedParts = affectedParts
+        self.image = image
     }
 }
 

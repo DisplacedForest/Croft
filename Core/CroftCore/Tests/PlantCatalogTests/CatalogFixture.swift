@@ -148,6 +148,7 @@ struct CatalogFixture {
         ownerID: String,
         file: String,
         kind: String = "catalog",
+        relatedID: String? = nil,
         license: String = "CC BY 2.0",
         licenseURL: String? = "https://creativecommons.org/licenses/by/2.0/",
         artist: String? = "A Photographer"
@@ -159,10 +160,10 @@ struct CatalogFixture {
                     INSERT INTO knowledge_image (
                         owner_kind, owner_id, related_id, kind, file, sha256,
                         license, license_url, artist, source_page_url, source_file_url
-                    ) VALUES (?, ?, NULL, ?, ?, 'abc', ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, 'abc', ?, ?, ?, ?, ?)
                     """,
                 arguments: [
-                    ownerKind, ownerID, kind, file, license, licenseURL, artist,
+                    ownerKind, ownerID, relatedID, kind, file, license, licenseURL, artist,
                     "https://example.org/wiki/\(file)", "https://example.org/files/\(file)",
                 ]
             )

@@ -97,6 +97,34 @@ struct PlantHeaderImage: View {
     }
 }
 
+struct PlantThreatThumbnail: View {
+    let image: PlantImage?
+    var side: CGFloat = 44
+    @State private var showingCredit = false
+
+    var body: some View {
+        if let image {
+            Button {
+                showingCredit = true
+            } label: {
+                thumbnail(file: image.file)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Photo credit")
+            .popover(isPresented: $showingCredit, arrowEdge: .bottom) {
+                PlantImageCreditView(image: image)
+            }
+        } else {
+            thumbnail(file: nil)
+        }
+    }
+
+    private func thumbnail(file: String?) -> some View {
+        PlantImageView(file: file, cornerRadius: CroftTheme.space(2))
+            .frame(width: side, height: side)
+    }
+}
+
 struct PlantImageCreditView: View {
     let image: PlantImage
 

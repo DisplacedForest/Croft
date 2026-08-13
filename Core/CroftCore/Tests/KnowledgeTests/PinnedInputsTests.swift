@@ -104,7 +104,8 @@ struct PinnedInputsTests {
             actual[row["owner_kind"] as String, default: 0] += 1
         }
         #expect(actual == expected)
-        #expect(expected == ["species": 32, "cultivar": 11])
+        #expect(expected["species"] == 32)
+        #expect(expected["cultivar"] == 11)
         for row in rows {
             for column in ["license", "license_url", "artist", "source_page_url"] {
                 let value: String? = row[column]
@@ -112,6 +113,35 @@ struct PinnedInputsTests {
             }
             #expect(KnowledgeImporter.allowedImageLicenses.contains(row["license"] as String))
         }
+    }
+
+    @Test func everyThreatCarriesAnOrganismImageOnceTheDataLands() throws {
+        guard try manifest.images.contains(where: { $0.ownerKind.isThreat }) else { return }
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("threats-\(UUID().uuidString).sqlite")
+        _ = try importer.buildSnapshot(at: output)
+        let missing = try AppDatabase.openReadOnly(at: output).writer.read { db in
+            try String.fetchAll(
+                db,
+                sql: """
+                    SELECT id FROM pest WHERE id NOT IN (
+                        SELECT owner_id FROM knowledge_image WHERE kind = 'organism'
+                    )
+                    UNION
+                    SELECT id FROM disease WHERE id NOT IN (
+                        SELECT owner_id FROM knowledge_image WHERE kind = 'organism'
+                    )
+                    ORDER BY 1
+                    """
+            )
+        }
+        let acceptedGaps = [
+            "disease:fusarium-yellows-brassica",
+            "disease:iris-yellow-spot-virus",
+            "disease:spinach-downy-mildew",
+            "pest:carrot-rust-fly",
+        ]
+        #expect(missing == acceptedGaps)
     }
 
     @Test func knownFactsSurviveTheRealImport() throws {

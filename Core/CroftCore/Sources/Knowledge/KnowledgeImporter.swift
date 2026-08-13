@@ -19,6 +19,12 @@ public enum ImportError: Error, Equatable {
     case invalidImageField(slug: String, field: String)
     case disallowedImageLicense(slug: String, license: String)
     case orphanImageFile(String)
+    case disallowedImageKind(slug: String, kind: String)
+    case imageKindOwnerMismatch(slug: String, kind: String, ownerKind: String)
+    case unexpectedRelatedSlug(slug: String, kind: String)
+    case missingRelatedSlug(slug: String, kind: String)
+    case unknownImageRelation(slug: String, relatedSlug: String)
+    case unrelatedImageHost(slug: String, relatedSlug: String)
 }
 
 public struct ImportSummary: Equatable, Sendable {

@@ -13,8 +13,12 @@ struct MappedImage {
     let sourcePageURL: String
     let sourceFileURL: String
 
-    var sortKey: String {
+    var primaryKey: String {
         "\(ownerKind)|\(ownerID)|\(kind)|\(file)"
+    }
+
+    var sortKey: String {
+        "\(primaryKey)|\(relatedID ?? "")"
     }
 }
 
@@ -54,6 +58,26 @@ extension KnowledgeImporter {
                 throw ImportError.disallowedImageLicense(
                     slug: image.slug, license: image.license ?? "")
             }
+            try validateKind(image)
+        }
+    }
+
+    private func validateKind(_ image: PlantImageInput) throws {
+        guard let kind = ImageKind(rawValue: image.kind) else {
+            throw ImportError.disallowedImageKind(slug: image.slug, kind: image.kind)
+        }
+        guard kind.allowedOwners.contains(image.ownerKind) else {
+            throw ImportError.imageKindOwnerMismatch(
+                slug: image.slug, kind: image.kind, ownerKind: image.ownerKind.rawValue)
+        }
+        let related = image.relatedSlug?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        switch kind.relatedRule {
+        case .forbidden where !related.isEmpty:
+            throw ImportError.unexpectedRelatedSlug(slug: image.slug, kind: image.kind)
+        case .required where related.isEmpty:
+            throw ImportError.missingRelatedSlug(slug: image.slug, kind: image.kind)
+        default:
+            break
         }
     }
 
@@ -90,63 +114,6 @@ extension KnowledgeImporter {
             guard actual == sha256.lowercased() else {
                 throw ImportError.checksumMismatch(
                     file: file, expected: sha256, actual: actual)
-            }
-        }
-    }
-}
-
-extension KnowledgeMapper {
-    func mapImages(
-        _ taxonomy: Taxonomy,
-        into mapped: inout MappedKnowledge
-    ) throws {
-        guard let manifest = inputs.images else { return }
-        mapped.inputVersions[manifest.meta.name] = manifest.meta.version
-        if let provenance = manifest.meta.provenance {
-            mapped.inputProvenance[manifest.meta.name] = provenance
-        }
-        var cropBySpecies: [String: String] = [:]
-        for (crop, speciesID) in taxonomy.speciesByCrop {
-            cropBySpecies[speciesID] = crop
-        }
-        var owners: [String: String] = [:]
-        for (crop, speciesID) in taxonomy.speciesByCrop {
-            owners["species:\(crop)"] = speciesID
-        }
-        for cultivar in mapped.cultivars {
-            guard let crop = cropBySpecies[cultivar.speciesID.rawValue] else { continue }
-            let leaf = cultivar.id.rawValue.split(separator: "/").last.map(String.init) ?? ""
-            owners["cultivar:\(crop)/\(leaf)"] = cultivar.id.rawValue
-        }
-        for image in manifest.images {
-            guard let file = image.file, let sha256 = image.sha256, let license = image.license,
-                let sourcePage = image.sourcePageURL, let sourceFile = image.sourceFileURL
-            else {
-                throw ImportError.invalidImageField(slug: image.slug, field: "file")
-            }
-            let key = "\(image.ownerKind.rawValue):\(image.slug)"
-            guard let ownerID = owners[key] else {
-                throw ImportError.unknownImageOwner(file: file, slug: image.slug)
-            }
-            mapped.images.append(
-                MappedImage(
-                    ownerKind: image.ownerKind.rawValue,
-                    ownerID: ownerID,
-                    relatedID: nil,
-                    kind: image.kind,
-                    file: file,
-                    sha256: sha256.lowercased(),
-                    license: license,
-                    licenseURL: image.licenseURL,
-                    artist: image.artist,
-                    sourcePageURL: sourcePage,
-                    sourceFileURL: sourceFile
-                ))
-        }
-        mapped.images.sort { $0.sortKey < $1.sortKey }
-        mapped.images = mapped.images.reduce(into: []) { result, image in
-            if result.last?.sortKey != image.sortKey {
-                result.append(image)
             }
         }
     }
