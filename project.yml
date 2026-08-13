@@ -66,6 +66,7 @@ targets:
         PRODUCT_NAME: Croft
         PRODUCT_BUNDLE_IDENTIFIER: com.displacedforest.croft
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1"
   Croft-iOS-UITests:
