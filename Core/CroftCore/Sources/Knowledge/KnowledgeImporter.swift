@@ -36,7 +36,7 @@ public struct ImportSummary: Equatable, Sendable {
 public struct KnowledgeImporter {
     public static let cropProfilesFile = "crop-profiles.json"
     public static let catalogFile = "cultivar-catalog.sanitized.json"
-    public static let pestDiseaseFile = "pest-disease-cultivar-seed.json"
+    public static let pestDiseaseFile = "pest-disease-cultivar-seed.sanitized.json"
     public static let importerVersion = "1"
 
     private let inputDirectory: URL

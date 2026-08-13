@@ -11,6 +11,30 @@ public enum CatalogSanitizer {
         "image_url", "image_file", "image_shared",
     ]
 
+    public static func sanitize(rawPestDisease data: Data) throws -> Data {
+        let parsed = try JSONSerialization.jsonObject(with: data)
+        guard let root = parsed as? [String: Any] else {
+            throw SanitizerError.unexpectedShape("top level is not an object")
+        }
+        return try JSONSerialization.data(
+            withJSONObject: scrubbed(root),
+            options: [.sortedKeys, .prettyPrinted, .withoutEscapingSlashes]
+        )
+    }
+
+    private static func scrubbed(_ value: Any) -> Any {
+        if let object = value as? [String: Any] {
+            return
+                object
+                .filter { !strippedFields.contains($0.key) }
+                .mapValues { scrubbed($0) }
+        }
+        if let array = value as? [Any] {
+            return array.map { scrubbed($0) }
+        }
+        return value
+    }
+
     public static func sanitize(rawCatalog data: Data) throws -> Data {
         let parsed = try JSONSerialization.jsonObject(with: data)
         guard var root = parsed as? [String: Any] else {

@@ -2,9 +2,10 @@
   "pinned": {
     "crop-profiles.json": "6f8abdb87f52c8004854aad7ff0146e4816003c3f1453ffcbaa4c536f9372653",
     "cultivar-catalog.sanitized.json": "3af6689e758d4265e0f53a9324f1d64bdae7eb6ecfdbd33f52d49850b9f40c71",
-    "pest-disease-cultivar-seed.json": "c5282e03d978e24ef167521ed24aac82fc5a4dbd1efd96629c3de362c3244df4"
+    "pest-disease-cultivar-seed.sanitized.json": "4d2f1155399393b7150341a5ea17ffbbf3cdc47ba36978f8a6f101d4a79635e7"
   },
   "upstream": {
-    "cultivar-catalog.json": "b3c70a41cb68e009ad15f7d60638fa3f1efdf1384c4034d960a50ded0ad6d27b"
+    "cultivar-catalog.json": "b3c70a41cb68e009ad15f7d60638fa3f1efdf1384c4034d960a50ded0ad6d27b",
+    "pest-disease-cultivar-seed.json": "c5282e03d978e24ef167521ed24aac82fc5a4dbd1efd96629c3de362c3244df4"
   }
 }

@@ -26,17 +26,23 @@ byte layout can vary across SQLite builds.
 
 - `crop-profiles.json`: first-party species-level growing profiles with
   per-record citations. Committed as is.
-- `pest-disease-cultivar-seed.json`: first-party editorial pest, disease, and
-  cultivar-resistance seed data with citations. Committed as is.
+- `pest-disease-cultivar-seed.sanitized.json`: first-party editorial pest,
+  disease, and cultivar-resistance seed data with citations. The resistance
+  examples in the raw file carry vendor image references, so it is committed
+  only in sanitized form.
 - `cultivar-catalog.sanitized.json`: cultivar facts derived from vendor
-  catalogs, committed only in sanitized form. The sanitizer strips price,
-  flavor_profile, vendor, url, image_url, image_file, and image_shared, and
-  those fields never enter the repository or the snapshot.
+  catalogs, committed only in sanitized form.
+
+The sanitizer strips price, flavor_profile, vendor, url, image_url,
+image_file, and image_shared. Those fields never enter the repository or the
+snapshot, and a test greps the committed inputs to keep it that way.
 
 ## Updating an input
 
-1. Replace the source file (for the catalog, run
-   `swift run --package-path Core/CroftCore knowledge-importer sanitize <raw> inputs/cultivar-catalog.sanitized.json`).
+1. Replace the source file. For the sanitized inputs, run
+   `swift run --package-path Core/CroftCore knowledge-importer sanitize catalog <raw> inputs/cultivar-catalog.sanitized.json`
+   or
+   `swift run --package-path Core/CroftCore knowledge-importer sanitize pest-disease <raw> inputs/pest-disease-cultivar-seed.sanitized.json`.
 2. Update the matching SHA-256 in `inputs/inputs.lock.json` (the sanitize
    command prints both raw and sanitized checksums; the raw checksum is
    recorded under `upstream`).

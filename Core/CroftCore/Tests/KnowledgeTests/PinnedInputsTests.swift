@@ -23,9 +23,9 @@ struct PinnedInputsTests {
         }
     }
 
-    @Test func theCommittedCatalogCarriesNoStrippedFields() throws {
-        let data = try Data(
-            contentsOf: inputsDirectory.appendingPathComponent(KnowledgeImporter.catalogFile))
+    @Test(arguments: [KnowledgeImporter.catalogFile, KnowledgeImporter.pestDiseaseFile])
+    func theCommittedSanitizedInputsCarryNoStrippedFields(name: String) throws {
+        let data = try Data(contentsOf: inputsDirectory.appendingPathComponent(name))
         let text = try #require(String(data: data, encoding: .utf8))
         for field in CatalogSanitizer.strippedFields {
             #expect(!text.contains("\"\(field)\""))

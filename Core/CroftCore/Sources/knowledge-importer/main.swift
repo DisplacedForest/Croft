@@ -6,10 +6,18 @@ func fail(_ message: String) -> Never {
     exit(1)
 }
 
-func runSanitize(raw: String, output: String) {
+func runSanitize(kind: String, raw: String, output: String) {
     do {
         let rawData = try Data(contentsOf: URL(fileURLWithPath: raw))
-        let sanitized = try CatalogSanitizer.sanitize(rawCatalog: rawData)
+        let sanitized =
+            switch kind {
+            case "catalog":
+                try CatalogSanitizer.sanitize(rawCatalog: rawData)
+            case "pest-disease":
+                try CatalogSanitizer.sanitize(rawPestDisease: rawData)
+            default:
+                throw SanitizerError.unexpectedShape("unknown sanitize kind \(kind)")
+            }
         try sanitized.write(to: URL(fileURLWithPath: output), options: .atomic)
         print("sanitized \(raw)")
         print("  raw sha256: \(InputsLock.checksum(of: rawData))")
@@ -60,8 +68,8 @@ func runDump(snapshot: String) {
 
 let arguments = CommandLine.arguments
 switch (arguments.count, arguments.dropFirst().first) {
-case (4, "sanitize"):
-    runSanitize(raw: arguments[2], output: arguments[3])
+case (5, "sanitize"):
+    runSanitize(kind: arguments[2], raw: arguments[3], output: arguments[4])
 case (4, "build"):
     runBuild(inputs: arguments[2], output: arguments[3])
 case (4, "attribution"):
@@ -72,7 +80,7 @@ default:
     fail(
         """
         usage:
-          knowledge-importer sanitize <raw-catalog.json> <output.json>
+          knowledge-importer sanitize catalog|pest-disease <raw.json> <output.json>
           knowledge-importer build <inputs-dir> <snapshot.sqlite>
           knowledge-importer attribution <snapshot.sqlite> <output.md>
           knowledge-importer dump <snapshot.sqlite>

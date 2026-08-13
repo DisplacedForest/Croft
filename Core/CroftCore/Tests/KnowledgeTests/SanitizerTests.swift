@@ -63,6 +63,38 @@ struct SanitizerTests {
         #expect(rows.map { $0["crop"] as? String } == ["other-herb", "tomato"])
     }
 
+    @Test func pestDiseaseSanitizationScrubsNestedVendorFields() throws {
+        let raw = """
+            {
+              "meta": {"name": "pests", "version": "0.1.0"},
+              "pests": [],
+              "diseases": [],
+              "cultivar_resistance_examples": [
+                {
+                  "crop": "tomato",
+                  "cultivar": "Defiant PhR",
+                  "resistances": ["late-blight"],
+                  "image_file": "tomato_defiant.jpg",
+                  "image_url": "https://cdn.example/defiant.jpg",
+                  "image_shared": false,
+                  "growing": {"url": "https://vendor.example/defiant"}
+                }
+              ]
+            }
+            """
+        let sanitized = try CatalogSanitizer.sanitize(rawPestDisease: Data(raw.utf8))
+        let text = try #require(String(data: sanitized, encoding: .utf8))
+        for field in CatalogSanitizer.strippedFields {
+            #expect(!text.contains("\"\(field)\""))
+        }
+        #expect(!text.contains("cdn.example"))
+        #expect(!text.contains("vendor.example"))
+        #expect(text.contains("\"cultivar\" : \"Defiant PhR\""))
+        #expect(text.contains("late-blight"))
+        let again = try CatalogSanitizer.sanitize(rawPestDisease: sanitized)
+        #expect(again == sanitized)
+    }
+
     @Test func aNonObjectCatalogIsRejected() {
         #expect(throws: SanitizerError.self) {
             try CatalogSanitizer.sanitize(rawCatalog: Data("[1,2]".utf8))
