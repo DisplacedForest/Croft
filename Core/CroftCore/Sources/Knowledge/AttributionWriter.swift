@@ -74,19 +74,35 @@ public enum AttributionWriter {
         guard !rows.isEmpty else { return [] }
         var lines = ["## Images", ""]
         for row in rows {
-            let file: String = row["file"]
-            let license: String = row["license"]
-            let page: String = row["source_page_url"]
-            let artist: String? = row["artist"]
-            let licenseURL: String? = row["license_url"]
-            let licenseText = licenseURL.map { "[\(license)](\($0))" } ?? license
-            var parts = ["`\(file)`", "[source](\(page))", licenseText]
-            if let artist {
-                parts.append(artist)
-            }
-            lines.append("- " + parts.joined(separator: " · "))
+            lines.append(imageLine(row))
         }
         lines.append("")
         return lines
+    }
+
+    private static func imageLine(_ row: Row) -> String {
+        func text(_ column: String) -> String? {
+            let value: String? = row[column]
+            let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        var parts: [String] = []
+        if let file = text("file") {
+            parts.append("`\(file)`")
+        }
+        if let page = text("source_page_url") {
+            parts.append("[source](\(page))")
+        }
+        if let license = text("license") {
+            if let licenseURL = text("license_url") {
+                parts.append("[\(license)](\(licenseURL))")
+            } else {
+                parts.append(license)
+            }
+        }
+        if let artist = text("artist") {
+            parts.append(artist)
+        }
+        return "- " + parts.joined(separator: " · ")
     }
 }

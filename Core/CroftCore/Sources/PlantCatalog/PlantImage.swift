@@ -52,11 +52,17 @@ struct PlantImageStore: Sendable {
             images[ownerID] = PlantImage(
                 file: row["file"],
                 license: row["license"],
-                licenseURL: row["license_url"],
-                artist: row["artist"],
+                licenseURL: Self.text(row, "license_url"),
+                artist: Self.text(row, "artist"),
                 sourcePageURL: row["source_page_url"]
             )
         }
         return images
+    }
+
+    private static func text(_ row: Row, _ column: String) -> String? {
+        let value: String? = row[column]
+        let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

@@ -16,6 +16,9 @@ public enum ImportError: Error, Equatable {
     case missingImageDirectory(String)
     case missingImageFile(String)
     case unknownImageOwner(file: String, slug: String)
+    case invalidImageField(slug: String, field: String)
+    case disallowedImageLicense(slug: String, license: String)
+    case orphanImageFile(String)
 }
 
 public struct ImportSummary: Equatable, Sendable {

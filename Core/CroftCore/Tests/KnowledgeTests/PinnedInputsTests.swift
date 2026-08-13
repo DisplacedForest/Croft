@@ -1,4 +1,6 @@
 import Foundation
+import GRDB
+import Persistence
 import Testing
 
 @testable import Knowledge
@@ -25,13 +27,16 @@ struct PinnedInputsTests {
         KnowledgeImporter(inputDirectory: inputsDirectory, imagesDirectory: imagesDirectory)
     }
 
-    private var manifestImageCount: Int {
+    private var manifest: PlantImagesFile {
         get throws {
             let url = inputsDirectory.appendingPathComponent(KnowledgeImporter.plantImagesFile)
-            let manifest = try JSONDecoder().decode(
+            return try JSONDecoder().decode(
                 PlantImagesFile.self, from: try Data(contentsOf: url))
-            return manifest.images.count
         }
+    }
+
+    private var manifestImageCount: Int {
+        get throws { try manifest.images.count }
     }
 
     @Test func theCommittedInputsMatchTheirPins() throws {
@@ -81,6 +86,32 @@ struct PinnedInputsTests {
 
         let size = try FileManager.default.attributesOfItem(atPath: first.path)[.size] as? Int
         #expect((size ?? .max) < 30_000_000)
+    }
+
+    @Test func theRealImageRowsMatchTheManifestAndCarryFullAttribution() throws {
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("images-\(UUID().uuidString).sqlite")
+        _ = try importer.buildSnapshot(at: output)
+        let rows = try AppDatabase.openReadOnly(at: output).writer.read { db in
+            try Row.fetchAll(db, sql: "SELECT * FROM knowledge_image")
+        }
+        var expected: [String: Int] = [:]
+        for image in try manifest.images {
+            expected[image.ownerKind.rawValue, default: 0] += 1
+        }
+        var actual: [String: Int] = [:]
+        for row in rows {
+            actual[row["owner_kind"] as String, default: 0] += 1
+        }
+        #expect(actual == expected)
+        #expect(expected == ["species": 32, "cultivar": 11])
+        for row in rows {
+            for column in ["license", "license_url", "artist", "source_page_url"] {
+                let value: String? = row[column]
+                #expect(value?.isEmpty == false)
+            }
+            #expect(KnowledgeImporter.allowedImageLicenses.contains(row["license"] as String))
+        }
     }
 
     @Test func knownFactsSurviveTheRealImport() throws {

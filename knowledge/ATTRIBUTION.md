@@ -13,7 +13,7 @@ Snapshot version: `crop-profiles@0.1.0+cultivar-catalog@0.1.0+garden-pest-diseas
 
 ## Images
 
-- `beet--sugar-beet.jpg` · [source](https://commons.wikimedia.org/wiki/File:SugarBeet.jpg) · [Public domain]() · USDA
+- `beet--sugar-beet.jpg` · [source](https://commons.wikimedia.org/wiki/File:SugarBeet.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDA
 - `watermelon--sugar-baby-watermelon.jpg` · [source](https://commons.wikimedia.org/wiki/File:1643Sugar_Baby_Watermelon_03.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · JFVelasquez Floro
 - `cucumber--lemon-cucumber.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucumbers_3_Sikkim_Armenian_Lemon.png) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · WhatamIdoing
 - `lettuce--iceberg-lettuce.jpg` · [source](https://commons.wikimedia.org/wiki/File:Iceberg_lettuce_in_SB.jpg) · [CC BY 1.0](https://creativecommons.org/licenses/by/1.0) · en:User:Geographer
@@ -31,31 +31,31 @@ Snapshot version: `crop-profiles@0.1.0+cultivar-catalog@0.1.0+garden-pest-diseas
 - `chard.jpg` · [source](https://commons.wikimedia.org/wiki/File:Starr_070112-3389_Beta_vulgaris_subsp._cicla.jpg) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) · Forest & Kim Starr
 - `kale.jpg` · [source](https://commons.wikimedia.org/wiki/File:Brassica_oleracea0.jpg) · [CC BY 2.5](https://creativecommons.org/licenses/by/2.5) · MPF
 - `cauliflower.jpg` · [source](https://commons.wikimedia.org/wiki/File:Stack_of_cauliflower_heads.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · Jeffery Martin
-- `cabbage.jpg` · [source](https://commons.wikimedia.org/wiki/File:Brassica_oleracea_2011_G1.jpg) · [Public domain]() · George Chernilevsky
+- `cabbage.jpg` · [source](https://commons.wikimedia.org/wiki/File:Brassica_oleracea_2011_G1.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · George Chernilevsky
 - `brussels-sprouts.jpg` · [source](https://commons.wikimedia.org/wiki/File:Brussels_sprout_closeup.jpg) · [CC BY 2.5](https://creativecommons.org/licenses/by/2.5) · Eric Hunt
-- `broccoli.jpg` · [source](https://commons.wikimedia.org/wiki/File:Fire-Tuscarora_Organic_Growers_-_Broccoli_head.jpg) · [Public domain]() · U.S. Department of Agriculture
+- `broccoli.jpg` · [source](https://commons.wikimedia.org/wiki/File:Fire-Tuscarora_Organic_Growers_-_Broccoli_head.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · U.S. Department of Agriculture
 - `turnip.jpg` · [source](https://commons.wikimedia.org/wiki/File:Turnip_2622027.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · thebittenword.com
-- `pepper.jpg` · [source](https://commons.wikimedia.org/wiki/File:Capsicum_annuum_2015_G1.jpg) · [Public domain]() · George Chernilevsky
+- `pepper.jpg` · [source](https://commons.wikimedia.org/wiki/File:Capsicum_annuum_2015_G1.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · George Chernilevsky
 - `watermelon.jpg` · [source](https://commons.wikimedia.org/wiki/File:%D0%90%D1%80%D0%B1%D1%83%D0%B7.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · Ли1006
-- `melon.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucumis_melo_var._reticulatus_(photo_by_Scott_Bauer).jpg) · [Public domain]() · USDA photo by Scott Bauer. Image Number K7355-11.
+- `melon.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucumis_melo_var._reticulatus_(photo_by_Scott_Bauer).jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDA photo by Scott Bauer. Image Number K7355-11.
 - `cucumber.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucumber_plants.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · Pascal Kings
-- `winter-squash.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucurbita_maxima_2012_G1.jpg) · [Public domain]() · George Chernilevsky
+- `winter-squash.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucurbita_maxima_2012_G1.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · George Chernilevsky
 - `summer-squash.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucurbita_pepo_Summer_Squash_Yellow_and_Green_Zucchini_zucchine.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · nociveglia from Appennino Emiliano, Italy
-- `pumpkin.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucurbita_pepo_2016_G1.jpg) · [Public domain]() · George Chernilevsky
+- `pumpkin.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucurbita_pepo_2016_G1.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · George Chernilevsky
 - `carrot.jpg` · [source](https://commons.wikimedia.org/wiki/File:Bunches_of_carrots.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · Robert Couse-Baker
 - `strawberry.jpg` · [source](https://commons.wikimedia.org/wiki/File:Buah_Stroberi_Kebun_8_Batu_Jawa_Timur.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · Rhani Lilianti Kata
 - `lettuce.jpg` · [source](https://commons.wikimedia.org/wiki/File:Iceberg_lettuce_in_SB.jpg) · [CC BY 1.0](https://creativecommons.org/licenses/by/1.0) · en:User:Geographer
 - `basil.jpg` · [source](https://commons.wikimedia.org/wiki/File:Starr-090519-8066-Ocimum_basilicum-leaves-Native_Nursery_Kula-Maui_(24588096799).jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Forest and Kim Starr
 - `bean.jpg` · [source](https://commons.wikimedia.org/wiki/File:Early_Mohawk_bean.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · Bicanski
-- `pea.jpg` · [source](https://commons.wikimedia.org/wiki/File:NCI_peas_in_pod.jpg) · [Public domain]() · Renee Comet (photographer) AV Number: AV-9400-4164
-- `radish.jpg` · [source](https://commons.wikimedia.org/wiki/File:Radish_3371103037_4ab07db0bf_o.jpg) · [Public domain]() · Self, en:User:Jengod
+- `pea.jpg` · [source](https://commons.wikimedia.org/wiki/File:NCI_peas_in_pod.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · Renee Comet (photographer) AV Number: AV-9400-4164
+- `radish.jpg` · [source](https://commons.wikimedia.org/wiki/File:Radish_3371103037_4ab07db0bf_o.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · Self, en:User:Jengod
 - `rhubarb.jpg` · [source](https://commons.wikimedia.org/wiki/File:Green leaf of young Rheum rhabarbarum.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · Andrew from Sheffield, UK
-- `raspberry.jpg` · [source](https://commons.wikimedia.org/wiki/File:Malina.jpg) · [Public domain]() · Karelj
+- `raspberry.jpg` · [source](https://commons.wikimedia.org/wiki/File:Malina.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · Karelj
 - `tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Starr-090421-6260-Solanum_lycopersicum-fruit-Pukalani-Maui_(24325517953).jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Forest and Kim Starr
 - `eggplant.jpg` · [source](https://commons.wikimedia.org/wiki/File:Eggplant.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · rdesai
-- `potato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Potato_flowers_2016_G1.jpg) · [Public domain]() · George Chernilevsky
+- `potato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Potato_flowers_2016_G1.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · George Chernilevsky
 - `spinach.jpg` · [source](https://www.flickr.com/photos/47264866@N00/4639259240) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · OakleyOriginals (Flickr)
-- `corn.jpg` · [source](https://commons.wikimedia.org/wiki/File:VegCorn.jpg) · [Public domain]() · 
+- `corn.jpg` · [source](https://commons.wikimedia.org/wiki/File:VegCorn.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDA (United States Department of Agriculture)
 
 ## Record citations
 

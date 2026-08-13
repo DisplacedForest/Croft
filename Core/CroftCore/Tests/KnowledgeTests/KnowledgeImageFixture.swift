@@ -41,8 +41,8 @@ extension KnowledgeFixture {
               "source_page_url": "https://example.org/wiki/File:Brandywine.jpg",
               "source_file_url": "https://example.org/files/Brandywine.jpg",
               "license": "CC0",
-              "license_url": null,
-              "artist": null
+              "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+              "artist": "Another Photographer"
             }
           ]
         }

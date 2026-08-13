@@ -64,8 +64,8 @@ struct ImageImportTests {
         #expect(cultivar.ownerID == "cultivar:solanum-lycopersicum/brandywine")
         #expect(cultivar.file == "brandywine.jpg")
         #expect(cultivar.license == "CC0")
-        #expect(cultivar.licenseURL == nil)
-        #expect(cultivar.artist == nil)
+        #expect(cultivar.licenseURL == "https://creativecommons.org/publicdomain/zero/1.0/")
+        #expect(cultivar.artist == "Another Photographer")
         #expect(cultivar.relatedID == nil)
         let species = ImageRow(rows[1])
         #expect(species.ownerKind == "species")
@@ -176,8 +176,10 @@ struct ImageImportTests {
         #expect(markdown.contains("## Images"))
         #expect(
             markdown.contains(
-                "- `brandywine.jpg` · [source](https://example.org/wiki/File:Brandywine.jpg) · CC0")
-        )
+                """
+                - `brandywine.jpg` · [source](https://example.org/wiki/File:Brandywine.jpg) · \
+                [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Another Photographer
+                """))
         #expect(
             markdown.contains(
                 """
