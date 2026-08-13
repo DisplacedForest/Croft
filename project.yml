@@ -84,6 +84,15 @@ targets:
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1"
+    postBuildScripts:
+      - name: Guard bundled knowledge snapshot
+        shell: /bin/bash
+        script: |
+          if [ ! -f "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/knowledge.sqlite" ]; then
+            echo "error: app bundle is missing knowledge.sqlite; run mise run build so the snapshot exists before project generation" >&2
+            exit 1
+          fi
+        basedOnDependencyAnalysis: false
   DesignRuntimeTests:
     type: bundle.unit-test
     platform: macOS
@@ -96,15 +105,6 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-    postBuildScripts:
-      - name: Guard bundled knowledge snapshot
-        shell: /bin/bash
-        script: |
-          if [ ! -f "${BUILT_PRODUCTS_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/knowledge.sqlite" ]; then
-            echo "error: app bundle is missing knowledge.sqlite; run mise run build so the snapshot exists before project generation" >&2
-            exit 1
-          fi
-        basedOnDependencyAnalysis: false
   Croft-iOS-UITests:
     type: bundle.ui-testing
     platform: iOS
