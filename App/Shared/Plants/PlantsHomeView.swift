@@ -37,7 +37,8 @@ struct PlantsHomeView: View {
         .task {
             guard !didLoad, let stores else { return }
             didLoad = true
-            items = (try? stores.plantPages.listItems()) ?? []
+            let loader = stores.plantPages
+            items = await Task.detached { (try? loader.listItems()) ?? [] }.value
         }
     }
 }

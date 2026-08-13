@@ -1,3 +1,4 @@
+import Design
 import Domain
 import PlantCatalog
 import SwiftUI
@@ -23,7 +24,9 @@ struct PlantPageView: View {
         .task {
             guard !didLoad, let stores else { return }
             didLoad = true
-            page = try? stores.plantPages.page(for: identity)
+            let loader = stores.plantPages
+            let identity = identity
+            page = await Task.detached { try? loader.page(for: identity) }.value
         }
     }
 }
@@ -263,8 +266,8 @@ private struct ThreatRow: View {
                     .font(.caption2.weight(.medium))
                     .padding(.horizontal, CroftTheme.space(1.5))
                     .padding(.vertical, CroftTheme.space(0.5))
-                    .background(.orange.opacity(0.15), in: Capsule())
-                    .foregroundStyle(.orange)
+                    .background(Color.domainHealth.opacity(0.15), in: Capsule())
+                    .foregroundStyle(Color.domainHealth)
             }
             if let agentName = threat.agentName {
                 Text(agentName)
