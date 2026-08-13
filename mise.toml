@@ -59,17 +59,22 @@ run = [
   "xcodebuild build -project Croft.xcodeproj -scheme Croft-iOS -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO -quiet",
 ]
 
-[tasks.check]
+[tasks."check-fast"]
 run = [
   "mise run fmt",
   "mise run lint",
   "mise run test",
 ]
 
+[tasks.check]
+run = [
+  "mise run check-fast",
+  "mise run build",
+]
+
 [tasks.ci]
 run = [
   "mise run check",
-  "mise run build",
   "mise run test-runtime-tokens",
 ]
 
