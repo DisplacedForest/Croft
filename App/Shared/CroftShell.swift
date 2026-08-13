@@ -4,6 +4,8 @@ import SwiftUI
 struct CroftShell: View {
     @State private var selection: AppSection? = .today
     @State private var gardenStore = GardenStore.live()
+    @Environment(\.appStores) private var appStores
+    @State private var captureStore: CaptureStore?
 
     var body: some View {
         #if os(macOS)
@@ -34,9 +36,27 @@ struct CroftShell: View {
     }
 
     private func sectionStack(for section: AppSection) -> some View {
-        SectionStack(section: section)
-            .environment(gardenStore)
-            .tint(section.domainColor)
+        Group {
+            if let captureStore {
+                SectionStack(section: section)
+                    .environment(captureStore)
+                    .toolbar {
+                        CaptureMenu()
+                            .environment(captureStore)
+                    }
+                    .modifier(CaptureSheetHost())
+                    .environment(captureStore)
+            } else {
+                SectionStack(section: section)
+                    .task {
+                        let store = CaptureStore(stores: appStores)
+                        store.onSaved = { gardenStore.refresh() }
+                        captureStore = store
+                    }
+            }
+        }
+        .environment(gardenStore)
+        .tint(section.domainColor)
     }
 }
 
