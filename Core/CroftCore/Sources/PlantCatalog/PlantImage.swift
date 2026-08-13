@@ -26,6 +26,7 @@ public struct PlantImage: Equatable, Hashable, Sendable {
 
 struct PlantImageStore: Sendable {
     static let catalogKind = "catalog"
+    static let organismKind = "organism"
 
     private let database: AppDatabase
 
@@ -49,15 +50,43 @@ struct PlantImageStore: Sendable {
         for row in rows {
             let ownerID: String = row["owner_id"]
             guard images[ownerID] == nil else { continue }
-            images[ownerID] = PlantImage(
-                file: row["file"],
-                license: row["license"],
-                licenseURL: Self.text(row, "license_url"),
-                artist: Self.text(row, "artist"),
-                sourcePageURL: row["source_page_url"]
-            )
+            images[ownerID] = image(from: row)
         }
         return images
+    }
+
+    func threatImages(hostID: String) throws -> [String: PlantImage] {
+        let rows = try database.writer.read { db -> [Row] in
+            guard try db.tableExists("knowledge_image") else { return [] }
+            return try Row.fetchAll(
+                db,
+                sql: """
+                    SELECT owner_id, file, license, license_url, artist, source_page_url
+                    FROM knowledge_image
+                    WHERE owner_kind IN ('pest', 'disease')
+                      AND (related_id = ? OR (related_id IS NULL AND kind = ?))
+                    ORDER BY owner_id, related_id IS NULL, kind, file
+                    """,
+                arguments: [hostID, Self.organismKind]
+            )
+        }
+        var images: [String: PlantImage] = [:]
+        for row in rows {
+            let ownerID: String = row["owner_id"]
+            guard images[ownerID] == nil else { continue }
+            images[ownerID] = image(from: row)
+        }
+        return images
+    }
+
+    private func image(from row: Row) -> PlantImage {
+        PlantImage(
+            file: row["file"],
+            license: row["license"],
+            licenseURL: Self.text(row, "license_url"),
+            artist: Self.text(row, "artist"),
+            sourcePageURL: row["source_page_url"]
+        )
     }
 
     private static func text(_ row: Row, _ column: String) -> String? {

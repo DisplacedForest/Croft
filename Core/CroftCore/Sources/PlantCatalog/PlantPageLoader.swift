@@ -10,11 +10,10 @@ public struct PlantPageLoader: Sendable {
     private let cultivars: CultivarRepository
     private let genera: GenusRepository
     private let families: PlantFamilyRepository
-    private let pests: PestRepository
-    private let diseases: DiseaseRepository
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
     private let images: PlantImageStore
+    private let threatResolver: PlantThreatResolver
 
     public init(knowledge: AppDatabase, personal: AppDatabase) {
         self.knowledge = knowledge
@@ -22,11 +21,10 @@ public struct PlantPageLoader: Sendable {
         cultivars = CultivarRepository(knowledge)
         genera = GenusRepository(knowledge)
         families = PlantFamilyRepository(knowledge)
-        pests = PestRepository(knowledge)
-        diseases = DiseaseRepository(knowledge)
         plantings = PlantingRepository(personal)
         structures = GardenStructureRepository(personal)
         images = PlantImageStore(knowledge)
+        threatResolver = PlantThreatResolver(knowledge: knowledge)
     }
 
     public init(_ database: AppDatabase) {
@@ -98,7 +96,8 @@ public struct PlantPageLoader: Sendable {
         if let cultivar {
             threatIDs.insert(cultivar.id.rawValue, at: 0)
         }
-        let threats = try threats(fromPlantIDs: threatIDs)
+        let threats = try threatResolver.threats(
+            fromPlantIDs: threatIDs, hostID: one.id.rawValue)
 
         let relevantPlantings = try relevantPlantings(species: one, cultivar: cultivar)
         var locationNames: [Bed.ID: String] = [:]
@@ -160,52 +159,6 @@ public struct PlantPageLoader: Sendable {
                     expectedMaturityOn: planting.expectedMaturityOn
                 )
             }
-    }
-
-    private func threats(fromPlantIDs plantIDs: [String]) throws -> [PlantThreat] {
-        let edges = try knowledge.writer.read { db in
-            try plantIDs.flatMap { plantID in
-                try GraphStore.outgoing(from: plantID, via: .hostOf, in: db)
-                    + GraphStore.outgoing(from: plantID, via: .susceptibleTo, in: db)
-            }
-        }
-        var seen = Set<String>()
-        var threats: [PlantThreat] = []
-        for edge in edges where !seen.contains(edge.target.id) {
-            seen.insert(edge.target.id)
-            switch edge.target.type {
-            case .pest:
-                guard let pest = try pests.fetch(id: Pest.ID(rawValue: edge.target.id)),
-                    pest.organismType == .pest
-                else { continue }
-                threats.append(
-                    PlantThreat(
-                        id: pest.id.rawValue,
-                        kind: .pest,
-                        name: pest.commonName,
-                        agentName: pest.scientificName,
-                        summary: pest.typicalDamage ?? pest.description,
-                        affectedParts: pest.affectedPlantParts
-                    ))
-            case .disease:
-                guard let disease = try diseases.fetch(id: Disease.ID(rawValue: edge.target.id))
-                else { continue }
-                threats.append(
-                    PlantThreat(
-                        id: disease.id.rawValue,
-                        kind: .disease,
-                        name: disease.name,
-                        agentName: disease.pathogen,
-                        summary: disease.symptoms,
-                        affectedParts: disease.affectedPlantParts
-                    ))
-            default:
-                continue
-            }
-        }
-        return threats.sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-        }
     }
 
     private func activity(

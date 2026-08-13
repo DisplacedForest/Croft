@@ -265,26 +265,29 @@ private struct ThreatRow: View {
     let threat: PlantThreat
 
     var body: some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
-            HStack(spacing: CroftTheme.space(2)) {
-                Text(threat.name)
-                    .font(.body.weight(.medium))
-                Text(threat.kind.displayName)
-                    .font(.caption2.weight(.medium))
-                    .padding(.horizontal, CroftTheme.space(1.5))
-                    .padding(.vertical, CroftTheme.space(0.5))
-                    .background(Color.domainHealth.opacity(0.15), in: Capsule())
-                    .foregroundStyle(Color.domainHealth)
-            }
-            if let agentName = threat.agentName {
-                Text(agentName)
-                    .font(.callout.italic())
-                    .foregroundStyle(.secondary)
-            }
-            if let summary = threat.summary {
-                Text(summary)
-                    .font(CroftTheme.supporting)
-                    .foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: CroftTheme.space(3)) {
+            PlantThreatThumbnail(image: threat.image)
+            VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
+                HStack(spacing: CroftTheme.space(2)) {
+                    Text(threat.name)
+                        .font(.body.weight(.medium))
+                    Text(threat.kind.displayName)
+                        .font(.caption2.weight(.medium))
+                        .padding(.horizontal, CroftTheme.space(1.5))
+                        .padding(.vertical, CroftTheme.space(0.5))
+                        .background(Color.domainHealth.opacity(0.15), in: Capsule())
+                        .foregroundStyle(Color.domainHealth)
+                }
+                if let agentName = threat.agentName {
+                    Text(agentName)
+                        .font(.callout.italic())
+                        .foregroundStyle(.secondary)
+                }
+                if let summary = threat.summary {
+                    Text(summary)
+                        .font(CroftTheme.supporting)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
     }
