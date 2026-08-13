@@ -104,10 +104,11 @@ struct SectionStack: View {
                     SectionDetailView(route: route) { next in
                         path.append(next)
                     }
+                    .croftScreenSurface()
                     .environment(gardenStore)
                     .environment(captureStore)
                 }
-                .background(Color.surfacePrimary)
+                .croftScreenSurface()
                 .environment(gardenStore)
                 .environment(captureStore)
         }

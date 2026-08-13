@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -178,6 +179,6 @@ struct PlantingDetailView: View {
         }
         .padding(CroftTheme.space(3))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
     }
 }

@@ -1,4 +1,5 @@
 import Capture
+import Design
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -63,7 +64,7 @@ struct LogObservationSheet: View {
         }
         .frame(maxWidth: .infinity)
         .padding(CroftTheme.space(3))
-        .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
         .dropDestination(for: Data.self) { items, _ in
             form.photos.append(contentsOf: items)
             attachmentNote = "Dropped \(items.count) photo\(items.count == 1 ? "" : "s")."

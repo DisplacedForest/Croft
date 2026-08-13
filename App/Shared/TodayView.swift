@@ -37,7 +37,6 @@ struct TodayView: View {
             .frame(maxWidth: 560, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
-        .background(Color.surfacePrimary)
         .onChange(of: capture?.saveCount) { _, _ in
             tasks?.refresh()
         }
