@@ -112,20 +112,12 @@ struct CatalogFixture {
         try structures.create(polytunnel, in: kitchenGarden.id)
         try structures.create(longBed, in: .garden(kitchenGarden.id))
         try structures.create(tunnelBed, in: .growingArea(polytunnel.id))
-        try registerPlant(tomato.id.rawValue)
-        try registerPlant(brandywine.id.rawValue)
         try relate(
             plantRef(tomato.id.rawValue), .hostOf,
             EntityRef(id: hornworm.id.rawValue, type: .pest))
         try relate(
             plantRef(tomato.id.rawValue), .susceptibleTo,
             EntityRef(id: earlyBlight.id.rawValue, type: .disease))
-    }
-
-    func registerPlant(_ id: String) throws {
-        try database.writer.write { db in
-            try GraphStore.register(EntityRef(id: id, type: .plant), in: db)
-        }
     }
 
     func plantRef(_ id: String) -> EntityRef {
