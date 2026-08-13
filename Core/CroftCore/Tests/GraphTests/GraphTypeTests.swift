@@ -15,6 +15,7 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.sownFrom.rawValue == "SOWN_FROM")
         #expect(RelationshipType.observedOn.rawValue == "OBSERVED_ON")
         #expect(RelationshipType.harvestedFrom.rawValue == "HARVESTED_FROM")
+        #expect(RelationshipType.taskFor.rawValue == "TASK_FOR")
     }
 
     @Test(arguments: RelationshipType.allCases)
@@ -35,6 +36,7 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.sownFrom.deleteRule == .cascade)
         #expect(RelationshipType.observedOn.deleteRule == .restrictTarget)
         #expect(RelationshipType.harvestedFrom.deleteRule == .restrictTarget)
+        #expect(RelationshipType.taskFor.deleteRule == .restrictTarget)
     }
 }
 
@@ -54,6 +56,7 @@ struct EntityTypeTests {
         #expect(EntityType.starterBatch.rawValue == "starter_batch")
         #expect(EntityType.observation.rawValue == "observation")
         #expect(EntityType.harvest.rawValue == "harvest")
+        #expect(EntityType.task.rawValue == "task")
     }
 
     @Test(arguments: EntityType.allCases)

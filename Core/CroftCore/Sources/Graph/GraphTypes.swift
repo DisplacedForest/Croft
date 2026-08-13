@@ -13,6 +13,7 @@ public enum EntityType: String, CaseIterable, Codable, Hashable, Sendable {
     case starterBatch = "starter_batch"
     case observation
     case harvest
+    case task
 }
 
 public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable {
@@ -34,6 +35,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
     case resistantTo = "RESISTANT_TO"
     case observedOn = "OBSERVED_ON"
     case harvestedFrom = "HARVESTED_FROM"
+    case taskFor = "TASK_FOR"
 
     public enum DeleteRule: Hashable, Sendable {
         case cascade
@@ -46,7 +48,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
             .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy, .lotOf, .sownFrom,
             .instanceOf, .plantedFrom, .vectorOf, .resistantTo:
             .cascade
-        case .locatedIn, .observedOn, .harvestedFrom:
+        case .locatedIn, .observedOn, .harvestedFrom, .taskFor:
             .restrictTarget
         }
     }
@@ -57,7 +59,7 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
             true
         case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
             .causedBy, .favoredBy, .lotOf, .sownFrom, .instanceOf, .plantedFrom,
-            .vectorOf, .resistantTo, .observedOn, .harvestedFrom:
+            .vectorOf, .resistantTo, .observedOn, .harvestedFrom, .taskFor:
             false
         }
     }
@@ -68,7 +70,8 @@ public enum RelationshipType: String, CaseIterable, Codable, Hashable, Sendable 
             0.3
         case .susceptibleTo, .hostOf, .locatedIn, .parasitizedBy, .predatedBy,
             .antagonisticTo, .rotateAwayFrom, .causedBy, .favoredBy, .lotOf, .sownFrom,
-            .instanceOf, .plantedFrom, .vectorOf, .resistantTo, .observedOn, .harvestedFrom:
+            .instanceOf, .plantedFrom, .vectorOf, .resistantTo, .observedOn, .harvestedFrom,
+            .taskFor:
             nil
         }
     }
