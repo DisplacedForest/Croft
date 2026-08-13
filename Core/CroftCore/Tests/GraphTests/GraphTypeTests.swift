@@ -14,6 +14,7 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.lotOf.rawValue == "LOT_OF")
         #expect(RelationshipType.sownFrom.rawValue == "SOWN_FROM")
         #expect(RelationshipType.observedOn.rawValue == "OBSERVED_ON")
+        #expect(RelationshipType.harvestedFrom.rawValue == "HARVESTED_FROM")
     }
 
     @Test(arguments: RelationshipType.allCases)
@@ -33,6 +34,7 @@ struct RelationshipTypeTests {
         #expect(RelationshipType.lotOf.deleteRule == .cascade)
         #expect(RelationshipType.sownFrom.deleteRule == .cascade)
         #expect(RelationshipType.observedOn.deleteRule == .restrictTarget)
+        #expect(RelationshipType.harvestedFrom.deleteRule == .restrictTarget)
     }
 }
 
@@ -51,6 +53,7 @@ struct EntityTypeTests {
         #expect(EntityType.environmentalCondition.rawValue == "environmental_condition")
         #expect(EntityType.starterBatch.rawValue == "starter_batch")
         #expect(EntityType.observation.rawValue == "observation")
+        #expect(EntityType.harvest.rawValue == "harvest")
     }
 
     @Test(arguments: EntityType.allCases)
