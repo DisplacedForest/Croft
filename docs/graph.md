@@ -39,7 +39,7 @@ Registering the same id twice with the same type is a no-op. Registering an exis
 Each relationship type declares what happens when an entity on the edge is deleted, via `RelationshipType.deleteRule`:
 
 - `cascade`: the edge is a fact about the deleted entity and goes with it. This is the rule for `SUSCEPTIBLE_TO`, `HOST_OF`, and `COMPANION_WITH`, enforced by `ON DELETE CASCADE`.
-- `restrictTarget`: the entity cannot be deleted while edges of this type still point at it. This is the rule for `LOCATED_IN` (you cannot delete a location that still contains things), enforced by the `entity_located_in_restrict` trigger.
+- `restrictTarget`: the entity cannot be deleted while edges of this type still point at it. This is the rule for `LOCATED_IN` (you cannot delete a location that still contains things), enforced by the `entity_located_in_restrict` trigger, and for `OBSERVED_ON` (you cannot delete something you have recorded observations about), enforced by the `entity_observed_on_restrict` trigger.
 
 Deleting the source side of any edge always cascades.
 
