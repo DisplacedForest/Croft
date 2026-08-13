@@ -61,7 +61,7 @@ The Xcode project is generated from `project.yml` with XcodeGen and is not check
 mise run check
 ```
 
-Runs formatting, lint, and the package tests on macOS. `mise run ci` adds the macOS app build and the runtime design-token resolution tests, and is what CI runs.
+Runs formatting, lint, the package tests, and the macOS app build. `mise run check-fast` skips the app build for tight iteration; the pre-push gate is the full check. `mise run ci` adds the runtime design-token resolution tests and is exactly what CI runs.
 
 ## License
 
