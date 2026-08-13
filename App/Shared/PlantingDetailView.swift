@@ -8,6 +8,7 @@ struct PlantingDetailView: View {
     let plantingID: Planting.ID
 
     var body: some View {
+        let capture = capture
         if let detail = store.plantingDetail(plantingID) {
             ScrollView {
                 VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
