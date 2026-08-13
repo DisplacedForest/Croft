@@ -33,11 +33,15 @@ targets:
           - Graph
           - Knowledge
           - Design
+          - Today
     settings:
       base:
         PRODUCT_NAME: Croft
         PRODUCT_BUNDLE_IDENTIFIER: com.displacedforest.croft
         GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_ENTITLEMENTS: App/macOS/Croft.entitlements
+        INFOPLIST_KEY_NSLocationUsageDescription: Croft shows the weather for where your garden grows.
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
   Croft-iOS:
     type: application
     platform: iOS
@@ -56,6 +60,7 @@ targets:
           - Graph
           - Knowledge
           - Design
+          - Today
     settings:
       base:
         PRODUCT_NAME: Croft
