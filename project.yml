@@ -33,6 +33,7 @@ targets:
           - Graph
           - Knowledge
           - Design
+          - PlantCatalog
           - Today
     settings:
       base:
@@ -60,6 +61,7 @@ targets:
           - Graph
           - Knowledge
           - Design
+          - PlantCatalog
           - Today
     settings:
       base:

@@ -5,6 +5,20 @@ struct SectionHomeView: View {
     let navigate: (SectionRoute) -> Void
 
     var body: some View {
+        switch section {
+        case .today, .garden:
+            SectionPlaceholderView(section: section, navigate: navigate)
+        case .plants:
+            PlantsHomeView(navigate: navigate)
+        }
+    }
+}
+
+struct SectionPlaceholderView: View {
+    let section: AppSection
+    let navigate: (SectionRoute) -> Void
+
+    var body: some View {
         VStack(spacing: CroftTheme.space(4)) {
             Image(systemName: section.symbolName)
                 .font(.system(size: 44, weight: .light))

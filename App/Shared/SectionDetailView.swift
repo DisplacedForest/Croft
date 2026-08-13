@@ -16,6 +16,8 @@ struct SectionDetailView: View {
             .padding(CroftTheme.space(8))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle("Preview")
+        case .plant(let identity):
+            PlantPageView(identity: identity)
         }
     }
 }
