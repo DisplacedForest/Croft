@@ -92,7 +92,8 @@ public struct HarvestRepository: Sendable {
                 try Row.fetchAll(
                     db,
                     sql: """
-                        SELECT unit, custom_unit, SUM(quantity) AS total, COUNT(*) AS count
+                        SELECT unit, custom_unit, SUM(quantity) AS total,
+                               COUNT(*) AS count, MIN(id) AS sample_id
                         FROM harvest
                         WHERE planting_id = :planting
                         GROUP BY unit, custom_unit
@@ -121,7 +122,8 @@ public struct HarvestRepository: Sendable {
                     db,
                     sql: """
                         SELECT h.unit AS unit, h.custom_unit AS custom_unit,
-                               SUM(h.quantity) AS total, COUNT(*) AS count
+                               SUM(h.quantity) AS total, COUNT(*) AS count,
+                               MIN(h.id) AS sample_id
                         FROM harvest h
                         JOIN planting p ON p.id = h.planting_id
                         WHERE p.\(column) = :identity
@@ -145,7 +147,11 @@ public struct HarvestRepository: Sendable {
     private static func totals(_ rows: [Row]) throws -> [HarvestTotal] {
         try rows.map { row in
             HarvestTotal(
-                unit: try HarvestRecord.decodeUnit(row["unit"]),
+                unit: try HarvestRecord.decodeUnit(
+                    row["unit"],
+                    pairedWith: row["custom_unit"],
+                    rowID: row["sample_id"]
+                ),
                 customUnit: row["custom_unit"],
                 total: row["total"],
                 count: row["count"]

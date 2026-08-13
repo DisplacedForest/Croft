@@ -190,6 +190,17 @@ struct HarvestConstraintTests {
             try fixture.harvests.fetch(id: Harvest.ID(rawValue: "h3"))
         }
     }
+
+    @Test func aCorruptedCustomUnitPairingFailsAggregation() throws {
+        let fixture = try HarvestFixture()
+        try fixture.insertUnchecked(id: "h4", unit: "custom", customUnit: nil)
+        #expect(throws: HarvestError.malformedUnit("h4")) {
+            try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id)
+        }
+        #expect(throws: HarvestError.malformedUnit("h4")) {
+            try fixture.harvests.totals(of: .cultivar(fixture.brandywine.id))
+        }
+    }
 }
 
 struct HarvestQueryTests {

@@ -36,6 +36,18 @@ struct HarvestRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
             .enumValue(HarvestUnit.self, from: raw, column: "unit")
     }
 
+    static func decodeUnit(
+        _ raw: String,
+        pairedWith customUnit: String?,
+        rowID: String
+    ) throws -> HarvestUnit {
+        let decoded = try decodeUnit(raw)
+        guard (decoded == .custom) == (customUnit != nil) else {
+            throw HarvestError.malformedUnit(rowID)
+        }
+        return decoded
+    }
+
     init(_ harvest: Harvest) {
         id = harvest.id.rawValue
         plantingID = harvest.plantingID.rawValue
@@ -48,10 +60,7 @@ struct HarvestRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
     }
 
     func model() throws -> Harvest {
-        let decoded = try Self.decodeUnit(unit)
-        guard (decoded == .custom) == (customUnit != nil) else {
-            throw HarvestError.malformedUnit(id)
-        }
+        let decoded = try Self.decodeUnit(unit, pairedWith: customUnit, rowID: id)
         let decoder = TaxonomyRowDecoder(table: Self.databaseTableName)
         return Harvest(
             id: Harvest.ID(rawValue: id),
