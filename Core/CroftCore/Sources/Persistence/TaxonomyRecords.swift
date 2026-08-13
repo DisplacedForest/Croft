@@ -59,8 +59,11 @@ struct GenusRecord: Codable, FetchableRecord, PersistableRecord {
     }
 }
 
-struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord {
+struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
     static let databaseTableName = "species"
+    static var entityType: EntityType { .plant }
+
+    var entityID: String { id }
 
     var id: String
     var genusID: String
