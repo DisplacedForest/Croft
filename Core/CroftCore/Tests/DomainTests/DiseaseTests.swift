@@ -21,7 +21,10 @@ struct DiseaseAttributeTests {
     @Test func pathogenTypeRawValuesAreStable() throws {
         try expectStableDiseaseRawValues(
             PathogenType.self,
-            ["fungal", "bacterial", "viral", "oomycete", "nematode", "physiological"]
+            [
+                "fungal", "bacterial", "viral", "oomycete", "nematode", "physiological",
+                "phytoplasma", "protist",
+            ]
         )
     }
 }

@@ -232,6 +232,31 @@ public struct AppDatabase: Sendable {
         try AppDatabase(DatabaseQueue(configuration: makeConfiguration()))
     }
 
+    public static func openReadOnly(at url: URL) throws -> AppDatabase {
+        var configuration = makeConfiguration()
+        configuration.readonly = true
+        let queue = try DatabaseQueue(path: url.path, configuration: configuration)
+        let (applicationID, applied) = try queue.read { db in
+            (
+                try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
+                try SchemaMigrations.migrator().appliedIdentifiers(db)
+            )
+        }
+        guard applicationID == SchemaMigrations.databaseApplicationID else {
+            throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
+        }
+        try MigrationHistory.validate(applied: applied, registered: SchemaMigrations.identifiers)
+        guard Set(SchemaMigrations.identifiers).isSubset(of: applied) else {
+            throw DatabaseIdentityError(
+                path: url.path, applicationID: SchemaMigrations.databaseApplicationID)
+        }
+        return AppDatabase(readOnly: queue)
+    }
+
+    private init(readOnly writer: any DatabaseWriter) {
+        self.writer = writer
+    }
+
     public static func defaultURL() throws -> URL {
         try FileManager.default
             .url(
