@@ -21,6 +21,10 @@ targets:
     sources:
       - App/Shared
       - App/macOS
+      - path: App/Shared/Resources
+        buildPhase: resources
+        optional: true
+        createIntermediateGroups: true
     dependencies:
       - package: CroftCore
         products:
@@ -40,6 +44,10 @@ targets:
     sources:
       - App/Shared
       - App/iOS
+      - path: App/Shared/Resources
+        buildPhase: resources
+        optional: true
+        createIntermediateGroups: true
     dependencies:
       - package: CroftCore
         products:
