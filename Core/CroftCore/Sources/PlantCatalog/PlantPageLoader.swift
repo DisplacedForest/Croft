@@ -5,7 +5,7 @@ import Graph
 import Persistence
 
 public struct PlantPageLoader: Sendable {
-    private let database: AppDatabase
+    private let knowledge: AppDatabase
     private let species: SpeciesRepository
     private let cultivars: CultivarRepository
     private let genera: GenusRepository
@@ -15,16 +15,20 @@ public struct PlantPageLoader: Sendable {
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
 
+    public init(knowledge: AppDatabase, personal: AppDatabase) {
+        self.knowledge = knowledge
+        species = SpeciesRepository(knowledge)
+        cultivars = CultivarRepository(knowledge)
+        genera = GenusRepository(knowledge)
+        families = PlantFamilyRepository(knowledge)
+        pests = PestRepository(knowledge)
+        diseases = DiseaseRepository(knowledge)
+        plantings = PlantingRepository(personal)
+        structures = GardenStructureRepository(personal)
+    }
+
     public init(_ database: AppDatabase) {
-        self.database = database
-        species = SpeciesRepository(database)
-        cultivars = CultivarRepository(database)
-        genera = GenusRepository(database)
-        families = PlantFamilyRepository(database)
-        pests = PestRepository(database)
-        diseases = DiseaseRepository(database)
-        plantings = PlantingRepository(database)
-        structures = GardenStructureRepository(database)
+        self.init(knowledge: database, personal: database)
     }
 
     public func listItems() throws -> [PlantListItem] {
@@ -36,7 +40,7 @@ public struct PlantPageLoader: Sendable {
                 id: one.id.rawValue,
                 identity: .species(one.id),
                 kind: .species,
-                displayName: one.commonNames.first ?? one.scientificName,
+                displayName: titled(one.commonNames.first) ?? one.scientificName,
                 scientificName: one.scientificName,
                 otherNames: Array(one.commonNames.dropFirst())
             )
@@ -98,7 +102,7 @@ public struct PlantPageLoader: Sendable {
 
         return PlantPage(
             identity: identity,
-            displayName: cultivar?.name ?? one.commonNames.first ?? one.scientificName,
+            displayName: cultivar?.name ?? titled(one.commonNames.first) ?? one.scientificName,
             commonNames: cultivar?.commonNames ?? one.commonNames,
             taxonomy: PlantTaxonomy(
                 familyName: family?.name,
@@ -144,7 +148,7 @@ public struct PlantPageLoader: Sendable {
     }
 
     private func threats(fromPlantIDs plantIDs: [String]) throws -> [PlantThreat] {
-        let edges = try database.writer.read { db in
+        let edges = try knowledge.writer.read { db in
             try plantIDs.flatMap { plantID in
                 try GraphStore.outgoing(from: plantID, via: .hostOf, in: db)
                     + GraphStore.outgoing(from: plantID, via: .susceptibleTo, in: db)
@@ -246,5 +250,10 @@ public struct PlantPageLoader: Sendable {
     private func cultivarScientificName(_ cultivar: Cultivar, _ parent: Species?) -> String {
         guard let parent else { return cultivar.name }
         return "\(parent.scientificName) '\(cultivar.name)'"
+    }
+
+    private func titled(_ name: String?) -> String? {
+        guard let name, let first = name.first else { return name }
+        return first.uppercased() + name.dropFirst()
     }
 }
