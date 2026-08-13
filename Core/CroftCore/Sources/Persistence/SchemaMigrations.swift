@@ -13,6 +13,7 @@ public enum SchemaMigrations {
         ("v009-plantings", applyPlantings),
         ("v010-cultivation-profile", applyCultivationProfile),
         ("v011-knowledge-types", applyKnowledgeTypes),
+        ("v015-edge-cardinality", applyEdgeCardinality),
         ("v012-observations", applyObservations),
     ]
 

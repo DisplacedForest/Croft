@@ -167,22 +167,25 @@ extension SchemaMigrations {
         try createRelationshipIndexesForObservations(db)
     }
 
+    private static let singleCardinalityIndexes = [
+        ("LOCATED_IN", "relationship_single_located_in_parent"),
+        ("INSTANCE_OF", "relationship_single_instance_of"),
+        ("LOT_OF", "relationship_single_lot_of"),
+        ("SOWN_FROM", "relationship_single_sown_from"),
+        ("OBSERVED_ON", "relationship_single_observed_on"),
+    ]
+
     private static func createRelationshipIndexesForObservations(_ db: Database) throws {
         try db.execute(sql: "CREATE INDEX relationship_from ON relationship(from_entity_id)")
         try db.execute(sql: "CREATE INDEX relationship_to ON relationship(to_entity_id)")
-        try db.execute(
-            sql: """
-                CREATE UNIQUE INDEX relationship_single_located_in_parent
-                ON relationship(from_entity_id)
-                WHERE relationship_type = 'LOCATED_IN'
-                """
-        )
-        try db.execute(
-            sql: """
-                CREATE UNIQUE INDEX relationship_single_observed_on
-                ON relationship(from_entity_id)
-                WHERE relationship_type = 'OBSERVED_ON'
-                """
-        )
+        for (type, index) in singleCardinalityIndexes {
+            try db.execute(
+                sql: """
+                    CREATE UNIQUE INDEX \(index)
+                    ON relationship(from_entity_id)
+                    WHERE relationship_type = '\(type)'
+                    """
+            )
+        }
     }
 }
