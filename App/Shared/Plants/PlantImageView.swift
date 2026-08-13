@@ -42,16 +42,17 @@ struct PlantImageView: View {
     var cornerRadius: CGFloat = CroftTheme.space(3)
 
     var body: some View {
-        Group {
-            if let image = PlantImageAsset.image(named: file) {
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
-                placeholder
+        Color.clear
+            .overlay {
+                if let image = PlantImageAsset.image(named: file) {
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } else {
+                    placeholder
+                }
             }
-        }
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
     }
 
     private var placeholder: some View {
@@ -94,34 +95,6 @@ struct PlantHeaderImage: View {
         .popover(isPresented: $showingCredit, arrowEdge: .bottom) {
             PlantImageCreditView(image: image)
         }
-    }
-}
-
-struct PlantThreatThumbnail: View {
-    let image: PlantImage?
-    var side: CGFloat = 44
-    @State private var showingCredit = false
-
-    var body: some View {
-        if let image {
-            Button {
-                showingCredit = true
-            } label: {
-                thumbnail(file: image.file)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Photo credit")
-            .popover(isPresented: $showingCredit, arrowEdge: .bottom) {
-                PlantImageCreditView(image: image)
-            }
-        } else {
-            thumbnail(file: nil)
-        }
-    }
-
-    private func thumbnail(file: String?) -> some View {
-        PlantImageView(file: file, cornerRadius: CroftTheme.space(2))
-            .frame(width: side, height: side)
     }
 }
 
