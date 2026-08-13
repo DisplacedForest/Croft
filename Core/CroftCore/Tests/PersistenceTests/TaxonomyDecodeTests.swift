@@ -4,45 +4,11 @@ import Testing
 
 @testable import Persistence
 
-private struct CorruptibleTaxonomy {
-    let database: AppDatabase
-    let species: Species
-    let cultivar: Cultivar
-
-    init() throws {
-        database = try AppDatabase.inMemory()
-        let family = PlantFamily(name: "Solanaceae")
-        let genus = Genus(familyID: family.id, name: "Solanum")
-        species = Species(genusID: genus.id, scientificName: "Solanum lycopersicum")
-        cultivar = Cultivar(speciesID: species.id, name: "San Marzano")
-        try PlantFamilyRepository(database).insert(family)
-        try GenusRepository(database).insert(genus)
-        try SpeciesRepository(database).insert(species)
-        try CultivarRepository(database).insert(cultivar)
-    }
-
-    func corrupt(table: String, id: String, assignments: String) throws {
-        try database.writer.write { db in
-            try db.execute(sql: "PRAGMA ignore_check_constraints = ON")
-            try db.execute(
-                sql: "UPDATE \(table) SET \(assignments) WHERE id = ?",
-                arguments: [id]
-            )
-            try db.execute(sql: "PRAGMA ignore_check_constraints = OFF")
-        }
-    }
-
-    func corruptSpecies(_ assignments: String) throws {
-        try corrupt(table: "species", id: species.id.rawValue, assignments: assignments)
-    }
-
-    func corruptCultivar(_ assignments: String) throws {
-        try corrupt(table: "cultivar", id: cultivar.id.rawValue, assignments: assignments)
-    }
-}
-
 struct TaxonomyDecodeTests {
-    @Test(arguments: ["life_cycle", "growth_habit", "sun_exposure", "water_need"])
+    @Test(arguments: [
+        "life_cycle", "growth_habit", "sun_exposure", "water_need",
+        "sowing_method", "frost_tolerance", "days_to_maturity_basis",
+    ])
     func unknownSpeciesEnumRawValueFailsFetch(column: String) throws {
         let context = try CorruptibleTaxonomy()
         try context.corruptSpecies("\(column) = 'bogus'")
@@ -90,6 +56,22 @@ struct TaxonomyDecodeTests {
         ("spacing_cm_min = 60.0, spacing_cm_max = 30.0", "spacing_cm", "60.0", "30.0"),
         ("days_to_maturity_min = 90, days_to_maturity_max = 30", "days_to_maturity", "90", "30"),
         ("hardiness_zone_min = 9, hardiness_zone_max = 3", "hardiness_zone", "9", "3"),
+        (
+            """
+            germination_temp_c_optimal_min = 30.0, germination_temp_c_optimal_max = 20.0
+            """,
+            "germination_temp_c_optimal", "30.0", "20.0"
+        ),
+        ("germination_days_min = 21, germination_days_max = 7", "germination_days", "21", "7"),
+        (
+            "sowing_depth_cm_min = 3.0, sowing_depth_cm_max = 1.0",
+            "sowing_depth_cm", "3.0", "1.0"
+        ),
+        (
+            "row_spacing_cm_min = 90.0, row_spacing_cm_max = 45.0",
+            "row_spacing_cm", "90.0", "45.0"
+        ),
+        ("weeks_indoors_min = 8, weeks_indoors_max = 4", "weeks_indoors", "8", "4"),
     ])
     func invertedSpeciesRangeFailsFetch(
         assignments: String,
@@ -197,12 +179,27 @@ struct TaxonomyDecodeTests {
         #expect(fetched.spacingCentimeters == nil)
         #expect(fetched.daysToMaturity == nil)
         #expect(fetched.hardinessZones == nil)
+        #expect(fetched.germinationTempMin == nil)
+        #expect(fetched.germinationTempOptimal == nil)
+        #expect(fetched.germinationTempMax == nil)
+        #expect(fetched.germinationDays == nil)
+        #expect(fetched.sowingDepthCentimeters == nil)
+        #expect(fetched.rowSpacingCentimeters == nil)
+        #expect(fetched.sowingMethod == nil)
+        #expect(fetched.weeksIndoorsBeforeTransplant == nil)
+        #expect(fetched.frostTolerance == nil)
+        #expect(fetched.transplantSoilTempMin == nil)
+        #expect(fetched.daysToMaturityBasis == nil)
         let cultivar = try #require(
             try CultivarRepository(context.database).fetch(id: context.cultivar.id)
         )
         #expect(cultivar.growthHabit == nil)
         #expect(cultivar.daysToMaturity == nil)
         #expect(cultivar.spacingCentimeters == nil)
+        #expect(cultivar.heirloom == nil)
+        #expect(cultivar.plantingSeasons.isEmpty)
+        #expect(cultivar.seedPreps.isEmpty)
+        #expect(cultivar.seedTypes.isEmpty)
     }
 
     @Test func allEnumCasesRoundTripThroughStorage() throws {
@@ -212,6 +209,9 @@ struct TaxonomyDecodeTests {
         try expectRoundTrip(context, repository, \.growthHabit)
         try expectRoundTrip(context, repository, \.sunExposure)
         try expectRoundTrip(context, repository, \.waterNeed)
+        try expectRoundTrip(context, repository, \.sowingMethod)
+        try expectRoundTrip(context, repository, \.frostTolerance)
+        try expectRoundTrip(context, repository, \.daysToMaturityBasis)
         var species = context.species
         species.harvestableParts = HarvestablePart.allCases
         try repository.update(species)
@@ -226,6 +226,7 @@ struct TaxonomyDecodeTests {
             #expect(stored.growthHabit == habit)
         }
     }
+
 }
 
 private func expectRoundTrip<Value: CaseIterable & Equatable>(
