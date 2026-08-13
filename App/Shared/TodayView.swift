@@ -19,6 +19,7 @@ private struct GardenTaskStore: GardenTaskProviding {
 
 struct TodayView: View {
     @Environment(\.appStores) private var stores
+    @Environment(CaptureStore.self) private var capture: CaptureStore?
     @State private var model = TodayViewModel(
         weatherProvider: SystemWeatherProvider(),
         locationProvider: SystemLocationProvider()
@@ -37,6 +38,9 @@ struct TodayView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.surfacePrimary)
+        .onChange(of: capture?.saveCount) { _, _ in
+            tasks?.refresh()
+        }
         .task {
             await model.loadWeather()
         }
