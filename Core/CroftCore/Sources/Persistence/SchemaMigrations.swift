@@ -14,6 +14,7 @@ public enum SchemaMigrations {
         ("v010-cultivation-profile", applyCultivationProfile),
         ("v011-knowledge-types", applyKnowledgeTypes),
         ("v015-edge-cardinality", applyEdgeCardinality),
+        ("v012-observations", applyObservations),
     ]
 
     public static let identifiers: [String] = migrations.map(\.identifier)
