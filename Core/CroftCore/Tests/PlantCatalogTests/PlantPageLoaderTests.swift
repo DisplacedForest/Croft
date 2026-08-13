@@ -150,6 +150,32 @@ import Testing
         #expect(page.activity.isEmpty)
     }
 
+    @Test func personalDataReadsFromASeparateDatabase() throws {
+        let fixture = try CatalogFixture()
+        let personal = try AppDatabase.inMemory()
+        try PlantFamilyRepository(personal).insert(solanaceae)
+        try GenusRepository(personal).insert(solanum)
+        try SpeciesRepository(personal).insert(tomato)
+        try CultivarRepository(personal).insert(brandywine)
+        let structures = GardenStructureRepository(personal)
+        try structures.create(homeProperty)
+        try structures.create(kitchenGarden, in: homeProperty.id)
+        try structures.create(longBed, in: .garden(kitchenGarden.id))
+        try PlantingRepository(personal).insert(
+            Planting(
+                identity: .cultivar(brandywine.id),
+                bedID: longBed.id,
+                quantity: 4,
+                status: .active
+            ))
+        let loader = PlantPageLoader(knowledge: fixture.database, personal: personal)
+        let page = try #require(try loader.page(for: .cultivar(brandywine.id)))
+        #expect(page.threats.map(\.name) == ["Early Blight", "Tomato Hornworm"])
+        #expect(page.currentPlantings.count == 1)
+        #expect(page.currentPlantings.first?.locationName == "Long Bed, Kitchen Garden")
+        #expect(page.currentPlantings.first?.quantity == 4)
+    }
+
     @Test func unknownPlantReturnsNil() throws {
         let fixture = try CatalogFixture()
         #expect(try fixture.loader.page(for: .species(Species.ID.generate())) == nil)
