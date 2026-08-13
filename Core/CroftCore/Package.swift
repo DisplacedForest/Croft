@@ -17,6 +17,7 @@ let package = Package(
         .library(name: "Design", targets: ["Design"]),
         .library(name: "PlantCatalog", targets: ["PlantCatalog"]),
         .library(name: "Today", targets: ["Today"]),
+        .library(name: "Capture", targets: ["Capture"]),
         .executable(name: "knowledge-importer", targets: ["knowledge-importer"]),
     ],
     dependencies: [
@@ -36,7 +37,7 @@ let package = Package(
             name: "Design",
             resources: [.process("Colors.xcassets")]
         ),
-        .target(name: "Today"),
+        .target(name: "Today", dependencies: ["Domain"]),
         .target(
             name: "Knowledge",
             dependencies: [
@@ -46,6 +47,10 @@ let package = Package(
         ),
         .target(name: "GardenModel", dependencies: ["Domain", "Persistence"]),
         .target(
+            name: "Capture",
+            dependencies: ["Domain", "Graph", "Persistence", "PlantCatalog"]
+        ),
+        .target(
             name: "PlantCatalog",
             dependencies: [
                 "Domain", "Persistence", "Graph", .product(name: "GRDB", package: "GRDB.swift"),
@@ -53,6 +58,10 @@ let package = Package(
         ),
         .executableTarget(name: "knowledge-importer", dependencies: ["Knowledge"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
+        .testTarget(
+            name: "CaptureTests",
+            dependencies: ["Capture", "Domain", "Graph", "Persistence", "PlantCatalog"]
+        ),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "Domain"]),
         .testTarget(name: "GraphTests", dependencies: ["Graph", "Persistence"]),
         .testTarget(
@@ -67,7 +76,7 @@ let package = Package(
             name: "PlantCatalogTests",
             dependencies: ["PlantCatalog", "Domain", "Persistence", "Graph"]
         ),
-        .testTarget(name: "TodayTests", dependencies: ["Today"]),
+        .testTarget(name: "TodayTests", dependencies: ["Today", "Domain"]),
         .testTarget(
             name: "GardenModelTests",
             dependencies: ["GardenModel", "Domain", "Persistence"]

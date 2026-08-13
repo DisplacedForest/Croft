@@ -4,6 +4,7 @@ import SwiftUI
 
 struct PlantingDetailView: View {
     @Environment(GardenStore.self) private var store
+    @Environment(CaptureStore.self) private var capture
     let plantingID: Planting.ID
 
     var body: some View {
@@ -19,6 +20,20 @@ struct PlantingDetailView: View {
                 .frame(maxWidth: 640, alignment: .leading)
             }
             .navigationTitle(detail.plantName)
+            .toolbar {
+                Button {
+                    capture.present(.logObservation(.planting(plantingID)))
+                } label: {
+                    Label("Log Observation", systemImage: "eye")
+                }
+                .keyboardShortcut("o", modifiers: [.command, .shift])
+                Button {
+                    capture.present(.recordHarvest(plantingID))
+                } label: {
+                    Label("Record Harvest", systemImage: "basket")
+                }
+                .keyboardShortcut("h", modifiers: [.command, .shift])
+            }
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif

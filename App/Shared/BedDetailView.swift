@@ -4,6 +4,7 @@ import SwiftUI
 
 struct BedDetailView: View {
     @Environment(GardenStore.self) private var store
+    @Environment(CaptureStore.self) private var capture
     let bedID: Bed.ID
     let navigate: (SectionRoute) -> Void
 
@@ -21,6 +22,14 @@ struct BedDetailView: View {
                 .frame(maxWidth: 640, alignment: .leading)
             }
             .navigationTitle(detail.bed.name)
+            .toolbar {
+                Button {
+                    capture.present(.addPlanting(bedID))
+                } label: {
+                    Label("Add Planting", systemImage: "leaf.circle")
+                }
+                .keyboardShortcut("p", modifiers: [.command, .shift])
+            }
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
