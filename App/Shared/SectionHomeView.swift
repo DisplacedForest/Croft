@@ -6,7 +6,7 @@ struct SectionHomeView: View {
 
     var body: some View {
         switch section {
-        case .garden:
+        case .today, .garden:
             SectionPlaceholderView(section: section, navigate: navigate)
         case .plants:
             PlantsHomeView(navigate: navigate)
