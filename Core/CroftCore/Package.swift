@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "Graph", targets: ["Graph"]),
         .library(name: "Knowledge", targets: ["Knowledge"]),
+        .library(name: "PlantCatalog", targets: ["PlantCatalog"]),
         .executable(name: "knowledge-importer", targets: ["knowledge-importer"]),
     ],
     dependencies: [
@@ -35,6 +36,12 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ]
         ),
+        .target(
+            name: "PlantCatalog",
+            dependencies: [
+                "Domain", "Persistence", "Graph", .product(name: "GRDB", package: "GRDB.swift"),
+            ]
+        ),
         .executableTarget(name: "knowledge-importer", dependencies: ["Knowledge"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "Domain"]),
@@ -45,6 +52,10 @@ let package = Package(
                 "Knowledge", "Domain", "Graph", "Persistence",
                 .product(name: "GRDB", package: "GRDB.swift"),
             ]
+        ),
+        .testTarget(
+            name: "PlantCatalogTests",
+            dependencies: ["PlantCatalog", "Domain", "Persistence", "Graph"]
         ),
     ]
 )
