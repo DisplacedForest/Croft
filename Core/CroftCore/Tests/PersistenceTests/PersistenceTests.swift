@@ -153,6 +153,7 @@ struct MigrationPreservationTests {
                 "v005-pests", "v006-plant-relationships", "v007-diseases",
                 "v008-seed-lots", "v009-plantings", "v010-cultivation-profile",
                 "v011-knowledge-types", "v015-edge-cardinality", "v012-observations",
+                "v013-harvests",
             ])
     }
 
