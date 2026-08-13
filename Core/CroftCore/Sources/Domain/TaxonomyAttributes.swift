@@ -36,3 +36,49 @@ public enum HarvestablePart: String, CaseIterable, Codable, Sendable {
     case seed
     case flower
 }
+
+public enum SowingMethod: String, CaseIterable, Codable, Sendable {
+    case direct
+    case transplant
+    case both
+    case plantingStock
+}
+
+public enum FrostTolerance: String, CaseIterable, Codable, Sendable {
+    case tender
+    case halfHardy
+    case hardy
+}
+
+public enum DaysToMaturityBasis: String, CaseIterable, Codable, Sendable {
+    case fromTransplant
+    case fromDirectSow
+    case fromPlantingStock
+}
+
+public enum PlantingSeason: String, CaseIterable, Codable, Sendable {
+    case spring
+    case summer
+    case fall
+    case winter
+    case coolSeason
+    case warmSeason
+}
+
+public enum SeedPrep: String, CaseIterable, Codable, Sendable {
+    case soaking
+    case scarification
+    case stratification
+    case coldStratification
+    case requiresLight
+    case requiresDark
+}
+
+public enum SeedType: String, CaseIterable, Codable, Sendable {
+    case openPollinated
+    case hybrid
+    case heirloom
+    case organic
+    case bulb
+    case root
+}

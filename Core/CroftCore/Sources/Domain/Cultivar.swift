@@ -8,6 +8,10 @@ public struct Cultivar: Equatable, Sendable, Codable {
     public var daysToMaturity: ClosedRange<Int>?
     public var spacingCentimeters: ClosedRange<Double>?
     public var growthHabit: GrowthHabit?
+    public var plantingSeasons: [PlantingSeason]
+    public var seedPreps: [SeedPrep]
+    public var heirloom: Bool?
+    public var seedTypes: [SeedType]
 
     public init(
         id: ID = .generate(),
@@ -16,7 +20,11 @@ public struct Cultivar: Equatable, Sendable, Codable {
         commonNames: [String] = [],
         daysToMaturity: ClosedRange<Int>? = nil,
         spacingCentimeters: ClosedRange<Double>? = nil,
-        growthHabit: GrowthHabit? = nil
+        growthHabit: GrowthHabit? = nil,
+        plantingSeasons: [PlantingSeason] = [],
+        seedPreps: [SeedPrep] = [],
+        heirloom: Bool? = nil,
+        seedTypes: [SeedType] = []
     ) {
         self.id = id
         self.speciesID = speciesID
@@ -25,5 +33,9 @@ public struct Cultivar: Equatable, Sendable, Codable {
         self.daysToMaturity = daysToMaturity
         self.spacingCentimeters = spacingCentimeters
         self.growthHabit = growthHabit
+        self.plantingSeasons = plantingSeasons
+        self.seedPreps = seedPreps
+        self.heirloom = heirloom
+        self.seedTypes = seedTypes
     }
 }
