@@ -19,6 +19,9 @@ struct PlantingDetailView: View {
                 .frame(maxWidth: 640, alignment: .leading)
             }
             .navigationTitle(detail.plantName)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
         } else {
             ContentUnavailableView(
                 "This planting is gone",

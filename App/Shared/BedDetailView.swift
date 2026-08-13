@@ -21,6 +21,9 @@ struct BedDetailView: View {
                 .frame(maxWidth: 640, alignment: .leading)
             }
             .navigationTitle(detail.bed.name)
+            #if os(iOS)
+                .navigationBarTitleDisplayMode(.inline)
+            #endif
         } else {
             ContentUnavailableView(
                 "This bed has been put away",

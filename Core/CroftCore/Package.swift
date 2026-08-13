@@ -14,6 +14,8 @@ let package = Package(
         .library(name: "Graph", targets: ["Graph"]),
         .library(name: "Knowledge", targets: ["Knowledge"]),
         .library(name: "GardenModel", targets: ["GardenModel"]),
+        .library(name: "Design", targets: ["Design"]),
+        .executable(name: "knowledge-importer", targets: ["knowledge-importer"]),
     ],
     dependencies: [
         .package(url: "https://github.com/groue/GRDB.swift.git", from: "7.0.0")
@@ -28,12 +30,30 @@ let package = Package(
             name: "Graph",
             dependencies: [.product(name: "GRDB", package: "GRDB.swift")]
         ),
-        .target(name: "Knowledge"),
+        .target(
+            name: "Design",
+            resources: [.process("Colors.xcassets")]
+        ),
+        .target(
+            name: "Knowledge",
+            dependencies: [
+                "Domain", "Graph", "Persistence",
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ]
+        ),
         .target(name: "GardenModel", dependencies: ["Domain", "Persistence"]),
+        .executableTarget(name: "knowledge-importer", dependencies: ["Knowledge"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "Domain"]),
         .testTarget(name: "GraphTests", dependencies: ["Graph", "Persistence"]),
-        .testTarget(name: "KnowledgeTests", dependencies: ["Knowledge"]),
+        .testTarget(
+            name: "KnowledgeTests",
+            dependencies: [
+                "Knowledge", "Domain", "Graph", "Persistence",
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ]
+        ),
+        .testTarget(name: "DesignTests", dependencies: ["Design"]),
         .testTarget(
             name: "GardenModelTests",
             dependencies: ["GardenModel", "Domain", "Persistence"]

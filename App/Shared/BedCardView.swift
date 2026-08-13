@@ -24,20 +24,13 @@ struct BedCardView<MenuItems: View>: View {
                     .foregroundStyle(summary.plantNamesLine == nil ? .tertiary : .primary)
                     .lineLimit(2, reservesSpace: true)
                     .multilineTextAlignment(.leading)
-                HStack(spacing: CroftTheme.space(2)) {
-                    if let status = summary.statusLine {
-                        Text(status)
-                    }
-                    if summary.statusLine != nil, summary.latestActivity != nil {
-                        Text("·")
-                    }
-                    if let activity = summary.latestActivity {
-                        Text(activity.phrase)
-                            .lineLimit(1)
-                    }
+                if let meta = metaLine {
+                    Text(meta)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
             }
             .padding(CroftTheme.space(4))
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -48,5 +41,13 @@ struct BedCardView<MenuItems: View>: View {
         .contextMenu {
             menu()
         }
+    }
+
+    private var metaLine: String? {
+        let parts = [summary.statusLine, summary.latestActivity?.phrase].compactMap { $0 }
+        guard !parts.isEmpty else {
+            return nil
+        }
+        return parts.joined(separator: " · ")
     }
 }

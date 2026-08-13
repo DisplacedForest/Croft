@@ -1,3 +1,4 @@
+import Design
 import SwiftUI
 
 struct CroftShell: View {
@@ -10,6 +11,7 @@ struct CroftShell: View {
                 List(selection: $selection) {
                     ForEach(AppSection.allCases) { section in
                         Label(section.title, systemImage: section.symbolName)
+                            .listItemTint(section.domainColor)
                             .tag(section)
                     }
                 }
@@ -34,6 +36,7 @@ struct CroftShell: View {
     private func sectionStack(for section: AppSection) -> some View {
         SectionStack(section: section)
             .environment(gardenStore)
+            .tint(section.domainColor)
     }
 }
 
@@ -52,6 +55,7 @@ private struct SectionStack: View {
                     path.append(next)
                 }
             }
+            .background(Color.surfacePrimary)
         }
     }
 }
