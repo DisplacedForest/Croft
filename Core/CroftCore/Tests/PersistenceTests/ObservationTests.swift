@@ -36,6 +36,7 @@ struct ObservationStorageTests {
         #expect(fetched.symptoms.isEmpty)
         #expect(fetched.measurements.isEmpty)
         #expect(fetched.tags.isEmpty)
+        #expect(fetched.photos.isEmpty)
     }
 
     @Test func everyTargetKindRoundTrips() throws {

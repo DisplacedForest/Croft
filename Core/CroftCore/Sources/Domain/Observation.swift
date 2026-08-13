@@ -32,6 +32,7 @@ public struct Observation: Equatable, Sendable, Codable {
     public var symptoms: [String]
     public var measurements: [ObservationMeasurement]
     public var tags: [String]
+    public var photos: [String]
 
     public init(
         id: ID = .generate(),
@@ -41,7 +42,8 @@ public struct Observation: Equatable, Sendable, Codable {
         growthState: String? = nil,
         symptoms: [String] = [],
         measurements: [ObservationMeasurement] = [],
-        tags: [String] = []
+        tags: [String] = [],
+        photos: [String] = []
     ) {
         self.id = id
         self.target = target
@@ -51,5 +53,6 @@ public struct Observation: Equatable, Sendable, Codable {
         self.symptoms = symptoms
         self.measurements = measurements
         self.tags = tags
+        self.photos = photos
     }
 }

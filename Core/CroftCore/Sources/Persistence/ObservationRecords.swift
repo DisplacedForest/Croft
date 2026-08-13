@@ -79,7 +79,7 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
         tags = try TaxonomyCoding.encodeList(observation.tags)
     }
 
-    func model() throws -> Observation {
+    func model(photos: [String] = []) throws -> Observation {
         let decoder = TaxonomyRowDecoder(table: Self.databaseTableName)
         return Observation(
             id: Observation.ID(rawValue: id),
@@ -89,7 +89,8 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
             growthState: growthState,
             symptoms: try decoder.stringList(from: symptoms, column: "symptoms"),
             measurements: try measurementList(),
-            tags: try decoder.stringList(from: tags, column: "tags")
+            tags: try decoder.stringList(from: tags, column: "tags"),
+            photos: photos
         )
     }
 

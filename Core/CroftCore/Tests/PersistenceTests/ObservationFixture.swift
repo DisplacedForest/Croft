@@ -117,8 +117,23 @@ final class ObservationFixture {
         }
     }
 
-    func fileExists(_ relativePath: String) -> Bool {
-        FileManager.default.fileExists(atPath: photos.url(forRelativePath: relativePath).path)
+    func fileExists(_ relativePath: String) throws -> Bool {
+        FileManager.default.fileExists(
+            atPath: try photos.url(forRelativePath: relativePath).path)
+    }
+
+    func directory(for id: Observation.ID) -> URL {
+        photoRoot
+            .appendingPathComponent("observations", isDirectory: true)
+            .appendingPathComponent(id.rawValue, isDirectory: true)
+    }
+
+    func writeStrayFile(named name: String, for id: Observation.ID) throws -> URL {
+        let directory = directory(for: id)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let stray = directory.appendingPathComponent(name, isDirectory: false)
+        try Data("stray".utf8).write(to: stray)
+        return stray
     }
 
     func targets() -> [ObservationTarget] {

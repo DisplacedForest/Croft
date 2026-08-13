@@ -42,36 +42,45 @@ public struct ObservationRepository: Sendable {
 
     public func fetch(id: Observation.ID) throws -> Observation? {
         try writer.read { db in
-            try ObservationRecord.fetchOne(db, key: id.rawValue)?.model()
+            guard let record = try ObservationRecord.fetchOne(db, key: id.rawValue) else {
+                return nil
+            }
+            return try models([record], in: db).first
         }
     }
 
     public func fetchAll() throws -> [Observation] {
         try writer.read { db in
-            try ObservationRecord
-                .order(Column("observed_at").desc, Column("id"))
-                .fetchAll(db)
-                .map { try $0.model() }
+            try models(
+                try ObservationRecord
+                    .order(Column("observed_at").desc, Column("id"))
+                    .fetchAll(db),
+                in: db
+            )
         }
     }
 
     public func observations(on target: ObservationTarget) throws -> [Observation] {
         try writer.read { db in
-            try ObservationRecord
-                .filter(Self.column(for: target) == Self.identifier(of: target))
-                .order(Column("observed_at").desc, Column("id"))
-                .fetchAll(db)
-                .map { try $0.model() }
+            try models(
+                try ObservationRecord
+                    .filter(Self.column(for: target) == Self.identifier(of: target))
+                    .order(Column("observed_at").desc, Column("id"))
+                    .fetchAll(db),
+                in: db
+            )
         }
     }
 
     public func recent(limit: Int) throws -> [Observation] {
         try writer.read { db in
-            try ObservationRecord
-                .order(Column("observed_at").desc, Column("id"))
-                .limit(limit)
-                .fetchAll(db)
-                .map { try $0.model() }
+            try models(
+                try ObservationRecord
+                    .order(Column("observed_at").desc, Column("id"))
+                    .limit(limit)
+                    .fetchAll(db),
+                in: db
+            )
         }
     }
 
@@ -89,8 +98,9 @@ public struct ObservationRepository: Sendable {
         do {
             try writer.write { try record.insert($0) }
         } catch {
-            try? FileManager.default.removeItem(
-                at: photoStore.url(forRelativePath: relativePath))
+            if let url = try? photoStore.url(forRelativePath: relativePath) {
+                try? FileManager.default.removeItem(at: url)
+            }
             throw error
         }
         return relativePath
@@ -98,11 +108,7 @@ public struct ObservationRepository: Sendable {
 
     public func photos(for id: Observation.ID) throws -> [String] {
         try writer.read { db in
-            try ObservationPhotoRecord
-                .filter(Column("observation_id") == id.rawValue)
-                .order(Column("created_at"), Column("id"))
-                .fetchAll(db)
-                .map(\.relativePath)
+            try Self.photoPaths(for: [id.rawValue], in: db)[id.rawValue] ?? []
         }
     }
 
@@ -119,10 +125,44 @@ public struct ObservationRepository: Sendable {
     }
 
     public func sweepOrphanedPhotos() throws {
-        let ids = try writer.read { db in
-            try String.fetchAll(db, sql: "SELECT id FROM observation")
+        let referenced = try writer.read { db -> [String: Set<String>] in
+            let ids = try String.fetchAll(db, sql: "SELECT id FROM observation")
+            let paths = try Self.photoPaths(for: ids, in: db)
+            return Dictionary(uniqueKeysWithValues: ids.map { ($0, Set(paths[$0] ?? [])) })
         }
-        try photoStore.sweepOrphans(keeping: Set(ids))
+        for (id, paths) in referenced {
+            try photoStore.sweepFiles(
+                forObservation: Observation.ID(rawValue: id), keeping: paths)
+        }
+        let candidates = try photoStore.orphanedIdentifiers(keeping: Set(referenced.keys))
+        for candidate in candidates {
+            let id = Observation.ID(rawValue: candidate)
+            guard try !exists(id) else {
+                continue
+            }
+            try photoStore.removePhotos(forObservation: id)
+        }
+    }
+
+    private static func photoPaths(
+        for ids: [String],
+        in db: Database
+    ) throws -> [String: [String]] {
+        guard !ids.isEmpty else {
+            return [:]
+        }
+        let records =
+            try ObservationPhotoRecord
+            .filter(ids.contains(Column("observation_id")))
+            .order(Column("created_at"), Column("id"))
+            .fetchAll(db)
+        return Dictionary(grouping: records, by: \.observationID)
+            .mapValues { $0.map(\.relativePath) }
+    }
+
+    private func models(_ records: [ObservationRecord], in db: Database) throws -> [Observation] {
+        let paths = try Self.photoPaths(for: records.map(\.id), in: db)
+        return try records.map { try $0.model(photos: paths[$0.id] ?? []) }
     }
 
     private static func column(for target: ObservationTarget) -> Column {
