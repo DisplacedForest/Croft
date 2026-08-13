@@ -10,8 +10,10 @@ public final class LogObservationForm {
     public var notes: String = ""
     public var photos: [Data] = []
     public private(set) var validationMessage: String?
+    public private(set) var savedID: ObservationRecord.ID?
 
     private let context: CaptureContext
+    private var attachedCount = 0
 
     public init(context: CaptureContext, target: ObservationTarget, now: Date = Date()) {
         self.context = context
@@ -30,15 +32,31 @@ public final class LogObservationForm {
             validationMessage = "Write a note or attach a photo."
             throw CaptureValidationError.incomplete
         }
+        do {
+            let id = try savedID ?? insertRecord(notes: trimmed)
+            while attachedCount < photos.count {
+                _ = try context.observations.addPhoto(photos[attachedCount], to: id)
+                attachedCount += 1
+            }
+            validationMessage = nil
+            guard let observation = try context.observations.fetch(id: id) else {
+                throw CaptureValidationError.incomplete
+            }
+            return observation
+        } catch {
+            validationMessage = "Couldn't save the observation. Try again."
+            throw error
+        }
+    }
+
+    private func insertRecord(notes trimmed: String) throws -> ObservationRecord.ID {
         let observation = ObservationRecord(
             target: target,
             observedAt: observedAt,
             notes: trimmed.isEmpty ? nil : trimmed
         )
         try context.observations.insert(observation)
-        for data in photos {
-            _ = try context.observations.addPhoto(data, to: observation.id)
-        }
-        return observation
+        savedID = observation.id
+        return observation.id
     }
 }

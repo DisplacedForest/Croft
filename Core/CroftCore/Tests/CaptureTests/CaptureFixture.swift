@@ -12,10 +12,16 @@ struct CaptureFixture {
     let cultivar: Cultivar
     let species: Species
 
-    init(knowledge: AppDatabase? = nil) throws {
+    init(knowledge: AppDatabase? = nil, brokenPhotoStore: Bool = false) throws {
         let personal = try AppDatabase.inMemory()
-        let photoBase = FileManager.default.temporaryDirectory
+        var photoBase = FileManager.default.temporaryDirectory
             .appendingPathComponent("capture-photos-\(UUID().uuidString)", isDirectory: true)
+        if brokenPhotoStore {
+            let blocker = FileManager.default.temporaryDirectory
+                .appendingPathComponent("capture-blocker-\(UUID().uuidString)")
+            try Data().write(to: blocker)
+            photoBase = blocker.appendingPathComponent("nested", isDirectory: true)
+        }
         let suite = UserDefaults(suiteName: "capture-tests-\(UUID().uuidString)")!
         context = CaptureContext(
             personal: personal,

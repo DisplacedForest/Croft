@@ -32,7 +32,7 @@ public final class AddSeedLotForm {
             validationMessage = "Pick a cultivar first."
             throw CaptureValidationError.incomplete
         }
-        try context.adopter.adopt(.cultivar(cultivarID))
+        let receipt = try context.adopter.adopt(.cultivar(cultivarID))
         let trimmedSource = source.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedQuantity = quantityText.trimmingCharacters(in: .whitespacesAndNewlines)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -44,7 +44,13 @@ public final class AddSeedLotForm {
             seedCount: Int(seedCountText),
             notes: trimmedNotes.isEmpty ? nil : trimmedNotes
         )
-        try context.seedLots.insert(lot)
+        do {
+            try context.seedLots.insert(lot)
+        } catch {
+            context.adopter.undo(receipt)
+            validationMessage = "Couldn't save the seed lot. Try again."
+            throw error
+        }
         return lot
     }
 }

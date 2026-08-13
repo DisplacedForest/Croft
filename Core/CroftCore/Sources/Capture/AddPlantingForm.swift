@@ -35,10 +35,10 @@ public final class AddPlantingForm {
             validationMessage = "Pick a plant and a bed first."
             throw CaptureValidationError.incomplete
         }
-        let adopted = try context.adopter.adopt(identity)
+        let receipt = try context.adopter.adopt(identity)
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
         let planting = Planting(
-            identity: adopted,
+            identity: identity,
             bedID: bedID,
             source: source,
             plantedOn: plantedOn,
@@ -46,7 +46,13 @@ public final class AddPlantingForm {
             status: .active,
             notes: trimmed.isEmpty ? nil : trimmed
         )
-        try context.plantings.insert(planting)
+        do {
+            try context.plantings.insert(planting)
+        } catch {
+            context.adopter.undo(receipt)
+            validationMessage = "Couldn't save the planting. Try again."
+            throw error
+        }
         context.defaults.lastBedID = bedID
         return planting
     }

@@ -78,13 +78,66 @@ struct AddPlantingFormTests {
     }
 
     @Test func anUnknownIdentityFailsWithoutHalfWrites() throws {
-        let fixture = try CaptureFixture()
+        let (knowledge, _) = try CaptureFixture.knowledgeDatabase()
+        let fixture = try CaptureFixture(knowledge: knowledge)
+        let personal = fixture.context.personal
+        let familiesBefore = try PlantFamilyRepository(personal).fetchAll().count
+        let generaBefore = try GenusRepository(personal).fetchAll().count
+        let speciesBefore = try SpeciesRepository(personal).fetchAll().count
+        let cultivarsBefore = try CultivarRepository(personal).fetchAll().count
         let form = AddPlantingForm(context: fixture.context, bedID: fixture.bed.id)
         form.identity = .cultivar(Cultivar.ID(rawValue: "cultivar:missing/ghost"))
         #expect(throws: PlantAdoptionError.self) {
             try form.save()
         }
         #expect(try fixture.context.plantings.fetchAll().isEmpty)
+        #expect(try PlantFamilyRepository(personal).fetchAll().count == familiesBefore)
+        #expect(try GenusRepository(personal).fetchAll().count == generaBefore)
+        #expect(try SpeciesRepository(personal).fetchAll().count == speciesBefore)
+        #expect(try CultivarRepository(personal).fetchAll().count == cultivarsBefore)
+    }
+
+    @Test func aFailedPlantingInsertRollsBackTheAdoptedChain() throws {
+        let (knowledge, knowledgeCultivar) = try CaptureFixture.knowledgeDatabase()
+        let fixture = try CaptureFixture(knowledge: knowledge)
+        let personal = fixture.context.personal
+        let form = AddPlantingForm(
+            context: fixture.context, bedID: Bed.ID(rawValue: "bed:missing"))
+        form.identity = .cultivar(knowledgeCultivar.id)
+        #expect(throws: (any Error).self) {
+            try form.save()
+        }
+        #expect(form.validationMessage != nil)
+        #expect(try fixture.context.plantings.fetchAll().isEmpty)
+        #expect(try CultivarRepository(personal).fetch(id: knowledgeCultivar.id) == nil)
+        #expect(
+            try SpeciesRepository(personal).fetch(id: knowledgeCultivar.speciesID) == nil)
+        #expect(
+            try GenusRepository(personal).fetch(id: Genus.ID(rawValue: "genus:lactuca")) == nil)
+        #expect(
+            try PlantFamilyRepository(personal)
+                .fetch(id: PlantFamily.ID(rawValue: "family:asteraceae")) == nil)
+
+        form.bedID = fixture.bed.id
+        let planting = try form.save()
+        #expect(try fixture.context.plantings.fetch(id: planting.id) != nil)
+        #expect(try CultivarRepository(personal).fetch(id: knowledgeCultivar.id) != nil)
+    }
+
+    @Test func adoptionNeverDeletesPreexistingPersonalRows() throws {
+        let (knowledge, knowledgeCultivar) = try CaptureFixture.knowledgeDatabase()
+        let fixture = try CaptureFixture(knowledge: knowledge)
+        let personal = fixture.context.personal
+        _ = try fixture.context.adopter.adopt(.species(knowledgeCultivar.speciesID))
+        let form = AddPlantingForm(
+            context: fixture.context, bedID: Bed.ID(rawValue: "bed:missing"))
+        form.identity = .cultivar(knowledgeCultivar.id)
+        #expect(throws: (any Error).self) {
+            try form.save()
+        }
+        #expect(try CultivarRepository(personal).fetch(id: knowledgeCultivar.id) == nil)
+        #expect(
+            try SpeciesRepository(personal).fetch(id: knowledgeCultivar.speciesID) != nil)
     }
 
     @Test func abandoningAFormWritesNothing() throws {
@@ -135,6 +188,37 @@ struct LogObservationFormTests {
         form.photos = [Data([0xFF, 0xD8, 0xFF, 0xE0]), Data([0x89, 0x50, 0x4E, 0x47])]
         let saved = try form.save()
         #expect(try fixture.context.observations.photos(for: saved.id).count == 2)
+    }
+
+    @Test func aPhotoFailureNeverDuplicatesTheObservationOnRetry() throws {
+        let fixture = try CaptureFixture(brokenPhotoStore: true)
+        let form = LogObservationForm(
+            context: fixture.context, target: .bed(fixture.bed.id))
+        form.notes = "hornworm frass on lower leaves"
+        form.photos = [Data([0xFF, 0xD8])]
+        #expect(throws: (any Error).self) {
+            try form.save()
+        }
+        #expect(form.validationMessage != nil)
+        #expect(try fixture.context.observations.fetchAll().count == 1)
+        #expect(throws: (any Error).self) {
+            try form.save()
+        }
+        #expect(try fixture.context.observations.fetchAll().count == 1)
+    }
+
+    @Test func aRetryAfterPhotoFailureAttachesOnlyTheMissingPhotos() throws {
+        let fixture = try CaptureFixture()
+        let form = LogObservationForm(
+            context: fixture.context, target: .bed(fixture.bed.id))
+        form.notes = "flowering"
+        form.photos = [Data([0x01])]
+        let first = try form.save()
+        form.photos.append(Data([0x02]))
+        let second = try form.save()
+        #expect(first.id == second.id)
+        #expect(try fixture.context.observations.fetchAll().count == 1)
+        #expect(try fixture.context.observations.photos(for: first.id).count == 2)
     }
 
     @Test func theObservedDateDefaultsToNow() throws {
