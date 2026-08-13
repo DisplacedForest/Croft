@@ -71,13 +71,22 @@ struct ImageValidationTests {
         }
     }
 
-    @Test(arguments: ["artist", "license_url"])
-    func aNullOptionalFieldFailsTheImport(field: String) throws {
-        let original = ImageFieldCase.all.first { $0.field == field }
-        let json = try #require(original?.json)
-        let key = String(json.split(separator: ":")[0])
-        let fixture = try fixture(replacing: json, with: "\(key): null")
-        #expect(throws: ImportError.invalidImageField(slug: "tomato", field: field)) {
+    @Test(arguments: ImageFieldCase.all)
+    func aNullRequiredFieldFailsTheImportWithTheFieldName(field: ImageFieldCase) throws {
+        let key = String(field.json.split(separator: ":")[0])
+        let fixture = try fixture(replacing: field.json, with: "\(key): null")
+        #expect(throws: ImportError.invalidImageField(slug: "tomato", field: field.field)) {
+            try fixture.build()
+        }
+    }
+
+    @Test func anUnreadableImagesDirectoryFailsTheImport() throws {
+        let fixture = try fixture()
+        try FileManager.default.removeItem(at: fixture.imagesDirectory)
+        #expect(
+            throws: ImportError.missingImageDirectory(
+                fixture.imagesDirectory.lastPathComponent)
+        ) {
             try fixture.build()
         }
     }

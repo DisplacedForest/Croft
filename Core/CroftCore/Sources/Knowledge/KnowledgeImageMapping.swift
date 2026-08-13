@@ -49,17 +49,22 @@ extension KnowledgeImporter {
                     throw ImportError.invalidImageField(slug: image.slug, field: field)
                 }
             }
-            guard Self.allowedImageLicenses.contains(image.license) else {
+            guard let license = image.license, Self.allowedImageLicenses.contains(license)
+            else {
                 throw ImportError.disallowedImageLicense(
-                    slug: image.slug, license: image.license)
+                    slug: image.slug, license: image.license ?? "")
             }
         }
     }
 
     func verifyNoOrphanImages(_ manifest: PlantImagesFile, in directory: URL) throws {
-        let referenced = Set(manifest.images.map(\.file))
-        let contents =
-            (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
+        let referenced = Set(manifest.images.compactMap(\.file))
+        let contents: [String]
+        do {
+            contents = try FileManager.default.contentsOfDirectory(atPath: directory.path)
+        } catch {
+            throw ImportError.missingImageDirectory(directory.lastPathComponent)
+        }
         for name in contents.sorted() where !name.hasPrefix(".") {
             guard referenced.contains(name) else {
                 throw ImportError.orphanImageFile(name)
@@ -72,18 +77,21 @@ extension KnowledgeImporter {
             throw ImportError.missingImageDirectory(Self.plantImagesFile)
         }
         try validateImageRecords(manifest)
+        try verifyNoOrphanImages(manifest, in: imagesDirectory)
         for image in manifest.images {
-            let url = imagesDirectory.appendingPathComponent(image.file)
+            guard let file = image.file, let sha256 = image.sha256 else {
+                throw ImportError.invalidImageField(slug: image.slug, field: "file")
+            }
+            let url = imagesDirectory.appendingPathComponent(file)
             guard let data = try? Data(contentsOf: url) else {
-                throw ImportError.missingImageFile(image.file)
+                throw ImportError.missingImageFile(file)
             }
             let actual = InputsLock.checksum(of: data)
-            guard actual == image.sha256.lowercased() else {
+            guard actual == sha256.lowercased() else {
                 throw ImportError.checksumMismatch(
-                    file: image.file, expected: image.sha256, actual: actual)
+                    file: file, expected: sha256, actual: actual)
             }
         }
-        try verifyNoOrphanImages(manifest, in: imagesDirectory)
     }
 }
 
@@ -111,9 +119,14 @@ extension KnowledgeMapper {
             owners["cultivar:\(crop)/\(leaf)"] = cultivar.id.rawValue
         }
         for image in manifest.images {
+            guard let file = image.file, let sha256 = image.sha256, let license = image.license,
+                let sourcePage = image.sourcePageURL, let sourceFile = image.sourceFileURL
+            else {
+                throw ImportError.invalidImageField(slug: image.slug, field: "file")
+            }
             let key = "\(image.ownerKind.rawValue):\(image.slug)"
             guard let ownerID = owners[key] else {
-                throw ImportError.unknownImageOwner(file: image.file, slug: image.slug)
+                throw ImportError.unknownImageOwner(file: file, slug: image.slug)
             }
             mapped.images.append(
                 MappedImage(
@@ -121,13 +134,13 @@ extension KnowledgeMapper {
                     ownerID: ownerID,
                     relatedID: nil,
                     kind: image.kind,
-                    file: image.file,
-                    sha256: image.sha256.lowercased(),
-                    license: image.license,
+                    file: file,
+                    sha256: sha256.lowercased(),
+                    license: license,
                     licenseURL: image.licenseURL,
                     artist: image.artist,
-                    sourcePageURL: image.sourcePageURL,
-                    sourceFileURL: image.sourceFileURL
+                    sourcePageURL: sourcePage,
+                    sourceFileURL: sourceFile
                 ))
         }
         mapped.images.sort { $0.sortKey < $1.sortKey }

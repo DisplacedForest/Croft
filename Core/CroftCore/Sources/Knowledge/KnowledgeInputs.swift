@@ -135,12 +135,12 @@ public struct PlantImageInput: Decodable, Sendable {
     public let slug: String
     public let ownerKind: OwnerKind
     public let kind: String
-    public let file: String
-    public let sha256: String
+    public let file: String?
+    public let sha256: String?
     public let sourceTitle: String?
-    public let sourcePageURL: String
-    public let sourceFileURL: String
-    public let license: String
+    public let sourcePageURL: String?
+    public let sourceFileURL: String?
+    public let license: String?
     public let licenseURL: String?
     public let artist: String?
 
