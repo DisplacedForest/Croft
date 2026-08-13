@@ -152,9 +152,19 @@ struct ObservationPhotoSweepTests {
         try fixture.observations.insert(observation)
         let referenced = try fixture.observations.addPhoto(photoData, to: observation.id)
         let stray = try fixture.writeStrayFile(named: "leftover", for: observation.id)
-        try fixture.observations.sweepOrphanedPhotos()
+        try fixture.observations.sweepOrphanedPhotos(graceInterval: 0)
         #expect(try fixture.fileExists(referenced))
         #expect(!FileManager.default.fileExists(atPath: stray.path))
+    }
+
+    @Test func aFreshUnreferencedFileSurvivesTheGracePeriod() throws {
+        let fixture = try ObservationFixture()
+        let observation = fixture.observation()
+        try fixture.observations.insert(observation)
+        _ = try fixture.observations.addPhoto(photoData, to: observation.id)
+        let stray = try fixture.writeStrayFile(named: "arriving", for: observation.id)
+        try fixture.observations.sweepOrphanedPhotos()
+        #expect(FileManager.default.fileExists(atPath: stray.path))
     }
 
     @Test func aLiveObservationWithoutRowsLosesEveryFile() throws {
@@ -162,7 +172,7 @@ struct ObservationPhotoSweepTests {
         let observation = fixture.observation()
         try fixture.observations.insert(observation)
         let stray = try fixture.writeStrayFile(named: "leftover", for: observation.id)
-        try fixture.observations.sweepOrphanedPhotos()
+        try fixture.observations.sweepOrphanedPhotos(graceInterval: 0)
         #expect(!FileManager.default.fileExists(atPath: stray.path))
         #expect(
             FileManager.default.fileExists(atPath: fixture.directory(for: observation.id).path))

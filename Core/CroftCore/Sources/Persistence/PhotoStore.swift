@@ -35,15 +35,23 @@ public struct PhotoStore: Sendable {
         try FileManager.default.removeItem(at: directory)
     }
 
-    public func sweepFiles(forObservation id: Observation.ID, keeping paths: Set<String>) throws {
+    public func sweepFiles(
+        forObservation id: Observation.ID,
+        keeping paths: Set<String>,
+        modifiedBefore cutoff: Date
+    ) throws {
         let directory = try directory(forObservation: id)
         guard FileManager.default.fileExists(atPath: directory.path) else {
             return
         }
         let kept = Set(try paths.map { try url(forRelativePath: $0).standardizedFileURL.path })
         let entries = try FileManager.default.contentsOfDirectory(
-            at: directory, includingPropertiesForKeys: nil)
+            at: directory, includingPropertiesForKeys: [.contentModificationDateKey])
         for entry in entries where !kept.contains(entry.standardizedFileURL.path) {
+            let values = try entry.resourceValues(forKeys: [.contentModificationDateKey])
+            guard let modified = values.contentModificationDate, modified < cutoff else {
+                continue
+            }
             try FileManager.default.removeItem(at: entry)
         }
     }

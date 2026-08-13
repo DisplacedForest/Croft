@@ -124,7 +124,8 @@ public struct ObservationRepository: Sendable {
         return deleted
     }
 
-    public func sweepOrphanedPhotos() throws {
+    public func sweepOrphanedPhotos(graceInterval: TimeInterval = 3600) throws {
+        let cutoff = Date(timeIntervalSinceNow: -graceInterval)
         let referenced = try writer.read { db -> [String: Set<String>] in
             let ids = try String.fetchAll(db, sql: "SELECT id FROM observation")
             let paths = try Self.photoPaths(for: ids, in: db)
@@ -132,7 +133,9 @@ public struct ObservationRepository: Sendable {
         }
         for (id, paths) in referenced {
             try photoStore.sweepFiles(
-                forObservation: Observation.ID(rawValue: id), keeping: paths)
+                forObservation: Observation.ID(rawValue: id),
+                keeping: paths,
+                modifiedBefore: cutoff)
         }
         let candidates = try photoStore.orphanedIdentifiers(keeping: Set(referenced.keys))
         for candidate in candidates {
