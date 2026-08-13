@@ -3,16 +3,16 @@ import Testing
 
 @testable import Design
 
-private let domainTokens = [
-    "DomainGarden",
-    "DomainAnimals",
-    "DomainHealth",
-    "DomainWater",
+private let domainTokens: [ColorToken] = [
+    .domainGarden,
+    .domainAnimals,
+    .domainHealth,
+    .domainWater,
 ]
 
-private let surfaceTokens = [
-    "SurfacePrimary",
-    "SurfaceSecondary",
+private let surfaceTokens: [ColorToken] = [
+    .surfacePrimary,
+    .surfaceSecondary,
 ]
 
 private struct RGB {
@@ -49,19 +49,28 @@ private struct Components: Decodable {
     let blue: String
 }
 
-private let catalogURL = URL(fileURLWithPath: #filePath)
+private let packageURL = URL(fileURLWithPath: #filePath)
     .deletingLastPathComponent()
     .deletingLastPathComponent()
     .deletingLastPathComponent()
+
+private let catalogURL =
+    packageURL
     .appendingPathComponent("Sources")
     .appendingPathComponent("Design")
     .appendingPathComponent("Colors.xcassets")
 
-private func resolve(_ name: String, dark: Bool) throws -> RGB {
-    let url =
-        catalogURL
-        .appendingPathComponent("\(name).colorset")
-        .appendingPathComponent("Contents.json")
+private let accentColorURL =
+    packageURL
+    .deletingLastPathComponent()
+    .deletingLastPathComponent()
+    .appendingPathComponent("App")
+    .appendingPathComponent("Shared")
+    .appendingPathComponent("Assets.xcassets")
+    .appendingPathComponent("AccentColor.colorset")
+    .appendingPathComponent("Contents.json")
+
+private func resolve(_ url: URL, dark: Bool) throws -> RGB {
     let catalog = try JSONDecoder().decode(Catalog.self, from: Data(contentsOf: url))
     let entry = try #require(catalog.colors.first { $0.isDark == dark })
     let components = entry.color.components
@@ -69,6 +78,14 @@ private func resolve(_ name: String, dark: Bool) throws -> RGB {
     let green = try #require(Double(components.green))
     let blue = try #require(Double(components.blue))
     return RGB(red: red, green: green, blue: blue)
+}
+
+private func resolve(_ token: ColorToken, dark: Bool) throws -> RGB {
+    let url =
+        catalogURL
+        .appendingPathComponent("\(token.rawValue).colorset")
+        .appendingPathComponent("Contents.json")
+    return try resolve(url, dark: dark)
 }
 
 private func luminance(_ rgb: RGB) -> Double {
@@ -92,10 +109,16 @@ private func composite(_ tint: RGB, over base: RGB, opacity: Double) -> RGB {
     )
 }
 
-@Test(arguments: domainTokens + surfaceTokens)
-func tokenDefinesBothAppearances(name: String) throws {
-    let light = try resolve(name, dark: false)
-    let dark = try resolve(name, dark: true)
+@Test(arguments: ColorToken.allCases)
+func tokenHasColorsetInCatalog(token: ColorToken) {
+    let url = catalogURL.appendingPathComponent("\(token.rawValue).colorset")
+    #expect(FileManager.default.fileExists(atPath: url.path))
+}
+
+@Test(arguments: ColorToken.allCases)
+func tokenDefinesBothAppearances(token: ColorToken) throws {
+    let light = try resolve(token, dark: false)
+    let dark = try resolve(token, dark: true)
     let differs =
         abs(light.red - dark.red) > 0.001
         || abs(light.green - dark.green) > 0.001
@@ -104,31 +127,31 @@ func tokenDefinesBothAppearances(name: String) throws {
 }
 
 @Test(arguments: domainTokens)
-func textOnTintedSurfaceMeetsContrast(name: String) throws {
-    let black = RGB(red: 0, green: 0, blue: 0)
-    let white = RGB(red: 1, green: 1, blue: 1)
-
-    let lightBlend = composite(
-        try resolve(name, dark: false),
-        over: try resolve("SurfacePrimary", dark: false),
-        opacity: 0.12
-    )
-    #expect(contrast(lightBlend, black) >= 4.5)
-
-    let darkBlend = composite(
-        try resolve(name, dark: true),
-        over: try resolve("SurfacePrimary", dark: true),
-        opacity: 0.12
-    )
-    #expect(contrast(darkBlend, white) >= 4.5)
+func tintOverOwnTintedCircleMeetsContrast(token: ColorToken) throws {
+    for dark in [false, true] {
+        let tint = try resolve(token, dark: dark)
+        let surface = try resolve(.surfacePrimary, dark: dark)
+        let circle = composite(tint, over: surface, opacity: 0.12)
+        #expect(contrast(tint, circle) >= 4.5)
+    }
 }
 
 @Test(arguments: surfaceTokens)
-func surfaceContrastsWithPrimaryText(name: String) throws {
+func surfaceContrastsWithPrimaryText(token: ColorToken) throws {
     let black = RGB(red: 0, green: 0, blue: 0)
     let white = RGB(red: 1, green: 1, blue: 1)
-    let light = try resolve(name, dark: false)
+    let light = try resolve(token, dark: false)
     #expect(contrast(light, black) >= 4.5)
-    let dark = try resolve(name, dark: true)
+    let dark = try resolve(token, dark: true)
     #expect(contrast(dark, white) >= 4.5)
+}
+
+@Test func accentColorMatchesGardenToken() throws {
+    for dark in [false, true] {
+        let accent = try resolve(accentColorURL, dark: dark)
+        let garden = try resolve(.domainGarden, dark: dark)
+        #expect(abs(accent.red - garden.red) < 0.001)
+        #expect(abs(accent.green - garden.green) < 0.001)
+        #expect(abs(accent.blue - garden.blue) < 0.001)
+    }
 }
