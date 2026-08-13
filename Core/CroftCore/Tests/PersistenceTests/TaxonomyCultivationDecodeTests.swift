@@ -92,6 +92,17 @@ struct TaxonomyCultivationDecodeTests {
         }
     }
 
+    @Test(arguments: ["planting_seasons", "seed_preps", "seed_types"])
+    func malformedCultivarListJSONFailsFetch(column: String) throws {
+        let context = try CorruptibleTaxonomy()
+        try context.corruptCultivar("\(column) = 'not json'")
+        #expect(
+            throws: TaxonomyCodingError.malformedList(table: "cultivar", column: column)
+        ) {
+            try CultivarRepository(context.database).fetch(id: context.cultivar.id)
+        }
+    }
+
     @Test func cultivationProfileRoundTripsThroughStorage() throws {
         let context = try CorruptibleTaxonomy()
         let repository = SpeciesRepository(context.database)

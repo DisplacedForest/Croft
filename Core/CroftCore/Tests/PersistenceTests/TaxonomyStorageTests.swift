@@ -5,7 +5,7 @@ import Testing
 @testable import Persistence
 
 private let taxonomyIdentifier = "v003-taxonomy"
-private let cultivationProfilePredecessor = "v008-seed-lots"
+private let cultivationProfilePredecessor = "v009-plantings"
 
 private struct SeededTaxonomy {
     let database: AppDatabase
@@ -323,8 +323,30 @@ struct CultivationProfileMigrationTests {
                     VALUES ('c1', 's1', 'San Marzano', '["roma"]', 75, 90, 'vine')
                     """
             )
+            try db.execute(
+                sql: """
+                    INSERT INTO seed_lot (id, cultivar_id, source)
+                    VALUES ('sl1', 'c1', 'saved seed')
+                    """
+            )
         }
         return queue
+    }
+
+    @Test func foreignKeyReferencesSurviveTheRebuild() throws {
+        let queue = try seededQueue()
+        try MigrationHarness.migrateToHead(queue)
+        let violations = try queue.read { db in
+            try Row.fetchAll(db, sql: "PRAGMA foreign_key_check")
+        }
+        #expect(violations.isEmpty)
+        let source = try queue.read { db in
+            try String.fetchOne(
+                db,
+                sql: "SELECT source FROM seed_lot WHERE cultivar_id = 'c1'"
+            )
+        }
+        #expect(source == "saved seed")
     }
 
     @Test func speciesRowsSurviveTheCultivationProfileRebuild() throws {
