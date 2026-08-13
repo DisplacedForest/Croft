@@ -85,7 +85,7 @@ private struct PlantPageContent: View {
     }
 
     private var otherNames: [String] {
-        page.commonNames.filter { $0 != page.displayName }
+        page.commonNames.filter { $0.caseInsensitiveCompare(page.displayName) != .orderedSame }
     }
 
     private var conditionsSection: some View {
