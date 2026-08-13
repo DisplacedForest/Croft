@@ -93,6 +93,31 @@ targets:
             exit 1
           fi
         basedOnDependencyAnalysis: false
+  AppSurfaceTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - App/AppSurfaceTests
+      - App/Shared
+      - path: App/Shared/Resources
+        buildPhase: resources
+        optional: true
+        createIntermediateGroups: true
+    dependencies:
+      - package: CroftCore
+        products:
+          - Domain
+          - Persistence
+          - Graph
+          - Knowledge
+          - GardenModel
+          - Design
+          - PlantCatalog
+          - Today
+          - Capture
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
   DesignRuntimeTests:
     type: bundle.unit-test
     platform: macOS
@@ -125,6 +150,7 @@ schemes:
     test:
       targets:
         - DesignRuntimeTests
+        - AppSurfaceTests
   Croft-iOS:
     build:
       targets:

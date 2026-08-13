@@ -9,6 +9,7 @@ struct BedDetailView: View {
     let navigate: (SectionRoute) -> Void
 
     var body: some View {
+        let capture = capture
         if let detail = store.bedDetail(bedID) {
             ScrollView {
                 VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
@@ -30,6 +31,7 @@ struct BedDetailView: View {
                 }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
             }
+
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
