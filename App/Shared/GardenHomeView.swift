@@ -150,7 +150,9 @@ struct GardenHomeView: View {
 
     private func bedGrid(_ beds: [BedSummary], parent: BedParent) -> some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 230), spacing: CroftTheme.space(4))],
+            columns: [
+                GridItem(.adaptive(minimum: 230, maximum: 320), spacing: CroftTheme.space(4))
+            ],
             alignment: .leading,
             spacing: CroftTheme.space(4)
         ) {
