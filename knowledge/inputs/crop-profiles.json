@@ -1,0 +1,972 @@
+{
+  "meta": {
+    "name": "crop-profiles",
+    "version": "0.1.0",
+    "generated": "2026-08-12",
+    "provenance": "Species-level growing profiles authored from university extension tables (UC Davis/Harrington germination table via UC Master Gardener Program, Clemson HGIC, UMD, Utah State, Illinois, NC State, UMaine) and Johnny's grower's library; per-row citations.",
+    "notes": [
+      "Germination temps follow the Harrington (UC Davis) table; germination_days_typical is at optimal temperature.",
+      "soil_temp_transplant_min_f is table-sourced for warm-season fruiting crops; the 45F values on cole crops, alliums, and greens are horticultural consensus.",
+      "days_to_maturity_basis states each crop's catalog counting convention (from seed vs from transplant).",
+      "Perennials (strawberry, rhubarb, raspberry) and garlic describe establishment period instead of days to maturity.",
+      "squash is split into summer-squash and winter-squash; winter-squash latin_name is a compound because species varies by type.",
+      "Joins: cultivar-catalog.json and pest-disease-cultivar-seed.json on crop (map their \"squash\" to summer- or winter-squash by context; \"pumpkin\" uses winter-squash timing)."
+    ]
+  },
+  "crops": [
+    {
+      "crop": "tomato",
+      "latin_name": "Solanum lycopersicum",
+      "family": "Solanaceae (nightshade)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 50,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "0.25",
+      "spacing_in": {
+        "plant": "18-36",
+        "row": "36-60"
+      },
+      "sowing_method": "transplant",
+      "weeks_indoors_before_transplant": "5-8",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 60,
+      "days_to_maturity_typical_range": "60-90",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-1.5 in/week; steady moisture through fruit set prevents blossom end rot and fruit cracking.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/tomato/"
+      ]
+    },
+    {
+      "crop": "pepper",
+      "latin_name": "Capsicum annuum",
+      "family": "Solanaceae (nightshade)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "70-85",
+        "max": 95
+      },
+      "germination_days_typical": "7-14",
+      "sowing_depth_in": "0.25",
+      "spacing_in": {
+        "plant": "12-18",
+        "row": "24-36"
+      },
+      "sowing_method": "transplant",
+      "weeks_indoors_before_transplant": "6-8",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 65,
+      "days_to_maturity_typical_range": "60-90",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-1.5 in/week; drought stress at flowering causes blossom drop, so keep moisture even.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/pepper/"
+      ]
+    },
+    {
+      "crop": "eggplant",
+      "latin_name": "Solanum melongena",
+      "family": "Solanaceae (nightshade)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "75-85",
+        "max": 95
+      },
+      "germination_days_typical": "7-14",
+      "sowing_depth_in": "0.25",
+      "spacing_in": {
+        "plant": "18-30",
+        "row": "30-48"
+      },
+      "sowing_method": "transplant",
+      "weeks_indoors_before_transplant": "6-8",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 65,
+      "days_to_maturity_typical_range": "65-80",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "6.2-6.8",
+      "water_needs_note": "1-1.5 in/week to 6 in depth; most critical during fruit set and sizing.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/eggplant/"
+      ]
+    },
+    {
+      "crop": "potato",
+      "latin_name": "Solanum tuberosum",
+      "family": "Solanaceae (nightshade)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": null,
+        "optimal": null,
+        "max": null
+      },
+      "germination_days_typical": null,
+      "sowing_depth_in": "3-5",
+      "spacing_in": {
+        "plant": "8-12",
+        "row": "30-36"
+      },
+      "sowing_method": "sets/cloves/crowns",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "half-hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "70-120",
+      "days_to_maturity_basis": "from planting seed tubers; early/mid/late season varieties span this range",
+      "ph_range": "5.8-6.5",
+      "water_needs_note": "1-2 in/week, most critical during tuber set and bulking; hold pH near 5.0-5.3 if scab is a problem.",
+      "life_cycle": "perennial grown as annual",
+      "citations": [
+        "https://hgic.clemson.edu/factsheet/potato/"
+      ]
+    },
+    {
+      "crop": "cucumber",
+      "latin_name": "Cucumis sativus",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "65-95",
+        "max": 105
+      },
+      "germination_days_typical": "3-7",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "8-12",
+        "row": "36-60"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "3-4",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 65,
+      "days_to_maturity_typical_range": "50-70",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-1.5 in/week; uneven moisture at fruit set gives bitter, misshapen fruit.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/cucumber/"
+      ]
+    },
+    {
+      "crop": "summer-squash",
+      "latin_name": "Cucurbita pepo",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "85-95",
+        "max": 105
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "12-24",
+        "row": "36-72"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "2-3",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 60,
+      "days_to_maturity_typical_range": "50-65",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "5.8-6.8",
+      "water_needs_note": "1-1.5 in/week; water in the morning at the base so leaves dry, which slows powdery mildew.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/summer-squash/"
+      ]
+    },
+    {
+      "crop": "winter-squash",
+      "latin_name": "Cucurbita maxima / C. moschata / C. pepo (species varies by type: buttercup and Hubbard are C. maxima, butternut is C. moschata, acorn and delicata are C. pepo)",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "85-95",
+        "max": 105
+      },
+      "germination_days_typical": "6-10",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "18-48",
+        "row": "48-144"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "3",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 62,
+      "days_to_maturity_typical_range": "80-100",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-1.5 in/week during vining and fruit set, then taper off near harvest so fruit cures for storage.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/pumpkins-winter-squash/"
+      ]
+    },
+    {
+      "crop": "melon",
+      "latin_name": "Cucumis melo",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "75-85",
+        "max": 105
+      },
+      "germination_days_typical": "4-8",
+      "sowing_depth_in": "0.5-0.75",
+      "spacing_in": {
+        "plant": "18-24",
+        "row": "72-96"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "3-4",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 65,
+      "days_to_maturity_typical_range": "70-90",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-1.5 in/week through fruit set, then ease off as fruit ripens to concentrate sugars.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/cantaloupe-honeydew-melons/"
+      ]
+    },
+    {
+      "crop": "pumpkin",
+      "latin_name": "Cucurbita pepo (also C. maxima and C. moschata depending on type)",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "85-95",
+        "max": 105
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "36-72",
+        "row": "96-144"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "2-3",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 60,
+      "days_to_maturity_typical_range": "90-120",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "5.8-6.8",
+      "water_needs_note": "Deep watering at the base, more often once fruit sets; keep foliage dry.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-pumpkins-home-garden"
+      ]
+    },
+    {
+      "crop": "watermelon",
+      "latin_name": "Citrullus lanatus",
+      "family": "Cucurbitaceae (gourd)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "75-95",
+        "max": 105
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "1",
+      "spacing_in": {
+        "plant": "36-72",
+        "row": "72-96"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "2-4",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 65,
+      "days_to_maturity_typical_range": "80-100",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-2 in/week by drip or soaker through fruit development; reduce as melons ripen.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/watermelons/"
+      ]
+    },
+    {
+      "crop": "bean",
+      "latin_name": "Phaseolus vulgaris",
+      "family": "Fabaceae (legume)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "75-85",
+        "max": 95
+      },
+      "germination_days_typical": "6-10",
+      "sowing_depth_in": "1",
+      "spacing_in": {
+        "plant": "2-4",
+        "row": "18-30"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "50-60",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "5.8-6.5",
+      "water_needs_note": "Water deeply rather than often, and step it up once pods start filling.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/bush-pole-type-snap-beans/"
+      ]
+    },
+    {
+      "crop": "pea",
+      "latin_name": "Pisum sativum",
+      "family": "Fabaceae (legume)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-75",
+        "max": 85
+      },
+      "germination_days_typical": "7-14",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "1-3",
+        "row": "18-36"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "50-70",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "Keep the root zone moist once pods form, but avoid waterlogged soil at sowing.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-green-peas-home-garden"
+      ]
+    },
+    {
+      "crop": "corn",
+      "latin_name": "Zea mays var. rugosa",
+      "family": "Poaceae (grass)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 50,
+        "optimal": "65-95",
+        "max": 105
+      },
+      "germination_days_typical": "5-8",
+      "sowing_depth_in": "1-1.5",
+      "spacing_in": {
+        "plant": "8-12",
+        "row": "30-36"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "65-95",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.5",
+      "water_needs_note": "At least 1 in/week, and never let it dry out during silking and ear fill.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://hgic.clemson.edu/factsheet/sweet-corn/"
+      ]
+    },
+    {
+      "crop": "cabbage",
+      "latin_name": "Brassica oleracea var. capitata (Capitata Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "60-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-7",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "12-18",
+        "row": "30-36"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "4-6",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "60-90",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "5.8-6.5",
+      "water_needs_note": "Even moisture to 6 in depth; a sudden soaking on dry plants splits heads.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-cabbage-home-garden"
+      ]
+    },
+    {
+      "crop": "broccoli",
+      "latin_name": "Brassica oleracea var. italica (Italica Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "60-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-7",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "16-24",
+        "row": "24-30"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "5-7",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "55-65",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "5.8-6.5",
+      "water_needs_note": "Steady moisture to 6 in depth, more as heads size up; stress causes buttoning.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-broccoli-home-garden"
+      ]
+    },
+    {
+      "crop": "cauliflower",
+      "latin_name": "Brassica oleracea var. botrytis (Botrytis Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-7",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "18-24",
+        "row": "24-36"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "5-7",
+      "frost_tolerance": "half-hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "50-80",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "5.8-6.5",
+      "water_needs_note": "The least forgiving cole crop: any water stress ruins curd quality, so keep soil moist to 6 in.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-cauliflower-home-garden"
+      ]
+    },
+    {
+      "crop": "kale",
+      "latin_name": "Brassica oleracea var. acephala (Acephala Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun to part shade",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "60-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-7",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "8-12",
+        "row": "18-30"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "4-6",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "50-75",
+      "days_to_maturity_basis": "from direct seed (roughly 30-40 days from transplant for full-size leaves)",
+      "ph_range": "6.0-7.5",
+      "water_needs_note": "About 1 in/week; drought makes leaves tough and bitter, and frost improves flavor.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umn.edu/vegetables/growing-collards-and-kale"
+      ]
+    },
+    {
+      "crop": "brussels-sprouts",
+      "latin_name": "Brassica oleracea var. gemmifera (Gemmifera Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "60-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-7",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "18-24",
+        "row": "30-36"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "4-6",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "90-110",
+      "days_to_maturity_basis": "from transplant",
+      "ph_range": "6.0-7.5",
+      "water_needs_note": "Steady 1-2 in/week over a long season; irregular water gives loose, poorly filled sprouts.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://www.johnnyseeds.com/growers-library/vegetables/brussels-sprouts/brussels-sprouts-key-growing-information.html"
+      ]
+    },
+    {
+      "crop": "radish",
+      "latin_name": "Raphanus sativus",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "3-6",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "1-2",
+        "row": "12-18"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "22-30",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-7.0",
+      "water_needs_note": "Keep evenly moist; uneven watering gives pithy, hot, or split roots.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.illinois.edu/gardening/radish"
+      ]
+    },
+    {
+      "crop": "turnip",
+      "latin_name": "Brassica rapa (Rapifera Group)",
+      "family": "Brassicaceae (mustard)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "60-95",
+        "max": 105
+      },
+      "germination_days_typical": "2-5",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "2-4",
+        "row": "12-24"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "30-55",
+      "days_to_maturity_basis": "from direct seed (greens at the low end, roots at the high end)",
+      "ph_range": "6.0-7.5",
+      "water_needs_note": "Even moisture at germination and while roots size up keeps them sweet and crack-free.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.illinois.edu/gardening/turnip"
+      ]
+    },
+    {
+      "crop": "lettuce",
+      "latin_name": "Lactuca sativa",
+      "family": "Asteraceae (aster)",
+      "sun": "full sun to part shade",
+      "germination_soil_temp_f": {
+        "min": 32,
+        "optimal": "60-75",
+        "max": 85
+      },
+      "germination_days_typical": "2-8",
+      "sowing_depth_in": "0.125-0.25",
+      "spacing_in": {
+        "plant": "6-12",
+        "row": "12-18"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "4-6",
+      "frost_tolerance": "half-hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "45-70",
+      "days_to_maturity_basis": "from transplant (about 25-30 days for cut baby leaf from direct seed)",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-2 in/week; shallow roots dry out fast and heat plus drought turns leaves bitter.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.usu.edu/yardandgarden/research/lettuce-in-the-garden"
+      ]
+    },
+    {
+      "crop": "spinach",
+      "latin_name": "Spinacia oleracea",
+      "family": "Amaranthaceae (goosefoot)",
+      "sun": "full sun to part shade",
+      "germination_soil_temp_f": {
+        "min": 32,
+        "optimal": "65-75",
+        "max": 75
+      },
+      "germination_days_typical": "5-9",
+      "sowing_depth_in": "0.5",
+      "spacing_in": {
+        "plant": "3-6",
+        "row": "12-18"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "37-45",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-7.0",
+      "water_needs_note": "1-2 in/week; heat plus dry soil triggers bolting, so sow early and keep it damp.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.usu.edu/yardandgarden/research/spinach-in-the-garden"
+      ]
+    },
+    {
+      "crop": "chard",
+      "latin_name": "Beta vulgaris subsp. vulgaris (Cicla Group)",
+      "family": "Amaranthaceae (goosefoot)",
+      "sun": "full sun to part shade",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "6-12",
+        "row": "12-24"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "3-4",
+      "frost_tolerance": "half-hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "50-60",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-2 in/week; steady moisture keeps stalks tender, and the seedball often sends up several seedlings to thin.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.usu.edu/yardandgarden/research/swiss-chard-in-the-garden"
+      ]
+    },
+    {
+      "crop": "beet",
+      "latin_name": "Beta vulgaris",
+      "family": "Amaranthaceae (goosefoot)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "5-8",
+      "sowing_depth_in": "0.5-1",
+      "spacing_in": {
+        "plant": "3-4",
+        "row": "12-18"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "55-70",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-7.5",
+      "water_needs_note": "About 1 in/week; swings between dry and wet give woody, zoned, or cracked roots.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.illinois.edu/gardening/beet"
+      ]
+    },
+    {
+      "crop": "carrot",
+      "latin_name": "Daucus carota subsp. sativus",
+      "family": "Apiaceae (carrot)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 40,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "7-14",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "1-2",
+        "row": "12-18"
+      },
+      "sowing_method": "direct",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "65-75",
+      "days_to_maturity_basis": "from direct seed",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "Keep the surface damp until emergence, then water evenly; erratic moisture cracks roots.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-carrots-home-garden"
+      ]
+    },
+    {
+      "crop": "onion",
+      "latin_name": "Allium cepa",
+      "family": "Amaryllidaceae (allium)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 32,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "4-10",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "3-4",
+        "row": "12-18"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "6-8",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "85-120",
+      "days_to_maturity_basis": "from direct seed; subtract roughly 10-15 days from transplant, and pick day-length type (long/intermediate/short) to match latitude",
+      "ph_range": "6.0-7.0",
+      "water_needs_note": "About 1 in/week, most critical during bulb enlargement; bulb size tracks water supply.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://content.ces.ncsu.edu/bulb-onions"
+      ]
+    },
+    {
+      "crop": "garlic",
+      "latin_name": "Allium sativum",
+      "family": "Amaryllidaceae (allium)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": null,
+        "optimal": null,
+        "max": null
+      },
+      "germination_days_typical": null,
+      "sowing_depth_in": "2-4",
+      "spacing_in": {
+        "plant": "4-6",
+        "row": "6-12"
+      },
+      "sowing_method": "sets/cloves/crowns",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "240-270",
+      "days_to_maturity_basis": "from fall-planted cloves to the following summer harvest, an overwintered 8-9 month cycle",
+      "ph_range": "6.0-7.0",
+      "water_needs_note": "Consistent moisture through spring bulking, then stop watering the last couple of weeks so bulbs cure.",
+      "life_cycle": "perennial grown as annual",
+      "citations": [
+        "https://extension.umaine.edu/publications/2063e/"
+      ]
+    },
+    {
+      "crop": "leek",
+      "latin_name": "Allium ampeloprasum var. porrum",
+      "family": "Amaryllidaceae (allium)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 32,
+        "optimal": "65-85",
+        "max": 95
+      },
+      "germination_days_typical": "7-14",
+      "sowing_depth_in": "0.25-0.5",
+      "spacing_in": {
+        "plant": "5-6",
+        "row": "12-24"
+      },
+      "sowing_method": "transplant",
+      "weeks_indoors_before_transplant": "10-12",
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": 45,
+      "days_to_maturity_typical_range": "90-120",
+      "days_to_maturity_basis": "from transplant (add 20-30 days if direct seeded)",
+      "ph_range": "6.2-6.8",
+      "water_needs_note": "Shallow-rooted and thirsty; water regularly all season and hill soil up for blanched shanks.",
+      "life_cycle": "biennial grown as annual",
+      "citations": [
+        "https://ucanr.edu/program/uc-master-gardener-program/seed-germination-temperature-and-timing",
+        "https://extension.umd.edu/resource/growing-leeks-home-garden"
+      ]
+    },
+    {
+      "crop": "basil",
+      "latin_name": "Ocimum basilicum",
+      "family": "Lamiaceae (mint)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": 60,
+        "optimal": "70-85",
+        "max": 95
+      },
+      "germination_days_typical": "5-10",
+      "sowing_depth_in": "0.25",
+      "spacing_in": {
+        "plant": "4-8",
+        "row": "18"
+      },
+      "sowing_method": "both",
+      "weeks_indoors_before_transplant": "6",
+      "frost_tolerance": "tender",
+      "soil_temp_transplant_min_f": 60,
+      "days_to_maturity_typical_range": "60-90",
+      "days_to_maturity_basis": "from transplant (about 30 days to first cutting of baby leaf)",
+      "ph_range": "6.0-7.5",
+      "water_needs_note": "Not drought tolerant; keep soil moist but well drained, and pinch flower buds to keep leaves coming.",
+      "life_cycle": "annual",
+      "citations": [
+        "https://www.johnnyseeds.com/growers-library/herbs/basil/basil-key-growing-information.html"
+      ]
+    },
+    {
+      "crop": "strawberry",
+      "latin_name": "Fragaria x ananassa",
+      "family": "Rosaceae (rose)",
+      "sun": "full sun (6+ h), tolerates part shade",
+      "germination_soil_temp_f": {
+        "min": null,
+        "optimal": null,
+        "max": null
+      },
+      "germination_days_typical": null,
+      "sowing_depth_in": "set crowns so the midpoint of the crown sits level with the soil surface, roots straight down",
+      "spacing_in": {
+        "plant": "12-18",
+        "row": "36-48"
+      },
+      "sowing_method": "sets/cloves/crowns",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "no harvest in year 1 for June-bearers (pinch blossoms to establish); first full crop in year 2",
+      "days_to_maturity_basis": "from crowns; establishment year then annual June crop",
+      "ph_range": "6.5-6.8",
+      "water_needs_note": "1-1.5 in/week, especially through flowering and fruit swell; mulch with straw to hold moisture and keep berries clean.",
+      "life_cycle": "perennial",
+      "citations": [
+        "https://www.johnnyseeds.com/growers-library/fruit/strawberries/strawberries-summer-bearing-june-bearing-key-growing-information.html"
+      ]
+    },
+    {
+      "crop": "rhubarb",
+      "latin_name": "Rheum x hybridum",
+      "family": "Polygonaceae (buckwheat)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": null,
+        "optimal": null,
+        "max": null
+      },
+      "germination_days_typical": null,
+      "sowing_depth_in": "1-2",
+      "spacing_in": {
+        "plant": "36-48",
+        "row": "36-48"
+      },
+      "sowing_method": "sets/cloves/crowns",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "no harvest year 1, light harvest year 2, full harvest year 3 onward",
+      "days_to_maturity_basis": "from crowns; 2-3 year establishment before full picking",
+      "ph_range": "5.0-6.8",
+      "water_needs_note": "Reasonably drought tolerant once established, but water deeply in hot dry spells; needs winter chill to break dormancy.",
+      "life_cycle": "perennial",
+      "citations": [
+        "https://extension.umaine.edu/publications/2514e/"
+      ]
+    },
+    {
+      "crop": "raspberry",
+      "latin_name": "Rubus idaeus",
+      "family": "Rosaceae (rose)",
+      "sun": "full sun (6+ h)",
+      "germination_soil_temp_f": {
+        "min": null,
+        "optimal": null,
+        "max": null
+      },
+      "germination_days_typical": null,
+      "sowing_depth_in": "2",
+      "spacing_in": {
+        "plant": "18-36",
+        "row": "72-96"
+      },
+      "sowing_method": "sets/cloves/crowns",
+      "weeks_indoors_before_transplant": null,
+      "frost_tolerance": "hardy",
+      "soil_temp_transplant_min_f": null,
+      "days_to_maturity_typical_range": "no meaningful crop year 1; first real crop year 2 on floricanes",
+      "days_to_maturity_basis": "from dormant canes; summer-bearing types fruit on second-year canes",
+      "ph_range": "6.0-6.8",
+      "water_needs_note": "1-2 in/week during fruit development; shallow roots dislike both drought and standing water.",
+      "life_cycle": "perennial",
+      "citations": [
+        "https://yardandgarden.extension.iastate.edu/article/2013/04-12/raspberry.html"
+      ]
+    }
+  ]
+}

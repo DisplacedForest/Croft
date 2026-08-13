@@ -40,6 +40,7 @@ public enum GraphStore {
         _ type: RelationshipType,
         to target: EntityRef,
         provenance: Provenance = Provenance(),
+        edgeID: String? = nil,
         in db: Database
     ) throws -> Edge {
         let attributed = provenance.source != nil && provenance.sourceType != nil
@@ -50,7 +51,7 @@ public enum GraphStore {
         if effective.confidence == nil, let confidence = type.defaultConfidence {
             effective.confidence = confidence
         }
-        let id = UUID().uuidString
+        let id = edgeID ?? UUID().uuidString
         try db.execute(
             sql: """
                 INSERT INTO relationship

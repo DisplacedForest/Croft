@@ -152,6 +152,7 @@ struct MigrationPreservationTests {
                 "v001-baseline", "v002-graph", "v003-taxonomy", "v004-garden-structure",
                 "v005-pests", "v006-plant-relationships", "v007-diseases",
                 "v008-seed-lots", "v009-plantings", "v010-cultivation-profile",
+                "v011-knowledge-types",
             ])
     }
 
