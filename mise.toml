@@ -43,6 +43,10 @@ run = [
   "swift run --package-path Core/CroftCore -c release knowledge-importer attribution App/Shared/Resources/knowledge.sqlite knowledge/ATTRIBUTION.md",
 ]
 
+[tasks."test-runtime-tokens"]
+depends = ["generate"]
+run = "xcodebuild test -project Croft.xcodeproj -scheme Croft-macOS -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -quiet"
+
 [tasks.build]
 depends = ["knowledge", "generate"]
 run = [
@@ -66,6 +70,7 @@ run = [
 run = [
   "mise run check",
   "mise run build",
+  "mise run test-runtime-tokens",
 ]
 
 [tasks.security]

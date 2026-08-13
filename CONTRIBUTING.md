@@ -19,7 +19,7 @@ mise run generate
 mise run check
 ```
 
-Formats with swift-format, lints with swift-format and SwiftLint, and runs the package test suite on macOS. Run it green before pushing. CI runs `mise run ci`, which adds the macOS app build. The iOS simulator tests, UI tests, and iOS build stay available on demand as `mise run test-ios`, `mise run test-ui`, `mise run test-all`, and `mise run build-ios`; they rejoin the default pipeline when an iOS release is on deck.
+Formats with swift-format, lints with swift-format and SwiftLint, and runs the package test suite on macOS. Run it green before pushing. CI runs `mise run ci`, which adds the macOS app build and the runtime design-token resolution tests (`mise run test-runtime-tokens`), verifying every color token resolves from the compiled asset catalog. The iOS simulator tests, UI tests, and iOS build stay available on demand as `mise run test-ios`, `mise run test-ui`, `mise run test-all`, and `mise run build-ios`; they rejoin the default pipeline when an iOS release is on deck.
 
 ## Changes
 

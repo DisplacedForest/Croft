@@ -69,6 +69,18 @@ targets:
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1"
+  DesignRuntimeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - App/DesignRuntimeTests
+    dependencies:
+      - package: CroftCore
+        products:
+          - Design
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
   Croft-iOS-UITests:
     type: bundle.ui-testing
     platform: iOS
@@ -86,6 +98,9 @@ schemes:
         Croft-macOS: all
     run:
       config: Debug
+    test:
+      targets:
+        - DesignRuntimeTests
   Croft-iOS:
     build:
       targets:
