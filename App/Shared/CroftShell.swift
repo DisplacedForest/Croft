@@ -2,7 +2,8 @@ import Design
 import SwiftUI
 
 struct CroftShell: View {
-    @State private var selection: AppSection? = .garden
+    @State private var selection: AppSection? = .today
+    @State private var gardenStore = GardenStore.live()
 
     var body: some View {
         #if os(macOS)
@@ -17,7 +18,7 @@ struct CroftShell: View {
                 .navigationSplitViewColumnWidth(min: 180, ideal: 210)
                 .navigationTitle("Croft")
             } detail: {
-                sectionStack(for: selection ?? .garden)
+                sectionStack(for: selection ?? .today)
             }
             .frame(minWidth: 760, minHeight: 520)
         #else
@@ -34,6 +35,7 @@ struct CroftShell: View {
 
     private func sectionStack(for section: AppSection) -> some View {
         SectionStack(section: section)
+            .environment(gardenStore)
             .tint(section.domainColor)
     }
 }
@@ -44,14 +46,24 @@ private struct SectionStack: View {
 
     var body: some View {
         NavigationStack(path: $path) {
+            home
+                .navigationTitle(section.title)
+                .navigationDestination(for: SectionRoute.self) { route in
+                    SectionDetailView(route: route) { next in
+                        path.append(next)
+                    }
+                }
+                .background(Color.surfacePrimary)
+        }
+    }
+
+    @ViewBuilder private var home: some View {
+        if section == .today {
+            TodayView()
+        } else {
             SectionHomeView(section: section) { route in
                 path.append(route)
             }
-            .navigationTitle(section.title)
-            .navigationDestination(for: SectionRoute.self) { route in
-                SectionDetailView(route: route)
-            }
-            .background(Color.surfacePrimary)
         }
     }
 }

@@ -32,12 +32,18 @@ targets:
           - Persistence
           - Graph
           - Knowledge
+          - GardenModel
           - Design
+          - PlantCatalog
+          - Today
     settings:
       base:
         PRODUCT_NAME: Croft
         PRODUCT_BUNDLE_IDENTIFIER: com.displacedforest.croft
         GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_ENTITLEMENTS: App/macOS/Croft.entitlements
+        INFOPLIST_KEY_NSLocationUsageDescription: Croft shows the weather for where your garden grows.
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
   Croft-iOS:
     type: application
     platform: iOS
@@ -55,14 +61,30 @@ targets:
           - Persistence
           - Graph
           - Knowledge
+          - GardenModel
           - Design
+          - PlantCatalog
+          - Today
     settings:
       base:
         PRODUCT_NAME: Croft
         PRODUCT_BUNDLE_IDENTIFIER: com.displacedforest.croft
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         TARGETED_DEVICE_FAMILY: "1"
+  DesignRuntimeTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - App/DesignRuntimeTests
+    dependencies:
+      - package: CroftCore
+        products:
+          - Design
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
   Croft-iOS-UITests:
     type: bundle.ui-testing
     platform: iOS
@@ -80,6 +102,9 @@ schemes:
         Croft-macOS: all
     run:
       config: Debug
+    test:
+      targets:
+        - DesignRuntimeTests
   Croft-iOS:
     build:
       targets:
