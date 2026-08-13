@@ -120,6 +120,55 @@ struct CatalogFixture {
             EntityRef(id: earlyBlight.id.rawValue, type: .disease))
     }
 
+    func createImageTable() throws {
+        try database.writer.write { db in
+            try db.execute(
+                sql: """
+                    CREATE TABLE IF NOT EXISTS knowledge_image (
+                        owner_kind TEXT NOT NULL,
+                        owner_id TEXT NOT NULL,
+                        related_id TEXT,
+                        kind TEXT NOT NULL,
+                        file TEXT NOT NULL,
+                        sha256 TEXT NOT NULL,
+                        license TEXT NOT NULL,
+                        license_url TEXT,
+                        artist TEXT,
+                        source_page_url TEXT NOT NULL,
+                        source_file_url TEXT NOT NULL,
+                        PRIMARY KEY (owner_kind, owner_id, kind, file)
+                    )
+                    """
+            )
+        }
+    }
+
+    func insertImage(
+        ownerKind: String,
+        ownerID: String,
+        file: String,
+        kind: String = "catalog",
+        license: String = "CC BY 2.0",
+        licenseURL: String? = "https://creativecommons.org/licenses/by/2.0/",
+        artist: String? = "A Photographer"
+    ) throws {
+        try createImageTable()
+        try database.writer.write { db in
+            try db.execute(
+                sql: """
+                    INSERT INTO knowledge_image (
+                        owner_kind, owner_id, related_id, kind, file, sha256,
+                        license, license_url, artist, source_page_url, source_file_url
+                    ) VALUES (?, ?, NULL, ?, ?, 'abc', ?, ?, ?, ?, ?)
+                    """,
+                arguments: [
+                    ownerKind, ownerID, kind, file, license, licenseURL, artist,
+                    "https://example.org/wiki/\(file)", "https://example.org/files/\(file)",
+                ]
+            )
+        }
+    }
+
     func plantRef(_ id: String) -> EntityRef {
         EntityRef(id: id, type: .plant)
     }

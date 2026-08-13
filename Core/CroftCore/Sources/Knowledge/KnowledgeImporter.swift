@@ -13,6 +13,12 @@ public enum ImportError: Error, Equatable {
     case unknownReference(record: String, reference: String)
     case duplicateRecord(String)
     case unmappableValue(record: String, field: String, value: String)
+    case missingImageDirectory(String)
+    case missingImageFile(String)
+    case unknownImageOwner(file: String, slug: String)
+    case invalidImageField(slug: String, field: String)
+    case disallowedImageLicense(slug: String, license: String)
+    case orphanImageFile(String)
 }
 
 public struct ImportSummary: Equatable, Sendable {
@@ -37,12 +43,17 @@ public struct KnowledgeImporter {
     public static let cropProfilesFile = "crop-profiles.json"
     public static let catalogFile = "cultivar-catalog.sanitized.json"
     public static let pestDiseaseFile = "pest-disease-cultivar-seed.sanitized.json"
+    public static let plantImagesFile = "plant-images.json"
     public static let importerVersion = "1"
+    public static let requiredInputs = [cropProfilesFile, catalogFile, pestDiseaseFile]
+    public static let optionalInputs = [plantImagesFile]
 
-    private let inputDirectory: URL
+    let inputDirectory: URL
+    let imagesDirectory: URL?
 
-    public init(inputDirectory: URL) {
+    public init(inputDirectory: URL, imagesDirectory: URL? = nil) {
         self.inputDirectory = inputDirectory
+        self.imagesDirectory = imagesDirectory
     }
 
     public func buildSnapshot(at output: URL) throws -> ImportSummary {
@@ -59,6 +70,7 @@ public struct KnowledgeImporter {
         let profiles: CropProfilesFile
         let catalog: CatalogFile
         let pestDisease: PestDiseaseFile
+        let images: PlantImagesFile?
         let checksums: [String: String]
     }
 
@@ -86,10 +98,20 @@ public struct KnowledgeImporter {
             }
         }
 
+        let profiles = try decode(CropProfilesFile.self, Self.cropProfilesFile)
+        let catalog = try decode(CatalogFile.self, Self.catalogFile)
+        let pestDisease = try decode(PestDiseaseFile.self, Self.pestDiseaseFile)
+        var images: PlantImagesFile?
+        if imageManifestExists {
+            let manifest = try decode(PlantImagesFile.self, Self.plantImagesFile)
+            try verifyImageFiles(manifest)
+            images = manifest
+        }
         return Inputs(
-            profiles: try decode(CropProfilesFile.self, Self.cropProfilesFile),
-            catalog: try decode(CatalogFile.self, Self.catalogFile),
-            pestDisease: try decode(PestDiseaseFile.self, Self.pestDiseaseFile),
+            profiles: profiles,
+            catalog: catalog,
+            pestDisease: pestDisease,
+            images: images,
             checksums: checksums
         )
     }
@@ -127,6 +149,7 @@ public struct KnowledgeImporter {
             try KnowledgeSnapshotTables.writeMeta(
                 mapped.meta(checksums: inputs.checksums), in: db)
             try KnowledgeSnapshotTables.writeAttributions(mapped.attributions, in: db)
+            try KnowledgeSnapshotTables.writeImages(mapped.images, in: db)
         }
         try queue.vacuum()
 
@@ -175,6 +198,7 @@ public struct KnowledgeImporter {
         summary.count("pathogens", by: mapped.pathogens.count)
         summary.count("edges", by: mapped.edges.count)
         summary.count("attributions", by: mapped.attributions.count)
+        summary.count("images", by: mapped.images.count)
     }
 }
 
@@ -197,6 +221,7 @@ struct MappedKnowledge {
     var plantRefs: [EntityRef] = []
     var edges: [PlannedEdge] = []
     var attributions: [(recordID: String, citation: String)] = []
+    var images: [MappedImage] = []
     var inputVersions: [String: String] = [:]
     var inputProvenance: [String: String] = [:]
 

@@ -121,6 +121,44 @@ public struct CatalogRow: Decodable, Sendable {
     }
 }
 
+public struct PlantImagesFile: Decodable, Sendable {
+    public let meta: InputMeta
+    public let images: [PlantImageInput]
+}
+
+public struct PlantImageInput: Decodable, Sendable {
+    public enum OwnerKind: String, Decodable, Sendable {
+        case species
+        case cultivar
+    }
+
+    public let slug: String
+    public let ownerKind: OwnerKind
+    public let kind: String
+    public let file: String?
+    public let sha256: String?
+    public let sourceTitle: String?
+    public let sourcePageURL: String?
+    public let sourceFileURL: String?
+    public let license: String?
+    public let licenseURL: String?
+    public let artist: String?
+
+    enum CodingKeys: String, CodingKey {
+        case slug
+        case ownerKind = "owner_kind"
+        case kind
+        case file
+        case sha256
+        case sourceTitle = "source_title"
+        case sourcePageURL = "source_page_url"
+        case sourceFileURL = "source_file_url"
+        case license
+        case licenseURL = "license_url"
+        case artist
+    }
+}
+
 public struct PestDiseaseFile: Decodable, Sendable {
     public let meta: InputMeta
     public let pests: [PestInput]

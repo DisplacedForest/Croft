@@ -14,6 +14,7 @@ public struct PlantPageLoader: Sendable {
     private let diseases: DiseaseRepository
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
+    private let images: PlantImageStore
 
     public init(knowledge: AppDatabase, personal: AppDatabase) {
         self.knowledge = knowledge
@@ -25,6 +26,7 @@ public struct PlantPageLoader: Sendable {
         diseases = DiseaseRepository(knowledge)
         plantings = PlantingRepository(personal)
         structures = GardenStructureRepository(personal)
+        images = PlantImageStore(knowledge)
     }
 
     public init(_ database: AppDatabase) {
@@ -35,6 +37,7 @@ public struct PlantPageLoader: Sendable {
         let allSpecies = try species.fetchAll()
         let allCultivars = try cultivars.fetchAll()
         let speciesByID = Dictionary(uniqueKeysWithValues: allSpecies.map { ($0.id, $0) })
+        let imagesByOwner = try images.imagesByOwner()
         var items = allSpecies.map { one in
             PlantListItem(
                 id: one.id.rawValue,
@@ -42,7 +45,8 @@ public struct PlantPageLoader: Sendable {
                 kind: .species,
                 displayName: titled(one.commonNames.first) ?? one.scientificName,
                 scientificName: one.scientificName,
-                otherNames: Array(one.commonNames.dropFirst())
+                otherNames: Array(one.commonNames.dropFirst()),
+                imageFile: imagesByOwner[one.id.rawValue]?.file
             )
         }
         items += allCultivars.map { cultivar in
@@ -57,7 +61,9 @@ public struct PlantPageLoader: Sendable {
                 kind: .cultivar,
                 displayName: cultivar.name,
                 scientificName: cultivarScientificName(cultivar, parent),
-                otherNames: otherNames
+                otherNames: otherNames,
+                imageFile: (imagesByOwner[cultivar.id.rawValue]
+                    ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
             )
         }
         return items.sorted {
@@ -114,8 +120,17 @@ public struct PlantPageLoader: Sendable {
             threats: threats,
             currentPlantings: currentPlantings(
                 from: relevantPlantings, locationNames: locationNames),
-            activity: activity(from: relevantPlantings, locationNames: locationNames)
+            activity: activity(from: relevantPlantings, locationNames: locationNames),
+            image: try image(speciesID: one.id, cultivarID: cultivar?.id)
         )
+    }
+
+    private func image(speciesID: Species.ID, cultivarID: Cultivar.ID?) throws -> PlantImage? {
+        let imagesByOwner = try images.imagesByOwner()
+        if let cultivarID, let own = imagesByOwner[cultivarID.rawValue] {
+            return own
+        }
+        return imagesByOwner[speciesID.rawValue]
     }
 
     private func relevantPlantings(species one: Species, cultivar: Cultivar?) throws -> [Planting] {

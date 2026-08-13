@@ -13,6 +13,7 @@ public struct PlantListItem: Equatable, Hashable, Sendable, Identifiable {
     public var displayName: String
     public var scientificName: String
     public var otherNames: [String]
+    public var imageFile: String?
 
     public init(
         id: String,
@@ -20,7 +21,8 @@ public struct PlantListItem: Equatable, Hashable, Sendable, Identifiable {
         kind: Kind,
         displayName: String,
         scientificName: String,
-        otherNames: [String] = []
+        otherNames: [String] = [],
+        imageFile: String? = nil
     ) {
         self.id = id
         self.identity = identity
@@ -28,6 +30,7 @@ public struct PlantListItem: Equatable, Hashable, Sendable, Identifiable {
         self.displayName = displayName
         self.scientificName = scientificName
         self.otherNames = otherNames
+        self.imageFile = imageFile
     }
 }
 

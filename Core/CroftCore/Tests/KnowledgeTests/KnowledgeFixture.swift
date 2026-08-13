@@ -3,38 +3,52 @@ import Knowledge
 
 struct KnowledgeFixture {
     let directory: URL
+    let imagesDirectory: URL
     let output: URL
 
     init(
         cropProfiles: String = KnowledgeFixture.cropProfiles,
         catalog: String = KnowledgeFixture.catalog,
         pestDisease: String = KnowledgeFixture.pestDisease,
-        pinnedOverrides: [String: String] = [:]
+        images: String? = nil,
+        imageFiles: [String: Data] = [:],
+        pinnedOverrides: [String: String] = [:],
+        unpinned: Set<String> = []
     ) throws {
         directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("knowledge-fixture-\(UUID().uuidString)", isDirectory: true)
+        imagesDirectory = directory.appendingPathComponent("images", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(
+            at: imagesDirectory, withIntermediateDirectories: true)
         output = directory.appendingPathComponent("snapshot.sqlite")
         var pinned: [String: String] = [:]
-        let files = [
+        var files = [
             KnowledgeImporter.cropProfilesFile: cropProfiles,
             KnowledgeImporter.catalogFile: catalog,
             KnowledgeImporter.pestDiseaseFile: pestDisease,
         ]
+        files[KnowledgeImporter.plantImagesFile] = images
         for (name, contents) in files {
             let data = Data(contents.utf8)
             try data.write(to: directory.appendingPathComponent(name))
             pinned[name] = InputsLock.checksum(of: data)
         }
+        for (name, data) in imageFiles {
+            try data.write(to: imagesDirectory.appendingPathComponent(name))
+        }
         for (name, checksum) in pinnedOverrides {
             pinned[name] = checksum
+        }
+        for name in unpinned {
+            pinned[name] = nil
         }
         let lock = InputsLock(pinned: pinned)
         try lock.encoded().write(to: directory.appendingPathComponent(InputsLock.fileName))
     }
 
     var importer: KnowledgeImporter {
-        KnowledgeImporter(inputDirectory: directory)
+        KnowledgeImporter(inputDirectory: directory, imagesDirectory: imagesDirectory)
     }
 
     @discardableResult

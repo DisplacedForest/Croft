@@ -23,18 +23,8 @@ public enum AttributionWriter {
             lines.append("Snapshot version: `\(version)`")
             lines.append("")
         }
-        let provenanceKeys = meta.keys
-            .filter { $0.hasPrefix("input_provenance:") }
-            .sorted()
-        if !provenanceKeys.isEmpty {
-            lines.append("## Sources")
-            lines.append("")
-            for key in provenanceKeys {
-                let name = key.replacingOccurrences(of: "input_provenance:", with: "")
-                lines.append("- **\(name)**: \(meta[key] ?? "")")
-            }
-            lines.append("")
-        }
+        lines.append(contentsOf: sourceLines(meta))
+        lines.append(contentsOf: try imageLines(snapshot))
         lines.append("## Record citations")
         lines.append("")
         var currentRecord = ""
@@ -53,5 +43,66 @@ public enum AttributionWriter {
         }
         lines.append("")
         return lines.joined(separator: "\n")
+    }
+
+    private static func sourceLines(_ meta: [String: String]) -> [String] {
+        let provenanceKeys = meta.keys
+            .filter { $0.hasPrefix("input_provenance:") }
+            .sorted()
+        guard !provenanceKeys.isEmpty else { return [] }
+        var lines = ["## Sources", ""]
+        for key in provenanceKeys {
+            let name = key.replacingOccurrences(of: "input_provenance:", with: "")
+            lines.append("- **\(name)**: \(meta[key] ?? "")")
+        }
+        lines.append("")
+        return lines
+    }
+
+    private static func imageLines(_ snapshot: KnowledgeSnapshot) throws -> [String] {
+        let rows = try snapshot.database.writer.read { db -> [Row] in
+            guard try db.tableExists("knowledge_image") else { return [] }
+            return try Row.fetchAll(
+                db,
+                sql: """
+                    SELECT file, license, license_url, artist, source_page_url
+                    FROM knowledge_image
+                    ORDER BY owner_kind, owner_id, kind, file
+                    """
+            )
+        }
+        guard !rows.isEmpty else { return [] }
+        var lines = ["## Images", ""]
+        for row in rows {
+            lines.append(imageLine(row))
+        }
+        lines.append("")
+        return lines
+    }
+
+    private static func imageLine(_ row: Row) -> String {
+        func text(_ column: String) -> String? {
+            let value: String? = row[column]
+            let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        var parts: [String] = []
+        if let file = text("file") {
+            parts.append("`\(file)`")
+        }
+        if let page = text("source_page_url") {
+            parts.append("[source](\(page))")
+        }
+        if let license = text("license") {
+            if let licenseURL = text("license_url") {
+                parts.append("[\(license)](\(licenseURL))")
+            } else {
+                parts.append(license)
+            }
+        }
+        if let artist = text("artist") {
+            parts.append(artist)
+        }
+        return "- " + parts.joined(separator: " · ")
     }
 }

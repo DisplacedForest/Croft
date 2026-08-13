@@ -22,6 +22,7 @@ struct KnowledgeMapper {
         let cultivarIndex = try mapCatalog(taxonomy, into: &mapped, summary: &summary)
         try mapPestsAndDiseases(
             taxonomy, cultivars: cultivarIndex, into: &mapped, summary: &summary)
+        try mapImages(taxonomy, into: &mapped)
         mapped.families.sort { $0.id.rawValue < $1.id.rawValue }
         mapped.genera.sort { $0.id.rawValue < $1.id.rawValue }
         mapped.species.sort { $0.id.rawValue < $1.id.rawValue }

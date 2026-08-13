@@ -1,4 +1,6 @@
 import Foundation
+import GRDB
+import Persistence
 import Testing
 
 @testable import Knowledge
@@ -14,13 +16,42 @@ struct PinnedInputsTests {
             .appendingPathComponent("knowledge/inputs", isDirectory: true)
     }
 
+    private var imagesDirectory: URL {
+        inputsDirectory
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("App/Shared/Resources/PlantImages", isDirectory: true)
+    }
+
+    private var importer: KnowledgeImporter {
+        KnowledgeImporter(inputDirectory: inputsDirectory, imagesDirectory: imagesDirectory)
+    }
+
+    private var manifest: PlantImagesFile {
+        get throws {
+            let url = inputsDirectory.appendingPathComponent(KnowledgeImporter.plantImagesFile)
+            return try JSONDecoder().decode(
+                PlantImagesFile.self, from: try Data(contentsOf: url))
+        }
+    }
+
+    private var manifestImageCount: Int {
+        get throws { try manifest.images.count }
+    }
+
     @Test func theCommittedInputsMatchTheirPins() throws {
         let lock = try InputsLock.load(from: inputsDirectory)
-        #expect(lock.pinned.count == 3)
+        #expect(lock.pinned.count == 4)
         for (name, _) in lock.pinned.sorted(by: { $0.key < $1.key }) {
             let data = try Data(contentsOf: inputsDirectory.appendingPathComponent(name))
             try lock.verify(fileName: name, data: data)
         }
+    }
+
+    @Test func theCommittedLockIsWhatPinWouldWrite() throws {
+        let committed = try InputsLock.load(from: inputsDirectory)
+        let regenerated = try InputsLock.regenerated(in: inputsDirectory)
+        #expect(committed == regenerated)
     }
 
     @Test(arguments: [KnowledgeImporter.catalogFile, KnowledgeImporter.pestDiseaseFile])
@@ -33,7 +64,6 @@ struct PinnedInputsTests {
     }
 
     @Test func thePinnedInputsBuildADeterministicSnapshot() throws {
-        let importer = KnowledgeImporter(inputDirectory: inputsDirectory)
         let base = FileManager.default.temporaryDirectory
             .appendingPathComponent("pinned-\(UUID().uuidString)", isDirectory: true)
         let first = base.appendingPathComponent("one.sqlite")
@@ -47,6 +77,7 @@ struct PinnedInputsTests {
         #expect(summary.counts["pests"] == 31)
         #expect(summary.counts["diseases"] == 37)
         #expect((summary.counts["cultivars"] ?? 0) > 1000)
+        #expect(try summary.counts["images"] == manifestImageCount)
 
         let dump = try KnowledgeSnapshot.logicalDump(at: first)
         for leak in ["cdn.shopify.com", "edenbrothers.com", "migardener.com", "flavor_profile"] {
@@ -57,8 +88,33 @@ struct PinnedInputsTests {
         #expect((size ?? .max) < 30_000_000)
     }
 
+    @Test func theRealImageRowsMatchTheManifestAndCarryFullAttribution() throws {
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("images-\(UUID().uuidString).sqlite")
+        _ = try importer.buildSnapshot(at: output)
+        let rows = try AppDatabase.openReadOnly(at: output).writer.read { db in
+            try Row.fetchAll(db, sql: "SELECT * FROM knowledge_image")
+        }
+        var expected: [String: Int] = [:]
+        for image in try manifest.images {
+            expected[image.ownerKind.rawValue, default: 0] += 1
+        }
+        var actual: [String: Int] = [:]
+        for row in rows {
+            actual[row["owner_kind"] as String, default: 0] += 1
+        }
+        #expect(actual == expected)
+        #expect(expected == ["species": 32, "cultivar": 11])
+        for row in rows {
+            for column in ["license", "license_url", "artist", "source_page_url"] {
+                let value: String? = row[column]
+                #expect(value?.isEmpty == false)
+            }
+            #expect(KnowledgeImporter.allowedImageLicenses.contains(row["license"] as String))
+        }
+    }
+
     @Test func knownFactsSurviveTheRealImport() throws {
-        let importer = KnowledgeImporter(inputDirectory: inputsDirectory)
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("facts-\(UUID().uuidString).sqlite")
         _ = try importer.buildSnapshot(at: output)

@@ -47,22 +47,26 @@ private struct PlantRowView: View {
     let item: PlantListItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
-            HStack(spacing: CroftTheme.space(2)) {
-                Text(item.displayName)
-                    .font(.body.weight(.medium))
-                if item.kind == .cultivar {
-                    Text("Cultivar")
-                        .font(.caption2.weight(.medium))
-                        .padding(.horizontal, CroftTheme.space(1.5))
-                        .padding(.vertical, CroftTheme.space(0.5))
-                        .background(.tint.opacity(0.12), in: Capsule())
-                        .foregroundStyle(.tint)
+        HStack(spacing: CroftTheme.space(3)) {
+            PlantImageView(file: item.imageFile, cornerRadius: CroftTheme.space(2))
+                .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
+                HStack(spacing: CroftTheme.space(2)) {
+                    Text(item.displayName)
+                        .font(.body.weight(.medium))
+                    if item.kind == .cultivar {
+                        Text("Cultivar")
+                            .font(.caption2.weight(.medium))
+                            .padding(.horizontal, CroftTheme.space(1.5))
+                            .padding(.vertical, CroftTheme.space(0.5))
+                            .background(.tint.opacity(0.12), in: Capsule())
+                            .foregroundStyle(.tint)
+                    }
                 }
+                Text(item.scientificName)
+                    .font(.callout.italic())
+                    .foregroundStyle(.secondary)
             }
-            Text(item.scientificName)
-                .font(.callout.italic())
-                .foregroundStyle(.secondary)
         }
         .padding(.vertical, CroftTheme.space(1))
         .frame(maxWidth: .infinity, alignment: .leading)

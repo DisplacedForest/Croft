@@ -28,8 +28,11 @@ func runSanitize(kind: String, raw: String, output: String) {
     }
 }
 
-func runBuild(inputs: String, output: String) {
-    let importer = KnowledgeImporter(inputDirectory: URL(fileURLWithPath: inputs))
+func runBuild(inputs: String, images: String?, output: String) {
+    let importer = KnowledgeImporter(
+        inputDirectory: URL(fileURLWithPath: inputs),
+        imagesDirectory: images.map { URL(fileURLWithPath: $0) }
+    )
     do {
         let summary = try importer.buildSnapshot(at: URL(fileURLWithPath: output))
         print("built \(output)")
@@ -58,6 +61,21 @@ func runAttribution(snapshot: String, output: String) {
     }
 }
 
+func runPin(inputs: String) {
+    let directory = URL(fileURLWithPath: inputs)
+    let output = directory.appendingPathComponent(InputsLock.fileName)
+    do {
+        let lock = try InputsLock.regenerated(in: directory)
+        try lock.encoded().write(to: output, options: .atomic)
+        for (name, checksum) in lock.pinned.sorted(by: { $0.key < $1.key }) {
+            print("  \(name): \(checksum)")
+        }
+        print("wrote \(output.path)")
+    } catch {
+        fail("pin failed: \(error)")
+    }
+}
+
 func runDump(snapshot: String) {
     do {
         print(try KnowledgeSnapshot.logicalDump(at: URL(fileURLWithPath: snapshot)))
@@ -71,9 +89,13 @@ switch (arguments.count, arguments.dropFirst().first) {
 case (5, "sanitize"):
     runSanitize(kind: arguments[2], raw: arguments[3], output: arguments[4])
 case (4, "build"):
-    runBuild(inputs: arguments[2], output: arguments[3])
+    runBuild(inputs: arguments[2], images: nil, output: arguments[3])
+case (5, "build"):
+    runBuild(inputs: arguments[2], images: arguments[3], output: arguments[4])
 case (4, "attribution"):
     runAttribution(snapshot: arguments[2], output: arguments[3])
+case (3, "pin"):
+    runPin(inputs: arguments[2])
 case (3, "dump"):
     runDump(snapshot: arguments[2])
 default:
@@ -81,7 +103,8 @@ default:
         """
         usage:
           knowledge-importer sanitize catalog|pest-disease <raw.json> <output.json>
-          knowledge-importer build <inputs-dir> <snapshot.sqlite>
+          knowledge-importer pin <inputs-dir>
+          knowledge-importer build <inputs-dir> [<images-dir>] <snapshot.sqlite>
           knowledge-importer attribution <snapshot.sqlite> <output.md>
           knowledge-importer dump <snapshot.sqlite>
         """
