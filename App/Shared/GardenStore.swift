@@ -1,8 +1,13 @@
-import Domain
 import Foundation
 import GardenModel
 import Persistence
 import SwiftUI
+
+import struct Domain.Bed
+import enum Domain.BedKind
+import struct Domain.Garden
+import struct Domain.GrowingArea
+import struct Domain.Planting
 
 @MainActor
 @Observable
