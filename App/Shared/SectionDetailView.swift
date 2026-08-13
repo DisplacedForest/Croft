@@ -21,6 +21,8 @@ struct SectionDetailView: View {
             BedDetailView(bedID: bedID, navigate: navigate)
         case .planting(let plantingID):
             PlantingDetailView(plantingID: plantingID)
+        case .plant(let identity):
+            PlantPageView(identity: identity)
         }
     }
 }

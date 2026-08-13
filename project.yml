@@ -34,6 +34,7 @@ targets:
           - Knowledge
           - GardenModel
           - Design
+          - PlantCatalog
           - Today
     settings:
       base:
@@ -62,6 +63,7 @@ targets:
           - Knowledge
           - GardenModel
           - Design
+          - PlantCatalog
           - Today
     settings:
       base:

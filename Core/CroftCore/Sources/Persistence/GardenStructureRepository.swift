@@ -265,3 +265,44 @@ public struct GardenStructureRepository: Sendable {
             .sorted { $0.name < $1.name }
     }
 }
+
+extension GardenStructureRepository {
+    public func property(id: Property.ID) throws -> Property? {
+        try writer.read { db in
+            try PropertyRecord.fetchOne(db, key: id.rawValue)?.model()
+        }
+    }
+
+    public func garden(id: Garden.ID) throws -> Garden? {
+        try writer.read { db in
+            try GardenRecord.fetchOne(db, key: id.rawValue)?.model()
+        }
+    }
+
+    public func growingArea(id: GrowingArea.ID) throws -> GrowingArea? {
+        try writer.read { db in
+            try GrowingAreaRecord.fetchOne(db, key: id.rawValue)?.model()
+        }
+    }
+
+    public func bed(id: Bed.ID) throws -> Bed? {
+        try writer.read { db in
+            try BedRecord.fetchOne(db, key: id.rawValue)?.model()
+        }
+    }
+
+    public func parent(ofBed id: Bed.ID) throws -> BedParent? {
+        try writer.read { db in
+            guard
+                let edge = try GraphStore.outgoing(from: id.rawValue, via: .locatedIn, in: db).first
+            else {
+                return nil
+            }
+            return switch edge.target.type {
+            case .garden: .garden(Garden.ID(rawValue: edge.target.id))
+            case .growingArea: .growingArea(GrowingArea.ID(rawValue: edge.target.id))
+            default: nil
+            }
+        }
+    }
+}
