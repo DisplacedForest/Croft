@@ -36,7 +36,7 @@ let package = Package(
             name: "Design",
             resources: [.process("Colors.xcassets")]
         ),
-        .target(name: "Today"),
+        .target(name: "Today", dependencies: ["Domain"]),
         .target(
             name: "Knowledge",
             dependencies: [
@@ -67,7 +67,7 @@ let package = Package(
             name: "PlantCatalogTests",
             dependencies: ["PlantCatalog", "Domain", "Persistence", "Graph"]
         ),
-        .testTarget(name: "TodayTests", dependencies: ["Today"]),
+        .testTarget(name: "TodayTests", dependencies: ["Today", "Domain"]),
         .testTarget(
             name: "GardenModelTests",
             dependencies: ["GardenModel", "Domain", "Persistence"]
