@@ -28,3 +28,14 @@ and merge only after required GitHub Actions checks pass.
 
 Changes are rejected when they fail `mise run ci`, include unrelated work, or
 leave documentation stale.
+
+## Changelog
+
+User-facing changes get a line under the Unreleased heading in CHANGELOG.md
+before the session ends; treat it as part of finishing the work. At release
+time the maintainer curates that section, using `mise run changelog-draft` as
+a safety net: it prints a skeleton grouped by Conventional Commit type from
+the commits since the last version tag (or the repository root before the
+first release), but never writes the file itself. Squash merges with
+Conventional Commit subjects are what keep its output reliable. Releasing
+renames Unreleased to the version and date.
