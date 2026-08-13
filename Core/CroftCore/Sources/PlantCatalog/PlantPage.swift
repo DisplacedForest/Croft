@@ -140,3 +140,25 @@ public struct PlantPage: Equatable, Sendable {
         self.image = image
     }
 }
+
+public enum PlantPageSectionKind: Equatable, Hashable, Sendable, CaseIterable {
+    case conditions
+    case growingNow
+    case recentActivity
+    case pests
+    case diseases
+}
+
+extension PlantPage {
+    public static let sectionOrder: [PlantPageSectionKind] = [
+        .conditions, .growingNow, .recentActivity, .pests, .diseases,
+    ]
+
+    public var pests: [PlantThreat] {
+        threats.filter { $0.kind == .pest }
+    }
+
+    public var diseases: [PlantThreat] {
+        threats.filter { $0.kind == .disease }
+    }
+}
