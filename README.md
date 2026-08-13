@@ -25,7 +25,7 @@ Shared code lives in the `CroftCore` package under `Core/`, with the `Domain`, `
 mise run check
 ```
 
-Runs formatting, lint, and the package tests on macOS. `mise run ci` adds the macOS app build and is what CI runs.
+Runs formatting, lint, and the package tests on macOS. `mise run ci` adds the macOS app build and the runtime design-token resolution tests, and is what CI runs.
 
 ## License
 

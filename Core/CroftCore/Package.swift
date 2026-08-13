@@ -15,6 +15,7 @@ let package = Package(
         .library(name: "Knowledge", targets: ["Knowledge"]),
         .library(name: "Design", targets: ["Design"]),
         .library(name: "PlantCatalog", targets: ["PlantCatalog"]),
+        .library(name: "Today", targets: ["Today"]),
         .executable(name: "knowledge-importer", targets: ["knowledge-importer"]),
     ],
     dependencies: [
@@ -34,6 +35,7 @@ let package = Package(
             name: "Design",
             resources: [.process("Colors.xcassets")]
         ),
+        .target(name: "Today"),
         .target(
             name: "Knowledge",
             dependencies: [
@@ -63,5 +65,6 @@ let package = Package(
             name: "PlantCatalogTests",
             dependencies: ["PlantCatalog", "Domain", "Persistence", "Graph"]
         ),
+        .testTarget(name: "TodayTests", dependencies: ["Today"]),
     ]
 )
