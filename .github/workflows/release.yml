@@ -23,12 +23,17 @@ jobs:
     if: github.repository == 'DisplacedForest/Croft'
     runs-on: macos-26
     timeout-minutes: 60
-    env:
-      KEYCHAIN_PATH: ${{ runner.temp }}/release-signing.keychain-db
-      API_KEY_PATH: ${{ runner.temp }}/apple-api-key.p8
-      PROFILE_STAGING: ${{ runner.temp }}/croft-developer-id.provisionprofile
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Define signing material paths
+        run: |
+          set -euo pipefail
+          {
+            echo "KEYCHAIN_PATH=$RUNNER_TEMP/release-signing.keychain-db"
+            echo "API_KEY_PATH=$RUNNER_TEMP/apple-api-key.p8"
+            echo "PROFILE_STAGING=$RUNNER_TEMP/croft-developer-id.provisionprofile"
+          } >> "$GITHUB_ENV"
 
       - name: Check required secrets
         env:
