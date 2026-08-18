@@ -98,7 +98,10 @@ final class AppearanceAuditTests: XCTestCase {
             Screen(
                 name: "sheet-add-planting", size: sheetSize,
                 view: AnyView(
-                    AddPlantingSheet(context: scenery.context, bedID: scenery.bedID) {})),
+                    AddPlantingSheet(
+                        context: scenery.context,
+                        intent: AddPlantingIntent(bedID: scenery.bedID)
+                    ) {})),
             Screen(
                 name: "sheet-add-seed-lot", size: sheetSize,
                 view: AnyView(AddSeedLotSheet(context: scenery.context) {})),
