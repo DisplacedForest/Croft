@@ -154,7 +154,7 @@ struct MigrationPreservationTests {
                 "v008-seed-lots", "v009-plantings", "v010-cultivation-profile",
                 "v011-knowledge-types", "v015-edge-cardinality", "v012-observations",
                 "v013-harvests", "v014-garden-tasks", "v016-lifecycle-stages",
-                "v017-property-location", "v018-harvest-yield",
+                "v017-property-location", "v018-harvest-yield", "v019-daily-weather",
             ])
     }
 

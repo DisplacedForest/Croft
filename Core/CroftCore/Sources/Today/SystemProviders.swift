@@ -14,6 +14,27 @@ public struct SystemWeatherProvider: WeatherProviding {
             temperature: current.temperature
         )
     }
+
+    public func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary {
+        let place = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        let daily = try await WeatherService.shared.weather(for: place, including: .daily)
+        let calendar = Calendar.current
+        let today =
+            daily.first { calendar.isDateInToday($0.date) }
+            ?? daily.forecast.first
+        guard let today else {
+            throw WeatherSummaryFailure.noDailyForecast
+        }
+        return DailyWeatherSummary(
+            highCelsius: today.highTemperature.converted(to: .celsius).value,
+            lowCelsius: today.lowTemperature.converted(to: .celsius).value,
+            precipitationMillimeters: today.precipitationAmount.converted(to: .millimeters).value
+        )
+    }
+}
+
+enum WeatherSummaryFailure: Error {
+    case noDailyForecast
 }
 
 public struct SystemLocationProvider: LocationProviding {

@@ -42,6 +42,7 @@ struct TodayView: View {
         }
         .task {
             await model.loadWeather()
+            await recordTodayWeather()
         }
         .task {
             if tasks == nil, let database = stores?.database {
@@ -55,6 +56,19 @@ struct TodayView: View {
         .task {
             await model.startClock()
         }
+    }
+
+    private func recordTodayWeather() async {
+        guard let database = stores?.database,
+            let property = try? GardenStructureRepository(database).properties().first
+        else {
+            return
+        }
+        let recorder = WeatherHistoryRecorder(
+            provider: SystemWeatherProvider(),
+            store: DailyWeatherRepository(database)
+        )
+        await recorder.recordToday(for: property)
     }
 
     private var clock: some View {
