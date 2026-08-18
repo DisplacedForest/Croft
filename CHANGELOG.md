@@ -4,6 +4,14 @@ All notable changes to Croft are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Harvests record a harvested part and structured yield in any mass, volume,
+  or count unit, entered in your preferred measurement system, with totals
+  that add up across units and a first-harvest date on the planting timeline.
+
 ## 0.1.0 - 2026-08-18
 
 ### Added
