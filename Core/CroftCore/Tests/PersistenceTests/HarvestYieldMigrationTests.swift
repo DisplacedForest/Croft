@@ -77,17 +77,7 @@ struct HarvestYieldMigrationTests {
                 """)
         try db.execute(
             sql: """
-                INSERT INTO property (id, name, sort_order) VALUES ('prop1', 'Home', 0)
-                """)
-        try db.execute(
-            sql: """
-                INSERT INTO garden (id, property_id, name, sort_order)
-                VALUES ('gar1', 'prop1', 'Kitchen', 0)
-                """)
-        try db.execute(
-            sql: """
-                INSERT INTO bed (id, garden_id, name, kind, sort_order)
-                VALUES ('bed1', 'gar1', 'Long Bed', 'raised', 0)
+                INSERT INTO bed (id, name, kind) VALUES ('bed1', 'Long Bed', 'raised')
                 """)
         try db.execute(
             sql: """
