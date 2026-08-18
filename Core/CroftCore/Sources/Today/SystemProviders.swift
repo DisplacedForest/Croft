@@ -2,7 +2,7 @@ import CoreLocation
 import Foundation
 import WeatherKit
 
-public struct SystemWeatherProvider: WeatherProviding {
+public struct SystemWeatherProvider: WeatherProviding, ForecastProviding {
     public init() {}
 
     public func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot {
@@ -13,6 +13,20 @@ public struct SystemWeatherProvider: WeatherProviding {
             conditionDescription: current.condition.description,
             temperature: current.temperature
         )
+    }
+
+    public func dailyForecast(at location: GeoLocation) async throws -> [DayForecast] {
+        let place = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        let daily = try await WeatherService.shared.weather(for: place, including: .daily)
+        return daily.forecast.prefix(7).map { day in
+            DayForecast(
+                date: day.date,
+                symbolName: day.symbolName,
+                high: day.highTemperature,
+                low: day.lowTemperature,
+                precipitationChance: day.precipitationChance
+            )
+        }
     }
 }
 

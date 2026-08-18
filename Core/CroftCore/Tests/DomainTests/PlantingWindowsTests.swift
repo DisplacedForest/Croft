@@ -20,7 +20,7 @@ private let northern = FrostAnchors(
     lastFrost: monthDay(5, 10), firstFrost: monthDay(9, 28))
 private let northernNoFall = FrostAnchors(lastFrost: monthDay(5, 10), firstFrost: nil)
 private let southern = FrostAnchors(
-    lastFrost: monthDay(9, 20), firstFrost: monthDay(5, 10), southernHemisphere: true)
+    lastFrost: monthDay(9, 20), firstFrost: monthDay(5, 10))
 
 private func assess(
     _ profile: PlantingWindowProfile,
@@ -282,13 +282,12 @@ struct CalculatorInputTests {
         #expect(opportunity.action == .directSow)
     }
 
-    @Test func anchorsDeriveHemisphereFromLatitude() throws {
+    @Test func anchorsComeFromThePropertyFrostDates() throws {
         var property = Property(name: "Home")
-        property.location = GeoCoordinate(latitude: -36.8, longitude: 174.7)
-        #expect(FrostAnchors(property: property).southernHemisphere)
-        property.location = GeoCoordinate(latitude: 44.5, longitude: -72.8)
-        #expect(!FrostAnchors(property: property).southernHemisphere)
-        property.location = nil
-        #expect(!FrostAnchors(property: property).southernHemisphere)
+        property.lastFrost = monthDay(5, 10)
+        property.firstFrost = monthDay(9, 28)
+        let anchors = FrostAnchors(property: property)
+        #expect(anchors.lastFrost == monthDay(5, 10))
+        #expect(anchors.firstFrost == monthDay(9, 28))
     }
 }
