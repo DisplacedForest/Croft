@@ -69,6 +69,49 @@ public struct PlantPageLoader: Sendable {
         }
     }
 
+    public func cropCatalog() throws -> CropCatalog {
+        let allSpecies = try species.fetchAll()
+        let allCultivars = try cultivars.fetchAll()
+        let speciesByID = Dictionary(uniqueKeysWithValues: allSpecies.map { ($0.id, $0) })
+        let imagesByOwner = try images.imagesByOwner()
+        let cultivarsBySpecies = Dictionary(grouping: allCultivars, by: \.speciesID)
+        let groups = allSpecies.map { one in
+            let crop = PlantListItem(
+                id: one.id.rawValue,
+                identity: .species(one.id),
+                kind: .species,
+                displayName: titled(one.commonNames.first) ?? one.scientificName,
+                scientificName: one.scientificName,
+                otherNames: Array(one.commonNames.dropFirst()),
+                imageFile: imagesByOwner[one.id.rawValue]?.file
+            )
+            let varietals = (cultivarsBySpecies[one.id] ?? [])
+                .map { cultivar in
+                    PlantListItem(
+                        id: cultivar.id.rawValue,
+                        identity: .cultivar(cultivar.id),
+                        kind: .cultivar,
+                        displayName: cultivar.name,
+                        scientificName: cultivarScientificName(
+                            cultivar, speciesByID[cultivar.speciesID]),
+                        otherNames: cultivar.commonNames,
+                        imageFile: (imagesByOwner[cultivar.id.rawValue]
+                            ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
+                    )
+                }
+                .sorted {
+                    $0.displayName.localizedCaseInsensitiveCompare($1.displayName)
+                        == .orderedAscending
+                }
+            return CropGroup(crop: crop, varietals: varietals)
+        }
+        return CropCatalog(
+            crops: groups.sorted {
+                $0.crop.displayName.localizedCaseInsensitiveCompare($1.crop.displayName)
+                    == .orderedAscending
+            })
+    }
+
     public func page(for identity: PlantIdentity) throws -> PlantPage? {
         switch identity {
         case .species(let id):
