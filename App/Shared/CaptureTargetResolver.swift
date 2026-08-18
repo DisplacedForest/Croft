@@ -9,6 +9,8 @@ enum CaptureTargetResolver {
             .bed(id)
         case .plant(let identity):
             .plant(identity)
+        case .crop(let speciesID):
+            .plant(.species(speciesID))
         case .season, nil:
             nil
         }
