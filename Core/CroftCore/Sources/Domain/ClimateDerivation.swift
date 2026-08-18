@@ -22,7 +22,6 @@ public struct DerivedFrostDates: Equatable, Sendable {
 
 public enum ClimateDerivation {
     public static let frostThresholdCelsius = 0.0
-    public static let seasonMidpointOffset = 183
     static let referenceYear = 2001
 
     public static func frostDates(
@@ -33,18 +32,23 @@ public enum ClimateDerivation {
         var lastOffsets: [Int: Int] = [:]
         var firstOffsets: [Int: Int] = [:]
         for minimum in minima where minimum.celsius <= frostThresholdCelsius {
+            let parts = calendar.dateComponents([.year, .month, .day], from: minimum.date)
+            guard let year = parts.year, let month = parts.month, let day = parts.day else {
+                continue
+            }
+            let season = seasonKey(year: year, month: month, southernHemisphere: southernHemisphere)
             guard
-                let position = seasonPosition(
-                    of: minimum.date, southernHemisphere: southernHemisphere, calendar: calendar)
+                let offset = normalizedOffset(
+                    month: month, day: day,
+                    southernHemisphere: southernHemisphere, calendar: calendar)
             else {
                 continue
             }
-            if position.offset < seasonMidpointOffset {
-                lastOffsets[position.season] = max(
-                    lastOffsets[position.season] ?? .min, position.offset)
+            let springHalf = southernHemisphere ? month >= 7 : month <= 6
+            if springHalf {
+                lastOffsets[season] = max(lastOffsets[season] ?? .min, offset)
             } else {
-                firstOffsets[position.season] = min(
-                    firstOffsets[position.season] ?? .max, position.offset)
+                firstOffsets[season] = min(firstOffsets[season] ?? .max, offset)
             }
         }
         return DerivedFrostDates(
@@ -64,55 +68,53 @@ public enum ClimateDerivation {
     ) -> Int? {
         var seasonMinima: [Int: Double] = [:]
         for minimum in minima {
-            guard
-                let position = seasonPosition(
-                    of: minimum.date, southernHemisphere: southernHemisphere, calendar: calendar)
-            else {
+            let parts = calendar.dateComponents([.year, .month], from: minimum.date)
+            guard let year = parts.year, let month = parts.month else {
                 continue
             }
-            seasonMinima[position.season] = Swift.min(
-                seasonMinima[position.season] ?? .greatestFiniteMagnitude, minimum.celsius)
+            let season = seasonKey(year: year, month: month, southernHemisphere: southernHemisphere)
+            seasonMinima[season] = Swift.min(
+                seasonMinima[season] ?? .greatestFiniteMagnitude, minimum.celsius)
         }
         guard !seasonMinima.isEmpty else {
             return nil
         }
-        let averageCelsius =
-            seasonMinima.values.reduce(0, +) / Double(seasonMinima.count)
+        let averageCelsius = seasonMinima.values.reduce(0, +) / Double(seasonMinima.count)
         let fahrenheit = averageCelsius * 9 / 5 + 32
-        let zone = Int((fahrenheit + 60) / 10) + 1
+        let zone = Int(floor((fahrenheit + 60) / 10)) + 1
         return Swift.min(Swift.max(zone, 1), 13)
     }
 
-    static func seasonPosition(
-        of date: Date,
+    static func seasonKey(year: Int, month: Int, southernHemisphere: Bool) -> Int {
+        guard southernHemisphere else {
+            return year
+        }
+        return month >= 7 ? year : year - 1
+    }
+
+    static func normalizedOffset(
+        month: Int,
+        day: Int,
         southernHemisphere: Bool,
         calendar: Calendar
-    ) -> (season: Int, offset: Int)? {
-        let parts = calendar.dateComponents([.year, .month], from: date)
-        guard let year = parts.year, let month = parts.month else {
-            return nil
-        }
-        let season = southernHemisphere && month >= 7 ? year : southernHemisphere ? year - 1 : year
+    ) -> Int? {
+        var parts = DateComponents()
+        parts.year =
+            southernHemisphere && month < 7 ? referenceYear + 1 : referenceYear
+        parts.month = month
+        parts.day = month == 2 && day == 29 ? 28 : day
         guard
-            let start = seasonStart(
-                season, southernHemisphere: southernHemisphere, calendar: calendar)
+            let date = calendar.date(from: parts),
+            let start = seasonStart(southernHemisphere: southernHemisphere, calendar: calendar)
         else {
             return nil
         }
-        let offset = calendar.dateComponents([.day], from: start, to: date).day
-        guard let offset, offset >= 0 else {
-            return nil
-        }
-        return (season, offset)
+        return calendar.dateComponents([.day], from: start, to: date).day
     }
 
-    static func seasonStart(
-        _ season: Int,
-        southernHemisphere: Bool,
-        calendar: Calendar
-    ) -> Date? {
+    static func seasonStart(southernHemisphere: Bool, calendar: Calendar) -> Date? {
         var parts = DateComponents()
-        parts.year = season
+        parts.year = referenceYear
         parts.month = southernHemisphere ? 7 : 1
         parts.day = 1
         return calendar.date(from: parts)
@@ -124,8 +126,7 @@ public enum ClimateDerivation {
         calendar: Calendar
     ) -> MonthDay? {
         guard
-            let start = seasonStart(
-                referenceYear, southernHemisphere: southernHemisphere, calendar: calendar),
+            let start = seasonStart(southernHemisphere: southernHemisphere, calendar: calendar),
             let date = calendar.date(byAdding: .day, value: offset, to: start)
         else {
             return nil

@@ -74,6 +74,28 @@ struct FrostDerivationTests {
         #expect(derived.lastFrost == nil)
         #expect(derived.firstFrost == nil)
     }
+
+    @Test func aLeapYearMedianKeepsItsCalendarDay() throws {
+        let minima = [minimum(2024, 10, 5, -2)]
+        let derived = ClimateDerivation.frostDates(
+            minima: minima, southernHemisphere: false, calendar: calendar)
+        #expect(derived.firstFrost == MonthDay(month: 10, day: 5))
+    }
+
+    @Test func aLeapDayFrostClampsWithoutCrashing() throws {
+        let minima = [minimum(2024, 2, 29, -5)]
+        let derived = ClimateDerivation.frostDates(
+            minima: minima, southernHemisphere: false, calendar: calendar)
+        #expect(derived.lastFrost == MonthDay(month: 2, day: 28))
+    }
+
+    @Test func aSouthernNewYearsEveFrostStaysInTheSpringHalf() throws {
+        let minima = [minimum(2022, 12, 31, -1)]
+        let derived = ClimateDerivation.frostDates(
+            minima: minima, southernHemisphere: true, calendar: calendar)
+        #expect(derived.lastFrost == MonthDay(month: 12, day: 31))
+        #expect(derived.firstFrost == nil)
+    }
 }
 
 struct ZoneDerivationTests {
