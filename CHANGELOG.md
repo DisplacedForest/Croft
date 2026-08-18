@@ -15,6 +15,11 @@ All notable changes to Croft are documented here. The format follows
 - Harvests record a harvested part and structured yield in any mass, volume,
   or count unit, entered in your preferred measurement system, with totals
   that add up across units and a first-harvest date on the planting timeline.
+- The Record menu reaches every capture action from anywhere with keyboard
+  shortcuts, prefills targets from the screen you are on with an override
+  picker in each sheet, records a lifecycle stage on the visible planting in
+  two clicks, and photos now paste from the clipboard as well as drag and
+  drop.
 
 ## 0.1.0 - 2026-08-18
 

@@ -24,17 +24,15 @@ struct PlantingDetailView: View {
             .navigationTitle(detail.plantName)
             .toolbar {
                 Button {
-                    capture.present(.logObservation(.planting(plantingID)))
+                    capture.present(.logObservation(.planting(plantingID), stage: nil))
                 } label: {
                     Label("Log Observation", systemImage: "eye")
                 }
-                .keyboardShortcut("o", modifiers: [.command, .shift])
                 Button {
                     capture.present(.recordHarvest(plantingID))
                 } label: {
                     Label("Record Harvest", systemImage: "basket")
                 }
-                .keyboardShortcut("h", modifiers: [.command, .shift])
             }
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)

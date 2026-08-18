@@ -81,8 +81,7 @@ struct CroftShell: View {
             initialRoute: initialRoute
         )
         .toolbar {
-            CaptureMenu()
-                .environment(captureStore)
+            CaptureMenu(capture: captureStore)
         }
         .modifier(CaptureSheetHost())
         .environment(captureStore)
@@ -104,7 +103,7 @@ struct SectionStack: View {
     let section: AppSection
     let gardenStore: GardenStore
     let captureStore: CaptureStore
-    @State private var path: NavigationPath
+    @State private var path: [SectionRoute]
 
     init(
         section: AppSection,
@@ -115,11 +114,7 @@ struct SectionStack: View {
         self.section = section
         self.gardenStore = gardenStore
         self.captureStore = captureStore
-        var path = NavigationPath()
-        if let initialRoute {
-            path.append(initialRoute)
-        }
-        _path = State(initialValue: path)
+        _path = State(initialValue: initialRoute.map { [$0] } ?? [])
     }
 
     var body: some View {
@@ -137,6 +132,9 @@ struct SectionStack: View {
                 .croftScreenSurface()
                 .environment(gardenStore)
                 .environment(captureStore)
+        }
+        .onChange(of: path, initial: true) { _, current in
+            captureStore.visibleTarget = CaptureTargetResolver.target(for: current.last)
         }
     }
 
