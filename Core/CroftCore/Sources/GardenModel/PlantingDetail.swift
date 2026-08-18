@@ -32,6 +32,9 @@ public struct PlantingDetail: Equatable, Sendable {
         if let transplanted = planting.transplantedOn {
             events.append(PlantingTimelineEvent(kind: .transplanted, date: transplanted))
         }
+        if let firstHarvest = try HarvestRepository(database).firstHarvestDate(forPlanting: id) {
+            events.append(PlantingTimelineEvent(kind: .firstHarvest, date: firstHarvest))
+        }
         if let ended = planting.endedOn {
             events.append(
                 PlantingTimelineEvent(

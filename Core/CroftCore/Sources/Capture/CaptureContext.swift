@@ -45,6 +45,22 @@ public struct CaptureContext {
         return try loader.listItems()
     }
 
+    public func harvestableParts(for plantingID: Planting.ID) throws -> [HarvestablePart] {
+        guard let planting = try plantings.fetch(id: plantingID) else {
+            return []
+        }
+        let species = SpeciesRepository(personal)
+        switch planting.identity {
+        case .species(let id):
+            return try species.fetch(id: id)?.harvestableParts ?? []
+        case .cultivar(let id):
+            guard let cultivar = try CultivarRepository(personal).fetch(id: id) else {
+                return []
+            }
+            return try species.fetch(id: cultivar.speciesID)?.harvestableParts ?? []
+        }
+    }
+
     public func activeBeds() throws -> [(bed: Bed, gardenName: String)] {
         var found: [(Bed, String)] = []
         let structures = self.structures
@@ -78,8 +94,41 @@ public struct CaptureDefaults {
         nonmutating set { store.set(newValue?.rawValue, forKey: Self.bedKey) }
     }
 
-    public var lastHarvestUnit: HarvestUnit? {
-        get { store.string(forKey: Self.unitKey).flatMap(HarvestUnit.init(rawValue:)) }
-        nonmutating set { store.set(newValue?.rawValue, forKey: Self.unitKey) }
+    public var lastHarvestUnit: HarvestUnitChoice? {
+        get { store.string(forKey: Self.unitKey).flatMap(HarvestUnitChoice.init(storageValue:)) }
+        nonmutating set { store.set(newValue?.storageValue, forKey: Self.unitKey) }
+    }
+
+    public var preferredUnitSystem: UnitSystem {
+        get { UnitSystemPreference(store: store).system }
+        nonmutating set { UnitSystemPreference(store: store).system = newValue }
+    }
+}
+
+public enum HarvestUnitChoice: Hashable, Sendable {
+    case unit(QuantityUnit)
+    case custom
+
+    public var storageValue: String {
+        switch self {
+        case .unit(let unit): unit.rawValue
+        case .custom: "custom"
+        }
+    }
+
+    public init?(storageValue: String) {
+        if storageValue == "custom" {
+            self = .custom
+        } else if let unit = QuantityUnit(rawValue: storageValue) {
+            self = .unit(unit)
+        } else {
+            return nil
+        }
+    }
+
+    public static func ordered(preferring system: UnitSystem) -> [HarvestUnitChoice] {
+        let preferred = QuantityUnit.allCases.filter { $0.system == system || $0.system == nil }
+        let others = QuantityUnit.allCases.filter { $0.system != system && $0.system != nil }
+        return (preferred + others).map(HarvestUnitChoice.unit) + [.custom]
     }
 }

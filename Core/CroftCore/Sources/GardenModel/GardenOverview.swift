@@ -12,6 +12,7 @@ public struct PlantingSummary: Equatable, Sendable, Identifiable {
 public enum PlantingActivityKind: Equatable, Sendable {
     case planted
     case transplanted
+    case firstHarvest
     case finished
     case failed
 }

@@ -36,6 +36,7 @@ extension PlantingActivityKind {
         switch self {
         case .planted: "Planted"
         case .transplanted: "Transplanted"
+        case .firstHarvest: "First harvest"
         case .finished: "Finished"
         case .failed: "Failed"
         }

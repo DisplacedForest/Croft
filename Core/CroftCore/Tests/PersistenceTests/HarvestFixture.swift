@@ -62,16 +62,14 @@ final class HarvestFixture {
     func harvest(
         of planting: Planting? = nil,
         on date: Date = harvestedDate,
-        quantity: Double = 1.5,
-        unit: HarvestUnit = .kilogram,
-        customUnit: String? = nil
-    ) -> Harvest {
+        yield: HarvestYield? = nil,
+        part: HarvestablePart? = nil
+    ) throws -> Harvest {
         Harvest(
             plantingID: (planting ?? tomatoPlanting).id,
             harvestedOn: date,
-            quantity: quantity,
-            unit: unit,
-            customUnit: customUnit
+            yield: try yield ?? measured(1.5, .kilogram),
+            harvestedPart: part
         )
     }
 
@@ -112,20 +110,30 @@ final class HarvestFixture {
         }
     }
 
-    func insertUnchecked(id: String, unit: String, customUnit: String?) throws {
+    func insertUnchecked(
+        id: String,
+        unit: String,
+        family: String?,
+        customUnit: String?
+    ) throws {
         try database.writer.write { db in
             try db.execute(sql: "PRAGMA ignore_check_constraints = ON")
             try db.execute(
                 sql: """
                     INSERT INTO harvest
-                        (id, planting_id, harvested_on, quantity, unit, custom_unit)
-                    VALUES (?, ?, '2024-07-03 12:00:00', 2.0, ?, ?)
+                        (id, planting_id, harvested_on, yield_amount, yield_unit,
+                         yield_family, custom_unit)
+                    VALUES (?, ?, '2024-07-03 12:00:00', 2.0, ?, ?, ?)
                     """,
-                arguments: [id, tomatoPlanting.id.rawValue, unit, customUnit]
+                arguments: [id, tomatoPlanting.id.rawValue, unit, family, customUnit]
             )
             try db.execute(sql: "PRAGMA ignore_check_constraints = OFF")
         }
     }
+}
+
+func measured(_ amount: Double, _ unit: QuantityUnit) throws -> HarvestYield {
+    .measured(try Quantity(amount: amount, unit: unit))
 }
 
 let harvestedDate = Date(timeIntervalSince1970: 1_720_000_000)

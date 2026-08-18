@@ -9,14 +9,17 @@ public enum HarvestError: Error, Hashable {
 }
 
 public struct HarvestTotal: Equatable, Sendable {
-    public let unit: HarvestUnit
-    public let customUnit: String?
+    public enum Kind: Equatable, Hashable, Sendable {
+        case family(UnitFamily)
+        case custom(String)
+    }
+
+    public let kind: Kind
     public let total: Double
     public let count: Int
 
-    public init(unit: HarvestUnit, customUnit: String?, total: Double, count: Int) {
-        self.unit = unit
-        self.customUnit = customUnit
+    public init(kind: Kind, total: Double, count: Int) {
+        self.kind = kind
         self.total = total
         self.count = count
     }
@@ -24,6 +27,18 @@ public struct HarvestTotal: Equatable, Sendable {
 
 public struct HarvestRepository: Sendable {
     private let writer: any DatabaseWriter
+
+    private static let totalsSelection = """
+        SELECT h.yield_family AS family, h.custom_unit AS custom_unit,
+               SUM(h.yield_amount) AS total, COUNT(*) AS count,
+               MIN(h.id) AS sample_id
+        FROM harvest h
+        """
+
+    private static let totalsGrouping = """
+        GROUP BY h.yield_family, h.custom_unit
+        ORDER BY h.yield_family IS NULL, h.yield_family, h.custom_unit
+        """
 
     public init(_ database: AppDatabase) {
         writer = database.writer
@@ -87,22 +102,20 @@ public struct HarvestRepository: Sendable {
     }
 
     public func totals(forPlanting plantingID: Planting.ID) throws -> [HarvestTotal] {
-        try writer.read { db in
-            try Self.totals(
-                try Row.fetchAll(
-                    db,
-                    sql: """
-                        SELECT unit, custom_unit, SUM(quantity) AS total,
-                               COUNT(*) AS count, MIN(id) AS sample_id
-                        FROM harvest
-                        WHERE planting_id = :planting
-                        GROUP BY unit, custom_unit
-                        ORDER BY unit, custom_unit
-                        """,
-                    arguments: ["planting": plantingID.rawValue]
-                )
-            )
-        }
+        try totalsQuery(
+            clauses: "WHERE h.planting_id = :scope",
+            argument: plantingID.rawValue
+        )
+    }
+
+    public func totals(forBed bedID: Bed.ID) throws -> [HarvestTotal] {
+        try totalsQuery(
+            clauses: """
+                JOIN planting p ON p.id = h.planting_id
+                WHERE p.bed_id = :scope
+                """,
+            argument: bedID.rawValue
+        )
     }
 
     public func totals(of identity: PlantIdentity) throws -> [HarvestTotal] {
@@ -116,22 +129,28 @@ public struct HarvestRepository: Sendable {
             case .cultivar(let id): id.rawValue
             case .species(let id): id.rawValue
             }
-        return try writer.read { db in
-            try Self.totals(
-                try Row.fetchAll(
-                    db,
-                    sql: """
-                        SELECT h.unit AS unit, h.custom_unit AS custom_unit,
-                               SUM(h.quantity) AS total, COUNT(*) AS count,
-                               MIN(h.id) AS sample_id
-                        FROM harvest h
-                        JOIN planting p ON p.id = h.planting_id
-                        WHERE p.\(column) = :identity
-                        GROUP BY h.unit, h.custom_unit
-                        ORDER BY h.unit, h.custom_unit
-                        """,
-                    arguments: ["identity": value]
-                )
+        return try totalsQuery(
+            clauses: """
+                JOIN planting p ON p.id = h.planting_id
+                WHERE p.\(column) = :scope
+                """,
+            argument: value
+        )
+    }
+
+    public func totals(inSeason year: Int) throws -> [HarvestTotal] {
+        try totalsQuery(
+            clauses: "WHERE CAST(strftime('%Y', h.harvested_on) AS INTEGER) = :scope",
+            argument: year
+        )
+    }
+
+    public func firstHarvestDate(forPlanting plantingID: Planting.ID) throws -> Date? {
+        try writer.read { db in
+            try Date.fetchOne(
+                db,
+                sql: "SELECT MIN(harvested_on) FROM harvest WHERE planting_id = :planting",
+                arguments: ["planting": plantingID.rawValue]
             )
         }
     }
@@ -144,18 +163,39 @@ public struct HarvestRepository: Sendable {
         }
     }
 
+    private func totalsQuery(
+        clauses: String,
+        argument: some DatabaseValueConvertible & Sendable
+    ) throws -> [HarvestTotal] {
+        try writer.read { db in
+            try Self.totals(
+                try Row.fetchAll(
+                    db,
+                    sql: [Self.totalsSelection, clauses, Self.totalsGrouping]
+                        .joined(separator: "\n"),
+                    arguments: ["scope": argument]
+                )
+            )
+        }
+    }
+
     private static func totals(_ rows: [Row]) throws -> [HarvestTotal] {
         try rows.map { row in
-            HarvestTotal(
-                unit: try HarvestRecord.decodeUnit(
-                    row["unit"],
-                    pairedWith: row["custom_unit"],
-                    rowID: row["sample_id"]
-                ),
-                customUnit: row["custom_unit"],
-                total: row["total"],
-                count: row["count"]
-            )
+            let kind: HarvestTotal.Kind
+            let family: String? = row["family"]
+            let customUnit: String? = row["custom_unit"]
+            switch (family, customUnit) {
+            case (.some(let family), nil):
+                guard let parsed = UnitFamily(rawValue: family) else {
+                    throw HarvestError.malformedUnit(row["sample_id"])
+                }
+                kind = .family(parsed)
+            case (nil, .some(let customUnit)):
+                kind = .custom(customUnit)
+            default:
+                throw HarvestError.malformedUnit(row["sample_id"])
+            }
+            return HarvestTotal(kind: kind, total: row["total"], count: row["count"])
         }
     }
 
