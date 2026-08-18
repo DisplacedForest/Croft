@@ -114,6 +114,7 @@ jobs:
             mkdir -p "$dir"
             cp "$PROFILE_STAGING" "$dir/$profile_uuid.provisionprofile"
           done
+          echo "uuid=$profile_uuid" >> "$GITHUB_OUTPUT"
           expected_name="$(sed -n 's/^ *PROVISIONING_PROFILE_SPECIFIER: //p' project.yml)"
           if [ "$profile_name" != "$expected_name" ]; then
             echo "Provisioning profile is named '$profile_name' but project.yml expects '$expected_name'." >&2
@@ -121,7 +122,6 @@ jobs:
             exit 1
           fi
           echo "name=$profile_name" >> "$GITHUB_OUTPUT"
-          echo "uuid=$profile_uuid" >> "$GITHUB_OUTPUT"
           echo "Installed profile $profile_name ($profile_uuid)"
 
       - name: Cache SwiftPM build
