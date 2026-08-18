@@ -3,54 +3,48 @@ import Persistence
 import SwiftUI
 import Today
 
-import struct Domain.GardenTask
-
-private struct GardenTaskStore: GardenTaskProviding {
-    let repository: GardenTaskRepository
-
-    func openTasks() throws -> [GardenTask] {
-        try repository.openTasks()
-    }
-
-    func complete(id: GardenTask.ID, on date: Date) throws {
-        try repository.complete(id: id, on: date)
-    }
-}
-
 struct TodayView: View {
     @Environment(\.appStores) private var stores
     @Environment(CaptureStore.self) private var capture: CaptureStore?
     @State private var model = TodayViewModel(
         weatherProvider: SystemWeatherProvider(),
-        locationProvider: SystemLocationProvider()
+        locationProvider: SystemLocationProvider(),
+        forecastProvider: SystemWeatherProvider()
     )
-    @State private var tasks: TodayTasksModel?
+    @State private var feed: TodayFeedStore?
+    @State private var showingForecast = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
-                clock
-                weatherBlock
-                gardenBlock
+                header
+                if let feed {
+                    if feed.items.isEmpty {
+                        quietBlock(feed)
+                    } else {
+                        attentionCard(feed)
+                    }
+                    if !feed.recentLines.isEmpty {
+                        recentlyCard(feed)
+                    }
+                }
             }
             .padding(CroftTheme.space(8))
             .frame(maxWidth: 560, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .onChange(of: capture?.saveCount) { _, _ in
-            tasks?.refresh()
+            feed?.refresh()
         }
         .task {
             await model.loadWeather()
             await recordTodayWeather()
         }
         .task {
-            if tasks == nil, let database = stores?.database {
-                let tasksModel = TodayTasksModel(
-                    provider: GardenTaskStore(repository: GardenTaskRepository(database))
-                )
-                tasksModel.refresh()
-                tasks = tasksModel
+            if feed == nil {
+                let store = TodayFeedStore(stores: stores)
+                store.refresh()
+                feed = store
             }
         }
         .task {
@@ -71,67 +65,74 @@ struct TodayView: View {
         await recorder.recordToday(for: property)
     }
 
-    private var clock: some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
-            Text(model.now, format: .dateTime.weekday(.wide).month(.wide).day())
-                .font(CroftTheme.display)
-            Text(model.now, format: .dateTime.hour().minute())
-                .font(CroftTheme.heading)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    @ViewBuilder private var weatherBlock: some View {
-        if case .loaded(let snapshot) = model.weather {
-            VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-                Label(snapshot.conditionDescription, systemImage: snapshot.symbolName)
+    private var header: some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
+                Text(model.now, format: .dateTime.weekday(.wide).month(.wide).day())
                     .font(CroftTheme.heading)
-                    .foregroundStyle(Color.domainWater)
-                Text(
-                    snapshot.temperature, format: .measurement(width: .abbreviated, usage: .weather)
-                )
-                .font(CroftTheme.display)
-                attribution
-            }
-            .padding(CroftTheme.space(5))
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                Color.domainWater.opacity(0.12),
-                in: RoundedRectangle(cornerRadius: CroftTheme.space(3))
-            )
-        }
-    }
-
-    @ViewBuilder private var attribution: some View {
-        HStack(spacing: CroftTheme.space(2)) {
-            Label(" Weather", systemImage: "apple.logo")
-                .labelStyle(.titleOnly)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            if let url = URL(string: "https://weatherkit.apple.com/legal-attribution.html") {
-                Link("Legal", destination: url)
+                Text(model.now, format: .dateTime.hour().minute())
                     .font(.caption)
-                    .foregroundStyle(Color.domainWater)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: CroftTheme.space(4))
+            weatherChip
+        }
+    }
+
+    @ViewBuilder private var weatherChip: some View {
+        if case .loaded(let snapshot) = model.weather {
+            Button {
+                showingForecast = true
+            } label: {
+                HStack(spacing: CroftTheme.space(2)) {
+                    Image(systemName: snapshot.symbolName)
+                        .foregroundStyle(Color.domainWater)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text(
+                            snapshot.temperature,
+                            format: .measurement(width: .abbreviated, usage: .weather)
+                        )
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color.domainWater)
+                        Text(snapshot.conditionDescription)
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.vertical, CroftTheme.space(2))
+                .padding(.horizontal, CroftTheme.space(3))
+                .background(
+                    Color.domainWater.opacity(0.12),
+                    in: RoundedRectangle(cornerRadius: CroftTheme.space(3))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Seven day forecast")
+            .popover(isPresented: $showingForecast, arrowEdge: .bottom) {
+                forecastPopover
             }
         }
     }
 
-    private var gardenBlock: some View {
+    private var forecastPopover: some View {
+        ForecastPopover(model: model)
+    }
+
+    private func attentionCard(_ feed: TodayFeedStore) -> some View {
         VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
-            Text("In the garden")
-                .font(CroftTheme.heading)
-                .foregroundStyle(Color.domainGarden)
-            if let tasks, !tasks.isEmpty {
-                if !tasks.overdue.isEmpty {
-                    taskGroup("Overdue", tasks.overdue, model: tasks, showsDueDate: true)
-                }
-                if !tasks.dueToday.isEmpty {
-                    taskGroup("Today", tasks.dueToday, model: tasks, showsDueDate: false)
-                }
-            } else {
-                Text("Nothing needs doing today.")
-                    .font(CroftTheme.supporting)
+            HStack(alignment: .firstTextBaseline) {
+                Text("Needs attention")
+                    .font(CroftTheme.heading)
+                    .foregroundStyle(Color.domainGarden)
+                Spacer()
+                Text(feed.itemCount == 1 ? "1 item" : "\(feed.itemCount) items")
+                    .font(.caption)
                     .foregroundStyle(.secondary)
+            }
+            VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
+                ForEach(feed.items) { item in
+                    attentionRow(item, feed: feed)
+                }
             }
         }
         .padding(CroftTheme.space(5))
@@ -142,44 +143,161 @@ struct TodayView: View {
         )
     }
 
-    private func taskGroup(
-        _ title: String,
-        _ group: [GardenTask],
-        model: TodayTasksModel,
-        showsDueDate: Bool
-    ) -> some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-            Text(title)
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(showsDueDate ? Color.domainHealth : Color.domainGarden)
-                .textCase(.uppercase)
-            ForEach(group, id: \.id) { item in
-                taskRow(item, model: model, showsDueDate: showsDueDate)
+    private func attentionRow(_ item: AttentionItem, feed: TodayFeedStore) -> some View {
+        HStack(alignment: .top, spacing: CroftTheme.space(3)) {
+            Circle()
+                .fill(accent(for: item.kind))
+                .frame(width: 8, height: 8)
+                .padding(.top, CroftTheme.space(1))
+            VStack(alignment: .leading, spacing: CroftTheme.space(0.5)) {
+                Text(item.kind.label)
+                    .font(.system(size: 10, weight: .semibold))
+                    .tracking(0.8)
+                    .textCase(.uppercase)
+                    .foregroundStyle(accent(for: item.kind))
+                Text(item.title)
+                    .font(.system(size: 13))
+                if let reason = item.reason {
+                    Text(reason)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer(minLength: CroftTheme.space(2))
+            if let taskID = item.taskID {
+                Button {
+                    feed.complete(taskID: taskID)
+                } label: {
+                    Image(systemName: "circle")
+                        .foregroundStyle(Color.domainGarden)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Complete \(item.title)")
             }
         }
     }
 
-    private func taskRow(
-        _ item: GardenTask,
-        model: TodayTasksModel,
-        showsDueDate: Bool
-    ) -> some View {
-        HStack(spacing: CroftTheme.space(2)) {
-            Button {
-                model.complete(item)
-            } label: {
-                Image(systemName: "circle")
-                    .foregroundStyle(Color.domainGarden)
+    private func quietBlock(_ feed: TodayFeedStore) -> some View {
+        VStack(spacing: CroftTheme.space(3)) {
+            Image(systemName: "leaf")
+                .font(.title)
+                .foregroundStyle(Color.domainGarden)
+            Text("The garden is quiet")
+                .font(CroftTheme.heading)
+                .foregroundStyle(Color.domainGarden)
+            Text(quietDetail(feed))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: 320)
+        .padding(CroftTheme.space(6))
+        .frame(maxWidth: .infinity)
+        .background(
+            Color.domainGarden.opacity(0.07),
+            in: RoundedRectangle(cornerRadius: CroftTheme.space(3))
+        )
+    }
+
+    private func quietDetail(_ feed: TodayFeedStore) -> String {
+        let base = "Nothing needs attention today."
+        guard let hint = feed.nextWindowHint else {
+            return base
+        }
+        return "\(base) \(hint)"
+    }
+
+    private func recentlyCard(_ feed: TodayFeedStore) -> some View {
+        VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
+            Text("Recently")
+                .font(CroftTheme.heading)
+            VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
+                ForEach(feed.recentLines, id: \.self) { line in
+                    Text(line)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.secondary)
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Complete \(item.title)")
-            Text(item.title)
-                .font(CroftTheme.supporting)
-            Spacer()
-            if showsDueDate, let due = item.dueOn {
-                Text(due, format: .dateTime.month(.abbreviated).day())
+        }
+        .padding(CroftTheme.space(5))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            Color.surfaceSecondary,
+            in: RoundedRectangle(cornerRadius: CroftTheme.space(3))
+        )
+    }
+
+    private func accent(for kind: AttentionKind) -> Color {
+        switch kind {
+        case .overdueTask, .harvestCheck: Color.domainHealth
+        case .dueTodayTask, .plantableNow: Color.domainGarden
+        case .quietLately: Color.primary.opacity(0.3)
+        }
+    }
+}
+
+private struct ForecastPopover: View {
+    let model: TodayViewModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
+            switch model.forecast {
+            case .idle, .loading:
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            case .unavailable:
+                Text("The forecast is unavailable.")
+                    .font(CroftTheme.supporting)
+                    .foregroundStyle(.secondary)
+            case .loaded(let days):
+                VStack(spacing: CroftTheme.space(2)) {
+                    ForEach(days.prefix(7), id: \.date) { day in
+                        row(day)
+                    }
+                }
+            }
+            attribution
+        }
+        .padding(CroftTheme.space(4))
+        .frame(width: 260)
+        .task {
+            await model.loadForecast()
+        }
+    }
+
+    private func row(_ day: DayForecast) -> some View {
+        HStack(spacing: CroftTheme.space(2)) {
+            Text(day.date, format: .dateTime.weekday(.abbreviated))
+                .font(.caption)
+                .frame(width: 34, alignment: .leading)
+            Image(systemName: day.symbolName)
+                .font(.caption)
+                .foregroundStyle(Color.domainWater)
+                .frame(width: 20)
+            Spacer(minLength: CroftTheme.space(1))
+            if day.precipitationChance > 0 {
+                Text(day.precipitationChance, format: .percent.precision(.fractionLength(0)))
+                    .font(.caption2)
+                    .foregroundStyle(Color.domainWater)
+            }
+            Text(day.high, format: .measurement(width: .narrow, usage: .weather))
+                .font(.caption)
+            Text(day.low, format: .measurement(width: .narrow, usage: .weather))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var attribution: some View {
+        HStack(spacing: CroftTheme.space(2)) {
+            Label(" Weather", systemImage: "apple.logo")
+                .labelStyle(.titleOnly)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            if let url = URL(string: "https://weatherkit.apple.com/legal-attribution.html") {
+                Link("Legal", destination: url)
                     .font(.caption)
-                    .foregroundStyle(Color.domainHealth)
+                    .foregroundStyle(Color.domainWater)
             }
         }
     }

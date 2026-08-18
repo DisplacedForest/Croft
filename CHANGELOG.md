@@ -30,6 +30,11 @@ All notable changes to Croft are documented here. The format follows
   lineage, stage pills with day counts, observations with notes and photos,
   harvests with yields, and the first harvest called out with days from
   sowing, plus header stats for days to first harvest and total yield.
+- Today is a ranked attention list: overdue and due tasks completable in
+  place, harvest checks past expected maturity, what is plantable now,
+  plantings gone quiet, and a Recently card, each with its reason, capped so
+  a busy June stays readable. The weather chip opens a seven-day forecast,
+  and a quiet winter day says so calmly instead of showing a blank page.
 - Croft updates itself: releases are offered in the app through Sparkle, with
   a Check for Updates menu item and scheduled background checks you consent
   to on first launch.
