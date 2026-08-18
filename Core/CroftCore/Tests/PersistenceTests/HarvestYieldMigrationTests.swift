@@ -105,8 +105,8 @@ struct HarvestYieldMigrationTests {
         let expectations: [String: Double] = [
             "h-gram": 500,
             "h-kilogram": 1500,
-            "h-ounce": 8 * QuantityUnit.ounce.canonicalFactor,
-            "h-pound": 2 * QuantityUnit.pound.canonicalFactor,
+            "h-ounce": 226.796_185,
+            "h-pound": 907.184_74,
         ]
         for (id, amount) in expectations {
             let row = try #require(rows[id])
