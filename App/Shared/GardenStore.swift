@@ -8,6 +8,7 @@ import enum Domain.BedKind
 import struct Domain.Garden
 import struct Domain.GrowingArea
 import struct Domain.Planting
+import enum Domain.UnitSystem
 
 @MainActor
 @Observable
@@ -57,6 +58,23 @@ final class GardenStore {
             return nil
         }
         return try? PlantingDetail.load(id, from: database)
+    }
+
+    func plantingTimeline(
+        _ id: Planting.ID,
+        photos: PhotoStore?,
+        display: UnitSystem,
+        threatNames: Set<String>
+    ) -> PlantingTimeline? {
+        guard let database, let photos else {
+            return nil
+        }
+        return try? PlantingTimeline.load(
+            id,
+            from: database,
+            photos: photos,
+            display: display,
+            threatNames: threatNames)
     }
 
     func addGarden(named name: String) {

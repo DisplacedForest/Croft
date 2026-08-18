@@ -15,6 +15,10 @@ All notable changes to Croft are documented here. The format follows
 - Harvests record a harvested part and structured yield in any mass, volume,
   or count unit, entered in your preferred measurement system, with totals
   that add up across units and a first-harvest date on the planting timeline.
+- The planting page tells the whole season as one timeline: planted with its
+  lineage, stage pills with day counts, observations with notes and photos,
+  harvests with yields, and the first harvest called out with days from
+  sowing, plus header stats for days to first harvest and total yield.
 
 ## 0.1.0 - 2026-08-18
 

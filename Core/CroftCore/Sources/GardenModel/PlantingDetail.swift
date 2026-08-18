@@ -2,11 +2,6 @@ import Domain
 import Foundation
 import Persistence
 
-public struct PlantingTimelineEvent: Equatable, Sendable {
-    public let kind: PlantingActivityKind
-    public let date: Date
-}
-
 public struct PlantingDetail: Equatable, Sendable {
     public let planting: Planting
     public let plantName: String
@@ -14,7 +9,6 @@ public struct PlantingDetail: Equatable, Sendable {
     public let bedName: String
     public let locationName: String?
     public let lineage: String?
-    public let timeline: [PlantingTimelineEvent]
 
     public static func load(
         _ id: Planting.ID,
@@ -25,29 +19,13 @@ public struct PlantingDetail: Equatable, Sendable {
         }
         let names = try PlantNameIndex(database)
         let place = try BedDetail.locate(planting.bedID, GardenStructureRepository(database))
-        var events: [PlantingTimelineEvent] = []
-        if let planted = planting.plantedOn {
-            events.append(PlantingTimelineEvent(kind: .planted, date: planted))
-        }
-        if let transplanted = planting.transplantedOn {
-            events.append(PlantingTimelineEvent(kind: .transplanted, date: transplanted))
-        }
-        if let firstHarvest = try HarvestRepository(database).firstHarvestDate(forPlanting: id) {
-            events.append(PlantingTimelineEvent(kind: .firstHarvest, date: firstHarvest))
-        }
-        if let ended = planting.endedOn {
-            events.append(
-                PlantingTimelineEvent(
-                    kind: planting.status == .failed ? .failed : .finished, date: ended))
-        }
         return PlantingDetail(
             planting: planting,
             plantName: names.name(for: planting.identity),
             botanicalName: try botanicalName(of: planting.identity, database),
             bedName: place?.bed.name ?? "Unknown bed",
             locationName: place?.locationName,
-            lineage: try lineage(of: planting.source, database),
-            timeline: events.sorted { $0.date < $1.date }
+            lineage: try lineage(of: planting.source, database)
         )
     }
 

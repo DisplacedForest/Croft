@@ -7,19 +7,29 @@ struct PlantingDetailView: View {
     @Environment(GardenStore.self) private var store
     @Environment(CaptureStore.self) private var capture
     let plantingID: Planting.ID
+    @State private var threatNames: Set<String> = []
 
     var body: some View {
         let capture = capture
         if let detail = store.plantingDetail(plantingID) {
+            let timeline = store.plantingTimeline(
+                plantingID,
+                photos: capture.context?.photos,
+                display: capture.context?.defaults.preferredUnitSystem ?? .metric,
+                threatNames: threatNames)
             ScrollView {
                 VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
-                    header(detail)
+                    header(detail, stats: timeline?.stats)
                     facts(detail)
-                    timeline(detail)
-                    historyScaffold
+                    if let timeline {
+                        PlantingTimelineSection(timeline: timeline, photos: capture.context?.photos)
+                    }
                 }
                 .padding(CroftTheme.space(6))
                 .frame(maxWidth: 640, alignment: .leading)
+            }
+            .task(id: capture.saveCount) {
+                threatNames = ThreatNameIndex.names(from: capture.context?.knowledge)
             }
             .navigationTitle(detail.plantName)
             .toolbar {
@@ -48,10 +58,16 @@ struct PlantingDetailView: View {
         }
     }
 
-    private func header(_ detail: PlantingDetail) -> some View {
+    private func header(_ detail: PlantingDetail, stats: PlantingTimeline.Stats?) -> some View {
         VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-            Text(detail.plantName)
-                .font(CroftTheme.display)
+            HStack(alignment: .bottom, spacing: CroftTheme.space(4)) {
+                Text(detail.plantName)
+                    .font(CroftTheme.display)
+                Spacer()
+                if let stats {
+                    statChips(stats)
+                }
+            }
             if let botanical = detail.botanicalName {
                 Text(botanical)
                     .font(.system(.callout, design: .serif).italic())
@@ -118,67 +134,31 @@ struct PlantingDetailView: View {
         }
     }
 
-    private func timeline(_ detail: PlantingDetail) -> some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
-            Text("Timeline")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-            if detail.timeline.isEmpty {
-                Text("No dates recorded yet.")
-                    .font(CroftTheme.supporting)
-                    .foregroundStyle(.tertiary)
-            } else {
-                VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-                    ForEach(Array(detail.timeline.enumerated()), id: \.offset) { _, event in
-                        HStack(spacing: CroftTheme.space(3)) {
-                            Circle()
-                                .fill(.tint)
-                                .frame(width: 6, height: 6)
-                            Text(event.kind.displayName)
-                                .font(.body.weight(.medium))
-                            Text(event.date.gardenDisplay)
-                                .font(CroftTheme.supporting)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
+    private func statChips(_ stats: PlantingTimeline.Stats) -> some View {
+        HStack(spacing: CroftTheme.space(2)) {
+            if let days = stats.daysToFirstHarvest {
+                statChip("\(days) days", "to first harvest")
+            }
+            if let yield = stats.totalYield {
+                statChip(
+                    yield,
+                    stats.harvestCount == 1
+                        ? "from 1 harvest" : "across \(stats.harvestCount) harvests")
             }
         }
     }
 
-    private var historyScaffold: some View {
-        VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
-            Text("Along the way")
-                .font(.headline)
+    private func statChip(_ value: String, _ caption: String) -> some View {
+        VStack(alignment: .leading, spacing: CroftTheme.space(0.5)) {
+            Text(value)
+                .font(.system(.body, design: .serif).weight(.semibold))
+                .foregroundStyle(Color.domainGarden)
+            Text(caption)
+                .font(.caption2)
                 .foregroundStyle(.secondary)
-            historyRow(
-                "eye", "Observations",
-                "Notes on how this planting is doing will gather here.")
-            historyRow(
-                "basket", "Harvests",
-                "What you pick from it will be tallied here.")
-            historyRow(
-                "checklist", "Tasks",
-                "Watering, feeding, and pruning reminders will live here.")
         }
-    }
-
-    private func historyRow(_ symbol: String, _ title: String, _ text: String) -> some View {
-        HStack(alignment: .top, spacing: CroftTheme.space(3)) {
-            Image(systemName: symbol)
-                .font(.system(.body, weight: .light))
-                .foregroundStyle(.tint)
-                .frame(width: 24)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.body.weight(.medium))
-                Text(text)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .padding(CroftTheme.space(3))
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, CroftTheme.space(3.5))
+        .padding(.vertical, CroftTheme.space(2.5))
+        .background(Color.domainGarden.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
     }
 }
