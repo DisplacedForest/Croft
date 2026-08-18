@@ -9,7 +9,7 @@ enum CaptureTargetResolver {
             .bed(id)
         case .plant(let identity):
             .plant(identity)
-        case nil:
+        case .season, nil:
             nil
         }
     }
