@@ -4,7 +4,7 @@ All notable changes to Croft are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.1.0 - 2026-08-18
 
 ### Added
 
@@ -40,8 +40,6 @@ All notable changes to Croft are documented here. The format follows
 - Capture flows on macOS for plantings, observations (photos via file picker
   and drag and drop), harvests, tasks, and seed lots, with last-used defaults
   and keyboard shortcuts.
-- A domain color palette derived from the app icon, enforced by runtime
-  design-token tests.
 
 ### Fixed
 
