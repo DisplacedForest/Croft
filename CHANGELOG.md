@@ -8,6 +8,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- A frost alert at the top of Today when the next two nights dip to a level
+  your plants care about, naming the at-risk plantings and their beds with
+  the forecast low. Tolerances come from each plant's profile and are never
+  guessed; no coordinates or no tender plantings means no alert.
+
 - Observations can record a typed lifecycle stage (germinated, transplanted,
   first flower, first fruit set, pulled) alongside the note.
 - Property settings for location, hardiness zone, and last and first frost
