@@ -50,6 +50,7 @@ struct TasksSheet: View {
         }
         .padding(CroftTheme.space(6))
         .frame(minWidth: 440, maxWidth: 540, minHeight: 380)
+        .croftScreenSurface()
         .sheet(isPresented: $adding) {
             AddTaskSheet(context: context) {
                 checklist.refresh()
