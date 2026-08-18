@@ -1,5 +1,7 @@
 import Foundation
 
+import struct Domain.LocalizedPlantName
+
 public enum TaxonomyCodingError: Error, Equatable {
     case unreadableListEncoding
     case unknownRawValue(table: String, column: String, value: String)
@@ -21,6 +23,14 @@ enum TaxonomyCoding {
         from text: String
     ) throws -> [Element] {
         try JSONDecoder().decode([Element].self, from: Data(text.utf8))
+    }
+
+    static func encodeCommonNames(
+        plain: [String],
+        localized: [LocalizedPlantName]
+    ) throws -> String {
+        let entries = plain.map(CommonNameEntry.plain) + localized.map(CommonNameEntry.localized)
+        return try encodeList(entries)
     }
 
     static func bounds<Bound>(_ range: ClosedRange<Bound>?) -> (lower: Bound?, upper: Bound?) {
@@ -99,5 +109,56 @@ struct TaxonomyRowDecoder {
             throw TaxonomyCodingError.unknownRawValue(table: table, column: column, value: raw)
         }
         return value
+    }
+}
+
+enum CommonNameEntry: Codable, Equatable {
+    case plain(String)
+    case localized(LocalizedPlantName)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let text = try? container.decode(String.self) {
+            self = .plain(text)
+        } else {
+            self = .localized(try container.decode(LocalizedPlantName.self))
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .plain(let text):
+            try container.encode(text)
+        case .localized(let name):
+            try container.encode(name)
+        }
+    }
+}
+
+struct SplitCommonNames {
+    let plain: [String]
+    let localized: [LocalizedPlantName]
+}
+
+extension TaxonomyRowDecoder {
+    func commonNames(from text: String, column: String) throws -> SplitCommonNames {
+        let entries: [CommonNameEntry]
+        do {
+            entries = try TaxonomyCoding.decodeList(CommonNameEntry.self, from: text)
+        } catch {
+            throw TaxonomyCodingError.malformedList(table: table, column: column)
+        }
+        var plain: [String] = []
+        var localized: [LocalizedPlantName] = []
+        for entry in entries {
+            switch entry {
+            case .plain(let name):
+                plain.append(name)
+            case .localized(let name):
+                localized.append(name)
+            }
+        }
+        return SplitCommonNames(plain: plain, localized: localized)
     }
 }

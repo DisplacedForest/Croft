@@ -14,8 +14,9 @@ public struct PlantPageLoader: Sendable {
     private let structures: GardenStructureRepository
     private let images: PlantImageStore
     private let threatResolver: PlantThreatResolver
+    private let locale: Locale
 
-    public init(knowledge: AppDatabase, personal: AppDatabase) {
+    public init(knowledge: AppDatabase, personal: AppDatabase, locale: Locale = .current) {
         self.knowledge = knowledge
         species = SpeciesRepository(knowledge)
         cultivars = CultivarRepository(knowledge)
@@ -25,10 +26,11 @@ public struct PlantPageLoader: Sendable {
         structures = GardenStructureRepository(personal)
         images = PlantImageStore(knowledge)
         threatResolver = PlantThreatResolver(knowledge: knowledge)
+        self.locale = locale
     }
 
-    public init(_ database: AppDatabase) {
-        self.init(knowledge: database, personal: database)
+    public init(_ database: AppDatabase, locale: Locale = .current) {
+        self.init(knowledge: database, personal: database, locale: locale)
     }
 
     public func listItems() throws -> [PlantListItem] {
@@ -37,15 +39,7 @@ public struct PlantPageLoader: Sendable {
         let speciesByID = Dictionary(uniqueKeysWithValues: allSpecies.map { ($0.id, $0) })
         let imagesByOwner = try images.imagesByOwner()
         var items = allSpecies.map { one in
-            PlantListItem(
-                id: one.id.rawValue,
-                identity: .species(one.id),
-                kind: .species,
-                displayName: titled(one.commonNames.first) ?? one.scientificName,
-                scientificName: one.scientificName,
-                otherNames: Array(one.commonNames.dropFirst()),
-                imageFile: imagesByOwner[one.id.rawValue]?.file
-            )
+            speciesItem(one, imagesByOwner: imagesByOwner)
         }
         items += allCultivars.map { cultivar in
             let parent = speciesByID[cultivar.speciesID]
@@ -69,6 +63,23 @@ public struct PlantPageLoader: Sendable {
         }
     }
 
+    private func speciesItem(
+        _ one: Species,
+        imagesByOwner: [String: PlantImage]
+    ) -> PlantListItem {
+        let preferred = one.preferredCommonName(for: locale)
+        let others = one.allCommonNames.filter { $0 != preferred }
+        return PlantListItem(
+            id: one.id.rawValue,
+            identity: .species(one.id),
+            kind: .species,
+            displayName: titled(preferred) ?? one.scientificName,
+            scientificName: one.scientificName,
+            otherNames: others,
+            imageFile: imagesByOwner[one.id.rawValue]?.file
+        )
+    }
+
     public func cropCatalog() throws -> CropCatalog {
         let allSpecies = try species.fetchAll()
         let allCultivars = try cultivars.fetchAll()
@@ -76,15 +87,7 @@ public struct PlantPageLoader: Sendable {
         let imagesByOwner = try images.imagesByOwner()
         let cultivarsBySpecies = Dictionary(grouping: allCultivars, by: \.speciesID)
         let groups = allSpecies.map { one in
-            let crop = PlantListItem(
-                id: one.id.rawValue,
-                identity: .species(one.id),
-                kind: .species,
-                displayName: titled(one.commonNames.first) ?? one.scientificName,
-                scientificName: one.scientificName,
-                otherNames: Array(one.commonNames.dropFirst()),
-                imageFile: imagesByOwner[one.id.rawValue]?.file
-            )
+            let crop = speciesItem(one, imagesByOwner: imagesByOwner)
             let varietals = (cultivarsBySpecies[one.id] ?? [])
                 .map { cultivar in
                     PlantListItem(

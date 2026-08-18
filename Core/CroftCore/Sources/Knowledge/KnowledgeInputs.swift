@@ -268,3 +268,15 @@ public struct ResistanceExample: Decodable, Sendable {
         verification = try container.decodeIfPresent(String.self, forKey: .verification)
     }
 }
+
+public struct LocalizedNamesFile: Decodable, Sendable {
+    public let meta: InputMeta
+    public let names: [LocalizedNameEntry]
+}
+
+public struct LocalizedNameEntry: Decodable, Sendable {
+    public let crop: String
+    public let locale: String
+    public let name: String
+    public let citations: [String]
+}

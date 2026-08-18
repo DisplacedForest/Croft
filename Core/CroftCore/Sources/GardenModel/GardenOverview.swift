@@ -118,11 +118,11 @@ struct PlantNameIndex {
     private let cultivarNames: [Cultivar.ID: String]
     private let speciesNames: [Species.ID: String]
 
-    init(_ database: AppDatabase) throws {
+    init(_ database: AppDatabase, locale: Locale = .current) throws {
         let species = try SpeciesRepository(database).fetchAll()
         speciesNames = Dictionary(
             uniqueKeysWithValues: species.map {
-                ($0.id, $0.commonNames.first ?? $0.scientificName)
+                ($0.id, $0.preferredCommonName(for: locale) ?? $0.scientificName)
             }
         )
         cultivarNames = Dictionary(

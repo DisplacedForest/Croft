@@ -10,6 +10,7 @@ public enum ImportError: Error, Equatable {
     case checksumMismatch(file: String, expected: String, actual: String)
     case undecodableInput(file: String, detail: String)
     case unknownCrop(record: String, crop: String)
+    case invalidLocalizedName(detail: String)
     case unknownReference(record: String, reference: String)
     case duplicateRecord(String)
     case unmappableValue(record: String, field: String, value: String)
@@ -50,9 +51,10 @@ public struct KnowledgeImporter {
     public static let catalogFile = "cultivar-catalog.sanitized.json"
     public static let pestDiseaseFile = "pest-disease-cultivar-seed.sanitized.json"
     public static let plantImagesFile = "plant-images.json"
+    public static let localizedNamesFile = "british-common-names.json"
     public static let importerVersion = "1"
     public static let requiredInputs = [cropProfilesFile, catalogFile, pestDiseaseFile]
-    public static let optionalInputs = [plantImagesFile]
+    public static let optionalInputs = [plantImagesFile, localizedNamesFile]
 
     let inputDirectory: URL
     let imagesDirectory: URL?
@@ -77,6 +79,7 @@ public struct KnowledgeImporter {
         let catalog: CatalogFile
         let pestDisease: PestDiseaseFile
         let images: PlantImagesFile?
+        let localizedNames: LocalizedNamesFile?
         let checksums: [String: String]
     }
 
@@ -113,13 +116,50 @@ public struct KnowledgeImporter {
             try verifyImageFiles(manifest)
             images = manifest
         }
+        var localizedNames: LocalizedNamesFile?
+        let localizedPath = inputDirectory.appendingPathComponent(Self.localizedNamesFile).path
+        if FileManager.default.fileExists(atPath: localizedPath) {
+            let file = try decode(LocalizedNamesFile.self, Self.localizedNamesFile)
+            try Self.validate(localizedNames: file, against: profiles)
+            localizedNames = file
+        }
         return Inputs(
             profiles: profiles,
             catalog: catalog,
             pestDisease: pestDisease,
             images: images,
+            localizedNames: localizedNames,
             checksums: checksums
         )
+    }
+
+    static func validate(
+        localizedNames file: LocalizedNamesFile,
+        against profiles: CropProfilesFile
+    ) throws {
+        let slugs = Set(profiles.crops.map(\.crop))
+        var seen = Set<String>()
+        for entry in file.names {
+            guard slugs.contains(entry.crop) else {
+                throw ImportError.invalidLocalizedName(detail: "unknown crop slug \(entry.crop)")
+            }
+            guard entry.locale.range(of: "^[a-z]{2}-[A-Z]{2}$", options: .regularExpression) != nil
+            else {
+                throw ImportError.invalidLocalizedName(
+                    detail: "malformed locale tag \(entry.locale) for \(entry.crop)")
+            }
+            guard !entry.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                throw ImportError.invalidLocalizedName(detail: "empty name for \(entry.crop)")
+            }
+            guard !entry.citations.isEmpty else {
+                throw ImportError.invalidLocalizedName(
+                    detail: "missing citations for \(entry.crop)")
+            }
+            guard seen.insert("\(entry.crop)|\(entry.locale)").inserted else {
+                throw ImportError.invalidLocalizedName(
+                    detail: "duplicate entry \(entry.crop) \(entry.locale)")
+            }
+        }
     }
 
     private func write(_ inputs: Inputs, to output: URL) throws -> ImportSummary {
