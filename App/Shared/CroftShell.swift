@@ -80,9 +80,6 @@ struct CroftShell: View {
             captureStore: captureStore,
             initialRoute: initialRoute
         )
-        .toolbar {
-            CaptureMenu(capture: captureStore)
-        }
         .modifier(CaptureSheetHost())
         .environment(captureStore)
         .environment(gardenStore)
@@ -126,10 +123,16 @@ struct SectionStack: View {
                         path.append(next)
                     }
                     .croftScreenSurface()
+                    .toolbar {
+                        CaptureMenu(capture: captureStore)
+                    }
                     .environment(gardenStore)
                     .environment(captureStore)
                 }
                 .croftScreenSurface()
+                .toolbar {
+                    CaptureMenu(capture: captureStore)
+                }
                 .environment(gardenStore)
                 .environment(captureStore)
         }

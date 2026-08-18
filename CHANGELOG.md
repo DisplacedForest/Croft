@@ -41,6 +41,8 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The Record menu now stays in the toolbar on bed, planting, and plant detail
+  screens instead of disappearing when you navigate into them.
 - A property record Croft can't read now shows an explicit message in
   Settings instead of posing as a fresh install, first-run setup stays out of
   the way so the stored record can't be overwritten, and a save that reaches
