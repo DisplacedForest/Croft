@@ -23,6 +23,10 @@ All notable changes to Croft are documented here. The format follows
   picker in each sheet, records a lifecycle stage on the visible planting in
   two clicks, and photos now paste from the clipboard as well as drag and
   drop.
+- The planting page tells the whole season as one timeline: planted with its
+  lineage, stage pills with day counts, observations with notes and photos,
+  harvests with yields, and the first harvest called out with days from
+  sowing, plus header stats for days to first harvest and total yield.
 - Croft updates itself: releases are offered in the app through Sparkle, with
   a Check for Updates menu item and scheduled background checks you consent
   to on first launch.
