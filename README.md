@@ -35,7 +35,7 @@ Under it all is one typed knowledge graph over SQLite ([GRDB](https://github.com
 
 ## Screenshots
 
-<img src=".github/assets/screenshot_today.png" alt="Today screen with weather and due garden tasks" width="100%">
+<img src=".github/assets/screenshot_today.png" alt="Today screen with due and overdue garden tasks" width="100%">
 <img src=".github/assets/screenshot_garden.png" alt="Garden view with beds and plantings" width="100%">
 <img src=".github/assets/screenshot_plant_page.png" alt="Plant page with cultivation detail and imagery" width="100%">
 <img src=".github/assets/screenshot_capture.png" alt="Capture sheet recording a harvest" width="100%">
