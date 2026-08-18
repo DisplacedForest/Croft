@@ -17,10 +17,20 @@ private struct StubWeatherProvider: WeatherProviding {
     func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot {
         try result.get()
     }
+
+    func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary {
+        Issue.record("the view model never asks for a daily summary")
+        throw StubFailure.unexpected
+    }
 }
 
 private struct UnreachableWeatherProvider: WeatherProviding {
     func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot {
+        Issue.record("weather provider must not be called when location fails")
+        throw StubFailure.unexpected
+    }
+
+    func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary {
         Issue.record("weather provider must not be called when location fails")
         throw StubFailure.unexpected
     }
