@@ -66,7 +66,8 @@ public struct GardenEditor: Sendable {
         try structures.moveGrowingArea(id, to: gardenID)
     }
 
-    private func homeProperty() throws -> Property {
+    @discardableResult
+    public func homeProperty() throws -> Property {
         if let existing = try structures.properties(includeArchived: true).first {
             return existing
         }

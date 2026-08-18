@@ -6,6 +6,7 @@ public enum GardenStructureError: Error, Hashable {
     case parentNotFound(String)
     case structureNotFound(String)
     case unknownBedKind(String)
+    case invalidPropertyDetails(String)
 }
 
 public enum BedParent: Hashable, Sendable {
@@ -124,7 +125,7 @@ public struct GardenStructureRepository: Sendable {
             if !includeArchived {
                 request = request.filter(Column("archived") == false)
             }
-            return try request.fetchAll(db).map { $0.model() }
+            return try request.fetchAll(db).map { try $0.model() }
         }
     }
 
@@ -270,6 +271,28 @@ extension GardenStructureRepository {
     public func property(id: Property.ID) throws -> Property? {
         try writer.read { db in
             try PropertyRecord.fetchOne(db, key: id.rawValue)?.model()
+        }
+    }
+
+    public func updatePropertyDetails(
+        _ id: Property.ID,
+        location: GeoCoordinate?,
+        hardinessZone: Int?,
+        lastFrost: MonthDay?,
+        firstFrost: MonthDay?
+    ) throws {
+        try writer.write { db in
+            guard var found = try PropertyRecord.fetchOne(db, key: id.rawValue) else {
+                throw GardenStructureError.structureNotFound(id.rawValue)
+            }
+            found.latitude = location?.latitude
+            found.longitude = location?.longitude
+            found.hardinessZone = hardinessZone
+            found.lastFrostMonth = lastFrost?.month
+            found.lastFrostDay = lastFrost?.day
+            found.firstFrostMonth = firstFrost?.month
+            found.firstFrostDay = firstFrost?.day
+            try found.update(db)
         }
     }
 
