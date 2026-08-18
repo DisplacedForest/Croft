@@ -14,6 +14,9 @@ settings:
 packages:
   CroftCore:
     path: Core/CroftCore
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.9.6
 targets:
   Croft-macOS:
     type: application
@@ -37,11 +40,13 @@ targets:
           - PlantCatalog
           - Today
           - Capture
+      - package: Sparkle
     settings:
       base:
         PRODUCT_NAME: Croft
         PRODUCT_BUNDLE_IDENTIFIER: com.displacedforest.croft
         GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: App/macOS/Info.plist
         CODE_SIGN_ENTITLEMENTS: App/macOS/Croft.entitlements
         INFOPLIST_KEY_NSLocationUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.

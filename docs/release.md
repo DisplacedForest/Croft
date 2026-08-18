@@ -12,7 +12,7 @@ A release is a notarized drag-to-install disk image: a signed, notarized, staple
    git push origin v0.1.0
    ```
 
-3. The workflow builds Croft-macOS in Release, signs it with the Developer ID Application certificate, notarizes it through notarytool, staples the ticket, and verifies the result with `codesign` and `spctl`. It then packages the stapled app into `Croft-<version>.dmg` (a volume named `Croft <version>` holding the app and an Applications symlink, built with hdiutil), signs the dmg with the same identity, notarizes and staples it too, and assesses it with `spctl --type open`. Finally it creates the GitHub release for the tag if one doesn't exist and attaches the dmg, the release's single canonical artifact.
+3. The workflow builds Croft-macOS in Release, signs it with the Developer ID Application certificate, notarizes it through notarytool, staples the ticket, and verifies the result with `codesign` and `spctl`. It then packages the stapled app into `Croft-<version>.dmg` (a volume named `Croft <version>` holding the app and an Applications symlink, built with hdiutil), signs the dmg with the same identity, notarizes and staples it too, and assesses it with `spctl --type open`. The dmg then gets its second signature: the job fetches the Sparkle distribution at a version pinned by sha256, signs the dmg with `sign_update` using the EdDSA private key from the `SPARKLE_ED_PRIVATE_KEY` secret, and writes `appcast.xml` with an enclosure pointing at the release's dmg download URL, the marketing version as `sparkle:shortVersionString`, and the run number as `sparkle:version` (matching the archived `CURRENT_PROJECT_VERSION`). Finally it creates the GitHub release for the tag if one doesn't exist and attaches both the dmg and `appcast.xml`. The app polls `https://github.com/DisplacedForest/Croft/releases/latest/download/appcast.xml`, which always resolves to the newest release's appcast; that URL is permanent and must never change.
 
 To rehearse without tagging, run the workflow manually from the Actions tab (workflow_dispatch) on any branch. A rehearsal signs and notarizes for real but uploads the dmg as a workflow artifact instead of creating a release.
 
@@ -29,6 +29,7 @@ All of these live in GitHub under Settings, Secrets and variables, Actions. None
 | `APPLE_API_KEY_ID` | Key ID of that API key |
 | `APPLE_API_ISSUER_ID` | Issuer ID from the App Store Connect API keys page |
 | `APPLE_TEAM_ID` | The 10-character Apple Developer team ID, shown under Membership details on developer.apple.com or in Xcode, Settings, Accounts |
+| `SPARKLE_ED_PRIVATE_KEY` | The Sparkle EdDSA private key that signs every update for the appcast, base64 as printed by Sparkle's `generate_keys -x`. Lives only here and in the password manager |
 
 ### Creating the material
 
@@ -44,6 +45,21 @@ All of these live in GitHub under Settings, Secrets and variables, Actions. None
    ```
 
 5. Paste each into its secret.
+
+### Sparkle update key
+
+Generate once with Sparkle's key tool (download the release matching the version pinned in the workflow):
+
+```sh
+curl -sSfLO https://github.com/sparkle-project/Sparkle/releases/download/2.9.6/Sparkle-2.9.6.tar.xz
+tar -xJf Sparkle-2.9.6.tar.xz
+./bin/generate_keys
+./bin/generate_keys -x sparkle-private-key
+```
+
+`generate_keys` stores the keypair in the login Keychain and prints the public key. The public key goes in `project.yml`'s Info.plist as `SUPublicEDKey`. The `-x` export writes the private key to a file: paste its contents into the `SPARKLE_ED_PRIVATE_KEY` secret and the password manager, then delete the file. The private key never enters the repo in any form.
+
+Rotating the Sparkle key is not like rotating Apple material: shipped apps pin the old public key and reject updates signed with a new one. A rotation therefore needs a bridge release, signed with the old key but carrying the new public key in its Info.plist, before releases signed only with the new key work. Treat the key as compromised-only rotation, keep the keypair backed up, and if it is ever lost, users on old versions must manually download once, exactly like the pre-Sparkle floor.
 
 ## How the workflow handles the material
 

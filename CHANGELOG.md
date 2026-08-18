@@ -23,6 +23,9 @@ All notable changes to Croft are documented here. The format follows
   picker in each sheet, records a lifecycle stage on the visible planting in
   two clicks, and photos now paste from the clipboard as well as drag and
   drop.
+- Croft updates itself: releases are offered in the app through Sparkle, with
+  a Check for Updates menu item and scheduled background checks you consent
+  to on first launch.
 
 ## 0.1.0 - 2026-08-18
 

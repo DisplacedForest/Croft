@@ -16,6 +16,8 @@ Croft models a real garden and the knowledge to run it, entirely on your machine
 
 Download `Croft-<version>.dmg` from the [latest release](https://github.com/DisplacedForest/Croft/releases/latest), open it, and drag Croft into Applications. Builds are signed and notarized, so macOS opens them without warnings. Requires macOS 15 or later.
 
+Croft keeps itself current: from 0.2.0 onward the app offers new releases in place through Sparkle, with a Check for Updates item in the app menu. Versions before 0.2.0 need this one manual download first.
+
 ## What Croft does
 
 - Knows plants. Family down to cultivar, with cultivation profiles covering sun, water, soil pH, spacing, germination, sowing, frost tolerance, and days to maturity: 32 common crops and over a thousand cultivars, bundled offline.
