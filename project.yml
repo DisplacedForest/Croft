@@ -45,6 +45,13 @@ targets:
         CODE_SIGN_ENTITLEMENTS: App/macOS/Croft.entitlements
         INFOPLIST_KEY_NSLocationUsageDescription: Croft shows the weather for where your garden grows.
         INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: Croft shows the weather for where your garden grows.
+      configs:
+        Release:
+          CODE_SIGN_STYLE: Manual
+          CODE_SIGN_IDENTITY: Developer ID Application
+          PROVISIONING_PROFILE_SPECIFIER: Croft Developer ID
+          ENABLE_HARDENED_RUNTIME: YES
+          OTHER_CODE_SIGN_FLAGS: --timestamp
     postBuildScripts:
       - name: Guard bundled knowledge snapshot
         shell: /bin/bash
