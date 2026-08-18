@@ -14,7 +14,7 @@ import struct Domain.Planting
 import struct Domain.QuantityFormatter
 import enum Domain.SowingAction
 
-private struct GardenTaskStore: GardenTaskProviding {
+private struct GardenTaskStore {
     let repository: GardenTaskRepository
 
     func openTasks() throws -> [GardenTask] {
@@ -32,10 +32,11 @@ private struct PlantIndex {
     var basis: [PlantIdentity: DaysToMaturityBasis] = [:]
 
     init(_ stores: AppStores) {
-        var databases = [stores.database]
+        var databases: [AppDatabase] = []
         if let knowledge = stores.knowledgeDatabase {
             databases.append(knowledge)
         }
+        databases.append(stores.database)
         for database in databases {
             for one in (try? SpeciesRepository(database).fetchAll()) ?? [] {
                 let identity = PlantIdentity.species(one.id)
