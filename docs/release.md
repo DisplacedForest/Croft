@@ -24,7 +24,7 @@ All of these live in GitHub under Settings, Secrets and variables, Actions. None
 | --- | --- |
 | `MACOS_SIGNING_CERT_P12_BASE64` | Developer ID Application certificate plus private key, exported as a `.p12`, base64 encoded |
 | `MACOS_SIGNING_CERT_PASSWORD` | The passphrase set when exporting the `.p12` |
-| `MACOS_PROVISIONING_PROFILE_BASE64` | Developer ID provisioning profile for `com.displacedforest.croft` with the WeatherKit capability, base64 encoded |
+| `MACOS_PROVISIONING_PROFILE_BASE64` | Developer ID provisioning profile for `com.displacedforest.croft` with the WeatherKit capability, base64 encoded. Must be named `Croft Developer ID`, since `project.yml` pins that name to the app target's Release configuration (xcodebuild command-line overrides hit SwiftPM package targets, which reject profiles, so the setting lives in the project instead) |
 | `APPLE_API_KEY_P8_BASE64` | App Store Connect API key (`.p8`), base64 encoded, used by notarytool |
 | `APPLE_API_KEY_ID` | Key ID of that API key |
 | `APPLE_API_ISSUER_ID` | Issuer ID from the App Store Connect API keys page |
@@ -55,7 +55,7 @@ Rotation is a secrets-only operation. No repo changes, no PR.
 
 1. Revoke the compromised or expiring item in the Apple Developer portal (certificate or profile) or App Store Connect (API key).
 2. Create the replacement the same way as above.
-3. Re-encode it and overwrite the matching repository secret. A new certificate usually means a new provisioning profile too, since the profile embeds the certificate.
+3. Re-encode it and overwrite the matching repository secret. A new certificate usually means a new provisioning profile too, since the profile embeds the certificate. Keep the profile named `Croft Developer ID`; the workflow checks the installed profile against the name pinned in `project.yml` and fails with instructions if they diverge.
 4. Run a rehearsal via workflow_dispatch and confirm the run goes green through the Gatekeeper assessment step.
 
 Previously shipped builds stay valid: notarization tickets are stapled to the artifacts and do not depend on the certificate remaining live, unless the certificate was revoked for compromise, in which case Apple invalidates its signatures and the affected releases need rebuilding.
