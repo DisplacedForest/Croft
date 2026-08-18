@@ -25,8 +25,8 @@ struct CaptureSheetHost: ViewModifier {
     @ViewBuilder
     private func sheetView(_ sheet: CaptureSheet, context: CaptureContext) -> some View {
         switch sheet {
-        case .addPlanting(let bedID):
-            AddPlantingSheet(context: context, bedID: bedID, onSaved: capture.didSave)
+        case .addPlanting(let intent):
+            AddPlantingSheet(context: context, intent: intent, onSaved: capture.didSave)
         case .logObservation(let target):
             LogObservationSheet(context: context, target: target, onSaved: capture.didSave)
         case .recordHarvest(let plantingID):
@@ -45,7 +45,7 @@ struct CaptureMenu: View {
 
     var body: some View {
         Menu {
-            Button("Add Planting…") { capture.present(.addPlanting(nil)) }
+            Button("Add Planting…") { capture.present(.addPlanting(AddPlantingIntent())) }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
             Button("Add Seed Lot…") { capture.present(.addSeedLot) }
                 .keyboardShortcut("l", modifiers: [.command, .shift])
