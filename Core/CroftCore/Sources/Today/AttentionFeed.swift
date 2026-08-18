@@ -3,6 +3,7 @@ import Foundation
 import struct Domain.GardenTask
 
 public enum AttentionKind: CaseIterable, Hashable, Sendable {
+    case frostAlert
     case overdueTask
     case dueTodayTask
     case harvestCheck
@@ -11,6 +12,7 @@ public enum AttentionKind: CaseIterable, Hashable, Sendable {
 
     public var label: String {
         switch self {
+        case .frostAlert: "Frost alert"
         case .overdueTask: "Overdue"
         case .dueTodayTask: "Today"
         case .harvestCheck: "Harvest check"
@@ -53,6 +55,7 @@ public enum AttentionLimits {
 
     public static func quota(for kind: AttentionKind) -> Int {
         switch kind {
+        case .frostAlert: 2
         case .overdueTask: 5
         case .dueTodayTask: 4
         case .harvestCheck: 3

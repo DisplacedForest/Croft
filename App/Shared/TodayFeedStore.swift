@@ -6,6 +6,7 @@ import SwiftUI
 import Today
 
 import enum Domain.DaysToMaturityBasis
+import enum Domain.FrostTolerance
 import struct Domain.GardenTask
 import enum Domain.HarvestYield
 import enum Domain.LifecycleStage
@@ -30,6 +31,7 @@ private struct PlantIndex {
     var names: [PlantIdentity: String] = [:]
     var daysToMaturity: [PlantIdentity: ClosedRange<Int>] = [:]
     var basis: [PlantIdentity: DaysToMaturityBasis] = [:]
+    var frostTolerance: [PlantIdentity: FrostTolerance] = [:]
 
     init(_ stores: AppStores) {
         var databases: [AppDatabase] = []
@@ -43,6 +45,7 @@ private struct PlantIndex {
                 names[identity] = PlantIndex.titled(one.commonNames.first) ?? one.scientificName
                 daysToMaturity[identity] = one.daysToMaturity
                 basis[identity] = one.daysToMaturityBasis
+                frostTolerance[identity] = one.frostTolerance
             }
         }
         for database in databases {
@@ -52,6 +55,7 @@ private struct PlantIndex {
                 names[identity] = one.name
                 daysToMaturity[identity] = one.daysToMaturity ?? daysToMaturity[parent]
                 basis[identity] = basis[parent]
+                frostTolerance[identity] = frostTolerance[parent]
             }
         }
     }
@@ -79,6 +83,8 @@ final class TodayFeedStore {
     private let tasks: GardenTaskStore?
     private let photos: PhotoStore?
     private let formatter: QuantityFormatter
+    private var forecastCache: [DayForecast] = []
+    private var forecastFetchedOn: Date?
 
     init(stores: AppStores?) {
         self.stores = stores
@@ -116,7 +122,13 @@ final class TodayFeedStore {
         let active = plantings.filter { $0.status == .active }
         let overview = seasonOverview(stores, now: now, calendar: calendar)
 
-        var collected = AttentionProviders.taskItems(
+        var collected = AttentionProviders.frostAlerts(
+            forecast: forecastCache,
+            candidates: frostCandidates(stores, active: active, index: index, names: names),
+            now: now,
+            calendar: calendar
+        )
+        collected += AttentionProviders.taskItems(
             openTasks: (try? tasks?.openTasks()) ?? [], now: now, calendar: calendar)
         collected += AttentionProviders.harvestChecks(
             candidates: harvestCandidates(stores, active: active, index: index, names: names),
@@ -312,6 +324,9 @@ final class TodayFeedStore {
         return "\(bed.name), \(parentName)"
     }
 
+}
+
+extension TodayFeedStore {
     private func yieldText(_ yield: HarvestYield) -> String {
         switch yield {
         case .measured(let quantity):
@@ -329,6 +344,51 @@ final class TodayFeedStore {
         case .firstFlower: "first flower on"
         case .firstFruitSet: "first fruit set on"
         case .pulled: "pulled"
+        }
+    }
+
+    func loadFrostForecast(now: Date = Date()) async {
+        guard let stores else {
+            return
+        }
+        let calendar = Calendar.current
+        if let fetched = forecastFetchedOn, calendar.isDate(fetched, inSameDayAs: now) {
+            return
+        }
+        let property =
+            (try? GardenStructureRepository(stores.database)
+            .properties(includeArchived: true))?.first
+        guard let coordinate = property?.location else {
+            forecastCache = []
+            forecastFetchedOn = now
+            return
+        }
+        let location = GeoLocation(
+            latitude: coordinate.latitude, longitude: coordinate.longitude)
+        forecastCache = (try? await SystemWeatherProvider().dailyForecast(at: location)) ?? []
+        forecastFetchedOn = now
+        refresh(now: now)
+    }
+
+    private func frostCandidates(
+        _ stores: AppStores,
+        active: [Planting],
+        index: PlantIndex,
+        names: [Planting.ID: String]
+    ) -> [AttentionProviders.FrostRiskCandidate] {
+        guard !forecastCache.isEmpty else {
+            return []
+        }
+        let structures = GardenStructureRepository(stores.database)
+        var locations: [String: String?] = [:]
+        return active.map { planting in
+            AttentionProviders.FrostRiskCandidate(
+                plantingID: planting.id.rawValue,
+                plantName: names[planting.id] ?? "unknown plant",
+                locationName: locationName(
+                    planting, structures: structures, cache: &locations),
+                frostTolerance: index.frostTolerance[planting.identity]
+            )
         }
     }
 }

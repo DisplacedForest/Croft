@@ -45,6 +45,7 @@ struct TodayView: View {
                 let store = TodayFeedStore(stores: stores)
                 store.refresh()
                 feed = store
+                await store.loadFrostForecast()
             }
         }
         .task {
@@ -229,7 +230,7 @@ struct TodayView: View {
 
     private func accent(for kind: AttentionKind) -> Color {
         switch kind {
-        case .overdueTask, .harvestCheck: Color.domainHealth
+        case .frostAlert, .overdueTask, .harvestCheck: Color.domainHealth
         case .dueTodayTask, .plantableNow: Color.domainGarden
         case .quietLately: Color.primary.opacity(0.3)
         }
