@@ -3,19 +3,35 @@ import GRDB
 
 public struct PlantFamilyRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ family: PlantFamily) throws {
         let record = try PlantFamilyRecord(family)
-        try writer.write { try record.insert($0) }
+        try writer.write { db in
+            try record.insert(db)
+            try changes.record(.plantFamily, record.id, .create, in: db)
+        }
     }
 
     public func update(_ family: PlantFamily) throws {
         let record = try PlantFamilyRecord(family)
-        try writer.write { try record.update($0) }
+        try writer.write { db in
+            try record.update(db)
+            try changes.record(.plantFamily, record.id, .update, in: db)
+        }
+    }
+
+    public func apply(_ family: PlantFamily) throws {
+        if try fetch(id: family.id) != nil {
+            try update(family)
+        } else {
+            try insert(family)
+        }
     }
 
     public func fetch(id: PlantFamily.ID) throws -> PlantFamily? {
@@ -36,7 +52,11 @@ public struct PlantFamilyRepository: Sendable {
     @discardableResult
     public func delete(id: PlantFamily.ID) throws -> Bool {
         try writer.write { db in
-            try PlantFamilyRecord.deleteOne(db, key: id.rawValue)
+            let removed = try PlantFamilyRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.plantFamily, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 }

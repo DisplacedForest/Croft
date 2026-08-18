@@ -4,9 +4,11 @@ import Graph
 
 public struct SpeciesRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ species: Species) throws {
@@ -14,12 +16,24 @@ public struct SpeciesRepository: Sendable {
         try writer.write { db in
             try record.insert(db)
             try GraphStore.register(record.entityRef, in: db)
+            try changes.record(.species, record.id, .create, in: db)
         }
     }
 
     public func update(_ species: Species) throws {
         let record = try SpeciesRecord(species)
-        try writer.write { try record.update($0) }
+        try writer.write { db in
+            try record.update(db)
+            try changes.record(.species, record.id, .update, in: db)
+        }
+    }
+
+    public func apply(_ species: Species) throws {
+        if try fetch(id: species.id) != nil {
+            try update(species)
+        } else {
+            try insert(species)
+        }
     }
 
     public func fetch(id: Species.ID) throws -> Species? {
@@ -51,7 +65,11 @@ public struct SpeciesRepository: Sendable {
     public func delete(id: Species.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try SpeciesRecord.deleteOne(db, key: id.rawValue)
+            let removed = try SpeciesRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.species, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 }
