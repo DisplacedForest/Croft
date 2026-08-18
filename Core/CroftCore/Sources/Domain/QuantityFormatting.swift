@@ -16,6 +16,13 @@ public struct QuantityFormatter: Sendable {
         return unit.symbol.isEmpty ? number : "\(number) \(unit.symbol)"
     }
 
+    public func string(fromCanonical canonicalAmount: Double, family: UnitFamily) -> String {
+        let unit = Self.scaledUnit(forCanonical: canonicalAmount, family: family, in: system)
+        let amount = canonicalAmount / unit.canonicalFactor
+        let number = numberString(for: amount)
+        return unit.symbol.isEmpty ? number : "\(number) \(unit.symbol)"
+    }
+
     public func displayUnit(for quantity: Quantity) -> QuantityUnit {
         if quantity.unit.system == system || quantity.family == .count {
             return quantity.unit

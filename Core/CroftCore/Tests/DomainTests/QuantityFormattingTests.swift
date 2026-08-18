@@ -36,6 +36,15 @@ struct QuantityFormatterTests {
         #expect(try imperial.string(from: Quantity(amount: 5, unit: .liter)) == "1.32 gal")
     }
 
+    @Test func canonicalTotalsScaleToTheReadableUnit() throws {
+        let metric = QuantityFormatter(system: .metric, locale: unitedStates)
+        #expect(metric.string(fromCanonical: 1350, family: .mass) == "1.35 kg")
+        #expect(metric.string(fromCanonical: 940, family: .mass) == "940 g")
+        let imperial = QuantityFormatter(system: .imperial, locale: unitedStates)
+        #expect(imperial.string(fromCanonical: 1350, family: .mass) == "2.98 lb")
+        #expect(imperial.string(fromCanonical: 6, family: .count) == "6")
+    }
+
     @Test func countRendersBareInBothSystems() throws {
         let quantity = try Quantity(amount: 12, unit: .count)
         #expect(

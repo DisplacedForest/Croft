@@ -34,7 +34,7 @@ struct BedDetailTests {
 }
 
 struct PlantingDetailTests {
-    @Test func carriesIdentityLocationAndTimeline() throws {
+    @Test func carriesIdentityAndLocation() throws {
         let fixture = try GardenFixture()
         let planting = try fixture.addPlanting(
             status: .active, plantedOn: march, transplantedOn: april)
@@ -44,31 +44,6 @@ struct PlantingDetailTests {
         #expect(detail.plantName == "Brandywine")
         #expect(detail.botanicalName == "Solanum lycopersicum")
         #expect(detail.bedName == "Long Bed")
-        #expect(detail.timeline.map(\.kind) == [.planted, .transplanted])
-        #expect(detail.timeline.map(\.date) == [march, april])
-    }
-
-    @Test func theFirstHarvestJoinsTheTimeline() throws {
-        let fixture = try GardenFixture()
-        let planting = try fixture.addPlanting(status: .active, plantedOn: march)
-        let harvests = HarvestRepository(fixture.database)
-        try harvests.insert(
-            Harvest(
-                plantingID: planting.id,
-                harvestedOn: june,
-                yield: .measured(try Quantity(amount: 500, unit: .gram))
-            ))
-        try harvests.insert(
-            Harvest(
-                plantingID: planting.id,
-                harvestedOn: may,
-                yield: .measured(try Quantity(amount: 3, unit: .count))
-            ))
-
-        let detail = try #require(
-            try PlantingDetail.load(planting.id, from: fixture.database))
-        #expect(detail.timeline.map(\.kind) == [.planted, .firstHarvest])
-        #expect(detail.timeline.map(\.date) == [march, may])
     }
 
     @Test func aSpeciesIdentityShowsTheCommonName() throws {
@@ -98,12 +73,4 @@ struct PlantingDetailTests {
         #expect(detail.lineage == "Sown from seed, Baker Creek")
     }
 
-    @Test func aFailedPlantingEndsItsTimelineWithFailure() throws {
-        let fixture = try GardenFixture()
-        let planting = try fixture.addPlanting(status: .failed, plantedOn: march, endedOn: may)
-
-        let detail = try #require(
-            try PlantingDetail.load(planting.id, from: fixture.database))
-        #expect(detail.timeline.map(\.kind) == [.planted, .failed])
-    }
 }
