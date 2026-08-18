@@ -30,6 +30,9 @@ All notable changes to Croft are documented here. The format follows
   lineage, stage pills with day counts, observations with notes and photos,
   harvests with yields, and the first harvest called out with days from
   sowing, plus header stats for days to first harvest and total yield.
+- Croft updates itself: releases are offered in the app through Sparkle, with
+  a Check for Updates menu item and scheduled background checks you consent
+  to on first launch.
 
 ## 0.1.0 - 2026-08-18
 
