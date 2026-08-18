@@ -6,20 +6,22 @@ import Testing
 
 @testable import Persistence
 
+private let nextSeasonDate = Date(timeIntervalSince1970: 1_755_000_000)
+
 struct HarvestAggregationTests {
     private func seeded() throws -> HarvestFixture {
         let fixture = try HarvestFixture()
         let tomato = fixture.tomatoPlanting
         let basil = fixture.basilPlanting
         let seeds = [
-            fixture.harvest(of: tomato, quantity: 1.5, unit: .kilogram),
-            fixture.harvest(of: tomato, quantity: 2.5, unit: .kilogram),
-            fixture.harvest(of: tomato, quantity: 3, unit: .count),
-            fixture.harvest(of: tomato, quantity: 2, unit: .custom, customUnit: "crate"),
-            fixture.harvest(of: tomato, quantity: 1, unit: .custom, customUnit: "flat"),
-            fixture.harvest(of: basil, quantity: 4, unit: .bunch),
-            fixture.harvest(of: basil, quantity: 6, unit: .bunch),
-            fixture.harvest(of: basil, quantity: 1, unit: .custom, customUnit: "crate"),
+            try fixture.harvest(of: tomato, yield: measured(500, .gram)),
+            try fixture.harvest(of: tomato, yield: measured(1, .pound)),
+            try fixture.harvest(of: tomato, yield: measured(3, .count)),
+            try fixture.harvest(of: tomato, yield: .custom(amount: 2, label: "crate")),
+            try fixture.harvest(of: tomato, yield: .custom(amount: 1, label: "flat")),
+            try fixture.harvest(of: basil, yield: measured(2, .liter)),
+            try fixture.harvest(of: basil, yield: measured(1, .quart)),
+            try fixture.harvest(of: basil, yield: .custom(amount: 1, label: "crate")),
         ]
         for seed in seeds {
             try fixture.harvests.insert(seed)
@@ -27,14 +29,15 @@ struct HarvestAggregationTests {
         return fixture
     }
 
-    @Test func totalsPerPlantingGroupByUnitAndCustomLabel() throws {
+    @Test func totalsPerPlantingSumMixedUnitsWithinAFamily() throws {
         let fixture = try seeded()
         #expect(
             try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id) == [
-                HarvestTotal(unit: .count, customUnit: nil, total: 3, count: 1),
-                HarvestTotal(unit: .custom, customUnit: "crate", total: 2, count: 1),
-                HarvestTotal(unit: .custom, customUnit: "flat", total: 1, count: 1),
-                HarvestTotal(unit: .kilogram, customUnit: nil, total: 4, count: 2),
+                HarvestTotal(kind: .family(.count), total: 3, count: 1),
+                HarvestTotal(
+                    kind: .family(.mass), total: 500 + QuantityUnit.pound.canonicalFactor, count: 2),
+                HarvestTotal(kind: .custom("crate"), total: 2, count: 1),
+                HarvestTotal(kind: .custom("flat"), total: 1, count: 1),
             ])
     }
 
@@ -42,60 +45,81 @@ struct HarvestAggregationTests {
         let fixture = try seeded()
         #expect(
             try fixture.harvests.totals(forPlanting: fixture.basilPlanting.id) == [
-                HarvestTotal(unit: .bunch, customUnit: nil, total: 10, count: 2),
-                HarvestTotal(unit: .custom, customUnit: "crate", total: 1, count: 1),
+                HarvestTotal(
+                    kind: .family(.volume), total: 2000 + QuantityUnit.quart.canonicalFactor,
+                    count: 2),
+                HarvestTotal(kind: .custom("crate"), total: 1, count: 1),
             ])
     }
 
-    @Test func totalsForACultivarIdentityJoinThroughPlanting() throws {
+    @Test func totalsPerBedSpanEveryPlantingInTheBed() throws {
         let fixture = try seeded()
-        let byIdentity = try fixture.harvests.totals(of: .cultivar(fixture.brandywine.id))
-        let byPlanting = try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id)
-        #expect(byIdentity == byPlanting)
+        #expect(
+            try fixture.harvests.totals(forBed: fixture.bed.id) == [
+                HarvestTotal(kind: .family(.count), total: 3, count: 1),
+                HarvestTotal(
+                    kind: .family(.mass), total: 500 + QuantityUnit.pound.canonicalFactor, count: 2),
+                HarvestTotal(
+                    kind: .family(.volume), total: 2000 + QuantityUnit.quart.canonicalFactor,
+                    count: 2),
+                HarvestTotal(kind: .custom("crate"), total: 3, count: 2),
+                HarvestTotal(kind: .custom("flat"), total: 1, count: 1),
+            ])
     }
 
-    @Test func totalsForASpeciesIdentityJoinThroughPlanting() throws {
+    @Test func totalsPerCultivarJoinThroughPlanting() throws {
+        let fixture = try seeded()
+        #expect(
+            try fixture.harvests.totals(of: .cultivar(fixture.brandywine.id)) == [
+                HarvestTotal(kind: .family(.count), total: 3, count: 1),
+                HarvestTotal(
+                    kind: .family(.mass), total: 500 + QuantityUnit.pound.canonicalFactor, count: 2),
+                HarvestTotal(kind: .custom("crate"), total: 2, count: 1),
+                HarvestTotal(kind: .custom("flat"), total: 1, count: 1),
+            ])
+    }
+
+    @Test func totalsPerSpeciesJoinThroughPlanting() throws {
         let fixture = try seeded()
         #expect(
             try fixture.harvests.totals(of: .species(fixture.basil.id)) == [
-                HarvestTotal(unit: .bunch, customUnit: nil, total: 10, count: 2),
-                HarvestTotal(unit: .custom, customUnit: "crate", total: 1, count: 1),
+                HarvestTotal(
+                    kind: .family(.volume), total: 2000 + QuantityUnit.quart.canonicalFactor,
+                    count: 2),
+                HarvestTotal(kind: .custom("crate"), total: 1, count: 1),
             ])
     }
 
-    @Test func aSpeciesIdentityIgnoresCultivarPlantings() throws {
-        let fixture = try seeded()
-        #expect(try fixture.harvests.totals(of: .species(fixture.tomato.id)).isEmpty)
-    }
-
-    @Test func anUnharvestedPlantingTotalsNothing() throws {
+    @Test func totalsPerSeasonSplitOnTheHarvestYear() throws {
         let fixture = try HarvestFixture()
-        #expect(try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id).isEmpty)
-    }
-
-    @Test func totalsAcrossPlantingsOfTheSameIdentityAreCombined() throws {
-        let fixture = try HarvestFixture()
-        let second = Planting(identity: .species(fixture.basil.id), bedID: fixture.bed.id)
-        try fixture.plantings.insert(second)
+        try fixture.harvests.insert(try fixture.harvest(yield: measured(500, .gram)))
         try fixture.harvests.insert(
-            fixture.harvest(of: fixture.basilPlanting, quantity: 2, unit: .bunch))
-        try fixture.harvests.insert(fixture.harvest(of: second, quantity: 5, unit: .bunch))
+            try fixture.harvest(on: nextSeasonDate, yield: measured(1, .pound)))
         #expect(
-            try fixture.harvests.totals(of: .species(fixture.basil.id)) == [
-                HarvestTotal(unit: .bunch, customUnit: nil, total: 7, count: 2)
+            try fixture.harvests.totals(inSeason: 2024) == [
+                HarvestTotal(kind: .family(.mass), total: 500, count: 1)
+            ])
+        #expect(
+            try fixture.harvests.totals(inSeason: 2025) == [
+                HarvestTotal(kind: .family(.mass), total: 453.592_37, count: 1)
+            ])
+        #expect(try fixture.harvests.totals(inSeason: 2023).isEmpty)
+    }
+
+    @Test func customYieldsAreNeverConvertedIntoAFamily() throws {
+        let fixture = try HarvestFixture()
+        try fixture.harvests.insert(
+            try fixture.harvest(yield: .custom(amount: 2, label: "gram")))
+        #expect(
+            try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id) == [
+                HarvestTotal(kind: .custom("gram"), total: 2, count: 1)
             ])
     }
 
-    @Test func anUnknownStoredUnitFailsTheAggregation() throws {
-        let fixture = try HarvestFixture()
-        try fixture.insertUnchecked(id: "h1", unit: "stone", customUnit: nil)
-        let expected = TaxonomyCodingError.unknownRawValue(
-            table: "harvest", column: "unit", value: "stone")
-        #expect(throws: expected) {
-            try fixture.harvests.totals(forPlanting: fixture.tomatoPlanting.id)
-        }
-        #expect(throws: expected) {
-            try fixture.harvests.totals(of: .cultivar(fixture.brandywine.id))
-        }
+    @Test func anUnharvestedScopeHasNoTotals() throws {
+        let fixture = try seeded()
+        let empty = Planting(identity: .species(fixture.basil.id), bedID: fixture.bed.id)
+        try fixture.plantings.insert(empty)
+        #expect(try fixture.harvests.totals(forPlanting: empty.id).isEmpty)
     }
 }

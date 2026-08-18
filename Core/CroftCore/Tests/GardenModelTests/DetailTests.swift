@@ -48,6 +48,29 @@ struct PlantingDetailTests {
         #expect(detail.timeline.map(\.date) == [march, april])
     }
 
+    @Test func theFirstHarvestJoinsTheTimeline() throws {
+        let fixture = try GardenFixture()
+        let planting = try fixture.addPlanting(status: .active, plantedOn: march)
+        let harvests = HarvestRepository(fixture.database)
+        try harvests.insert(
+            Harvest(
+                plantingID: planting.id,
+                harvestedOn: june,
+                yield: .measured(try Quantity(amount: 500, unit: .gram))
+            ))
+        try harvests.insert(
+            Harvest(
+                plantingID: planting.id,
+                harvestedOn: may,
+                yield: .measured(try Quantity(amount: 3, unit: .count))
+            ))
+
+        let detail = try #require(
+            try PlantingDetail.load(planting.id, from: fixture.database))
+        #expect(detail.timeline.map(\.kind) == [.planted, .firstHarvest])
+        #expect(detail.timeline.map(\.date) == [march, may])
+    }
+
     @Test func aSpeciesIdentityShowsTheCommonName() throws {
         let fixture = try GardenFixture()
         let planting = try fixture.addPlanting(identity: .species(fixture.tomatoSpecies.id))

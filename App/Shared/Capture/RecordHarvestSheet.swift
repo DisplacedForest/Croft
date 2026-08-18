@@ -2,8 +2,9 @@ import Capture
 import SwiftUI
 
 import enum Domain.HarvestQuality
-import enum Domain.HarvestUnit
+import enum Domain.HarvestablePart
 import struct Domain.Planting
+import enum Domain.QuantityUnit
 
 struct RecordHarvestSheet: View {
     @State private var form: RecordHarvestForm
@@ -27,16 +28,24 @@ struct RecordHarvestSheet: View {
                 TextField("Quantity", text: $form.quantityText)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 120)
-                Picker("Unit", selection: $form.unit) {
-                    ForEach(HarvestUnit.allCases, id: \.self) { unit in
-                        Text(unit.rawValue.capitalized).tag(unit)
+                Picker("Unit", selection: $form.unitChoice) {
+                    ForEach(form.unitChoices, id: \.self) { choice in
+                        Text(choice.displayName).tag(choice)
                     }
                 }
                 .labelsHidden()
             }
-            if form.unit == .custom {
+            if form.unitChoice == .custom {
                 TextField("Custom unit (baskets, heads…)", text: $form.customUnit)
                     .textFieldStyle(.roundedBorder)
+            }
+            if !form.partChoices.isEmpty {
+                Picker("Part", selection: $form.harvestedPart) {
+                    Text("Unspecified").tag(HarvestablePart?.none)
+                    ForEach(form.partChoices, id: \.self) { part in
+                        Text(part.rawValue.capitalized).tag(HarvestablePart?.some(part))
+                    }
+                }
             }
             Picker("Quality", selection: $form.quality) {
                 Text("Unrated").tag(HarvestQuality?.none)
@@ -79,6 +88,34 @@ struct RecordHarvestSheet: View {
             return true
         } catch {
             return false
+        }
+    }
+}
+
+extension HarvestUnitChoice {
+    var displayName: String {
+        switch self {
+        case .unit(let unit): unit.entryName
+        case .custom: "Custom"
+        }
+    }
+}
+
+extension QuantityUnit {
+    var entryName: String {
+        switch self {
+        case .gram: "Grams"
+        case .kilogram: "Kilograms"
+        case .ounce: "Ounces"
+        case .pound: "Pounds"
+        case .milliliter: "Milliliters"
+        case .liter: "Liters"
+        case .fluidOunce: "Fluid ounces"
+        case .cup: "Cups"
+        case .pint: "Pints"
+        case .quart: "Quarts"
+        case .gallon: "Gallons"
+        case .count: "Count"
         }
     }
 }

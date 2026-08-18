@@ -9,7 +9,7 @@ import Testing
 struct HarvestGraphTests {
     @Test func insertRegistersTheHarvestAndItsPlanting() throws {
         let fixture = try HarvestFixture()
-        let harvest = fixture.harvest()
+        let harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         #expect(try fixture.registered(harvest.id.rawValue)?.type == .harvest)
         #expect(try fixture.registered(fixture.tomatoPlanting.id.rawValue)?.type == .planting)
@@ -17,7 +17,7 @@ struct HarvestGraphTests {
 
     @Test func insertCreatesExactlyOneHarvestedFromEdge() throws {
         let fixture = try HarvestFixture()
-        let harvest = fixture.harvest()
+        let harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         let edges = try fixture.outgoing(harvest.id.rawValue, .harvestedFrom)
         #expect(
@@ -28,7 +28,7 @@ struct HarvestGraphTests {
 
     @Test func harvestEdgesCarryNoProvenance() throws {
         let fixture = try HarvestFixture()
-        let harvest = fixture.harvest()
+        let harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         let edges = try fixture.outgoing(harvest.id.rawValue, .harvestedFrom)
         #expect(edges.map(\.provenance) == [Provenance()])
@@ -36,7 +36,7 @@ struct HarvestGraphTests {
 
     @Test func repointingMovesTheHarvestedFromEdge() throws {
         let fixture = try HarvestFixture()
-        var harvest = fixture.harvest()
+        var harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         harvest.plantingID = fixture.basilPlanting.id
         try fixture.harvests.update(harvest)
@@ -47,7 +47,7 @@ struct HarvestGraphTests {
 
     @Test func anUnchangedUpdateKeepsTheSameEdge() throws {
         let fixture = try HarvestFixture()
-        var harvest = fixture.harvest()
+        var harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         let before = try fixture.outgoing(harvest.id.rawValue, .harvestedFrom).map(\.id)
         harvest.notes = "still fine"
@@ -58,7 +58,7 @@ struct HarvestGraphTests {
 
     @Test func aSecondHarvestedFromEdgeIsRejectedByTheDatabase() throws {
         let fixture = try HarvestFixture()
-        let harvest = fixture.harvest()
+        let harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         #expect(throws: DatabaseError.self) {
             try fixture.database.writer.write { db in
@@ -76,7 +76,7 @@ struct HarvestGraphTests {
 
     @Test func aHarvestedPlantingCannotBeDeletedFromTheGraph() throws {
         let fixture = try HarvestFixture()
-        try fixture.harvests.insert(fixture.harvest())
+        try fixture.harvests.insert(try fixture.harvest())
         #expect(throws: DatabaseError.self) {
             try fixture.database.writer.write { db in
                 try GraphStore.deleteEntity(fixture.tomatoPlanting.id.rawValue, in: db)
@@ -86,7 +86,7 @@ struct HarvestGraphTests {
 
     @Test func deleteRemovesTheEntityAndItsEdge() throws {
         let fixture = try HarvestFixture()
-        let harvest = fixture.harvest()
+        let harvest = try fixture.harvest()
         try fixture.harvests.insert(harvest)
         try fixture.harvests.delete(id: harvest.id)
         #expect(try fixture.registered(harvest.id.rawValue) == nil)
@@ -96,8 +96,8 @@ struct HarvestGraphTests {
 
     @Test func twoHarvestsOfTheSamePlantingBothPointAtIt() throws {
         let fixture = try HarvestFixture()
-        let first = fixture.harvest()
-        let second = fixture.harvest(on: laterHarvestedDate)
+        let first = try fixture.harvest()
+        let second = try fixture.harvest(on: laterHarvestedDate)
         try fixture.harvests.insert(first)
         try fixture.harvests.insert(second)
         let sources = try fixture.incoming(fixture.tomatoPlanting.id.rawValue, .harvestedFrom)
