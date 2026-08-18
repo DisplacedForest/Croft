@@ -5,7 +5,7 @@ import Testing
 
 @testable import Persistence
 
-let harvestYieldIdentifier = "v016-harvest-yield"
+let harvestYieldIdentifier = "v018-harvest-yield"
 
 private struct LegacyHarvestRow {
     let id: String
@@ -30,7 +30,7 @@ struct HarvestYieldMigrationTests {
         let identifiers = SchemaMigrations.identifiers
         let index = try #require(identifiers.firstIndex(of: harvestYieldIdentifier))
         try #require(index > 0)
-        #expect(identifiers[index - 1] == gardenTaskIdentifier)
+        #expect(identifiers[index - 1] == lifecycleStageIdentifier)
         let queue = try MigrationHarness.database(through: identifiers[index - 1])
         try queue.write { db in
             try seedStructure(db)
