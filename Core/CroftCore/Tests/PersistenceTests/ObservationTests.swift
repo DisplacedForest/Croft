@@ -13,7 +13,7 @@ struct ObservationStorageTests {
             target: .planting(fixture.planting.id),
             observedAt: observedDate,
             notes: "first truss setting",
-            growthState: "flowering",
+            stage: .firstFlower,
             symptoms: ["leaf curl", "yellow veins"],
             measurements: [
                 ObservationMeasurement(label: "height", value: 82.5, unit: "cm"),
@@ -32,7 +32,7 @@ struct ObservationStorageTests {
         let fetched = try #require(try fixture.observations.fetch(id: observation.id))
         #expect(fetched == observation)
         #expect(fetched.notes == nil)
-        #expect(fetched.growthState == nil)
+        #expect(fetched.stage == nil)
         #expect(fetched.symptoms.isEmpty)
         #expect(fetched.measurements.isEmpty)
         #expect(fetched.tags.isEmpty)
@@ -57,7 +57,7 @@ struct ObservationStorageTests {
         for column in columns {
             #expect(stored[column] == DatabaseValue.null)
         }
-        #expect(stored["growth_state"] == DatabaseValue.null)
+        #expect(stored["stage"] == DatabaseValue.null)
         #expect(stored["symptoms"] == "[]")
         #expect(stored["measurements"] == "[]")
         #expect(stored["tags"] == "[]")
@@ -69,7 +69,7 @@ struct ObservationStorageTests {
         observation.notes = "slug damage"
         try fixture.observations.insert(observation)
         observation.notes = nil
-        observation.growthState = "fruiting"
+        observation.stage = .firstFruitSet
         observation.symptoms = ["holes in leaves"]
         observation.tags = ["pest watch"]
         observation.observedAt = laterObservedDate
@@ -225,5 +225,148 @@ struct ObservationQueryTests {
             try fixture.observations.insert(observation)
         }
         #expect(try fixture.observations.recent(limit: 2).map(\.notes) == ["newest", "middle"])
+    }
+}
+
+struct ObservationStageTests {
+    @Test func everyStageRawValueRoundTrips() throws {
+        let fixture = try ObservationFixture()
+        for stage in LifecycleStage.allCases {
+            var observation = fixture.observation()
+            observation.stage = stage
+            try fixture.observations.insert(observation)
+            #expect(try fixture.observations.fetch(id: observation.id)?.stage == stage)
+        }
+    }
+
+    @Test func anUnknownStageIsRejectedByTheDatabase() throws {
+        let fixture = try ObservationFixture()
+        #expect(throws: DatabaseError.self) {
+            try fixture.database.writer.write { db in
+                try db.execute(
+                    sql: """
+                        INSERT INTO observation (id, bed_id, observed_at, stage)
+                        VALUES ('o1', ?, '2024-07-03 12:00:00', 'flowering')
+                        """,
+                    arguments: [fixture.bed.id.rawValue]
+                )
+            }
+        }
+    }
+
+    @Test func anUnknownStageRawValueFailsFetch() throws {
+        let fixture = try ObservationFixture()
+        let observation = fixture.observation()
+        try fixture.observations.insert(observation)
+        try fixture.database.writer.write { db in
+            try db.execute(sql: "PRAGMA ignore_check_constraints = ON")
+            try db.execute(
+                sql: "UPDATE observation SET stage = 'bogus' WHERE id = ?",
+                arguments: [observation.id.rawValue]
+            )
+            try db.execute(sql: "PRAGMA ignore_check_constraints = OFF")
+        }
+        #expect(
+            throws: TaxonomyCodingError.unknownRawValue(
+                table: "observation",
+                column: "stage",
+                value: "bogus"
+            )
+        ) {
+            try fixture.observations.fetch(id: observation.id)
+        }
+    }
+}
+
+struct ObservationStageHistoryTests {
+    private func day(_ offset: Int) throws -> Date {
+        let start = Calendar.current.startOfDay(for: observedDate)
+        return try #require(Calendar.current.date(byAdding: .day, value: offset, to: start))
+    }
+
+    private func plantedPlanting(
+        _ fixture: ObservationFixture,
+        plantedOn: Date?
+    ) throws -> Planting {
+        let planting = Planting(
+            identity: .cultivar(fixture.cultivar.id),
+            bedID: fixture.bed.id,
+            plantedOn: plantedOn
+        )
+        try fixture.plantings.insert(planting)
+        return planting
+    }
+
+    private func record(
+        _ stage: LifecycleStage,
+        on planting: Planting,
+        at date: Date,
+        in fixture: ObservationFixture
+    ) throws -> Observation {
+        var observation = fixture.observation(on: .planting(planting.id), at: date)
+        observation.stage = stage
+        try fixture.observations.insert(observation)
+        return observation
+    }
+
+    @Test func stageHistoryOrdersByDateAndSkipsPlainNotes() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        let flower = try record(.firstFlower, on: planting, at: try day(40), in: fixture)
+        let germinated = try record(.germinated, on: planting, at: try day(6), in: fixture)
+        try fixture.observations.insert(
+            fixture.observation(on: .planting(planting.id), at: try day(20)))
+        let history = try fixture.observations.stageHistory(forPlanting: planting.id)
+        #expect(history.map(\.stage) == [.germinated, .firstFlower])
+        #expect(history.map(\.observationID) == [germinated.id, flower.id])
+        #expect(history.map(\.observedAt) == [try day(6), try day(40)])
+    }
+
+    @Test func stageHistoryIsScopedToItsPlanting() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        let neighbor = try plantedPlanting(fixture, plantedOn: try day(0))
+        _ = try record(.germinated, on: neighbor, at: try day(4), in: fixture)
+        #expect(try fixture.observations.stageHistory(forPlanting: planting.id).isEmpty)
+    }
+
+    @Test func daysToGerminationCountsWholeDays() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        _ = try record(.germinated, on: planting, at: try day(6), in: fixture)
+        _ = try record(.germinated, on: planting, at: try day(9), in: fixture)
+        #expect(try fixture.observations.daysToGermination(forPlanting: planting.id) == 6)
+    }
+
+    @Test func daysToGerminationIsNilWithoutAPlantedDate() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: nil)
+        _ = try record(.germinated, on: planting, at: try day(6), in: fixture)
+        #expect(try fixture.observations.daysToGermination(forPlanting: planting.id) == nil)
+    }
+
+    @Test func daysToGerminationIsNilWithoutAGerminationEvent() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        _ = try record(.firstFlower, on: planting, at: try day(40), in: fixture)
+        #expect(try fixture.observations.daysToGermination(forPlanting: planting.id) == nil)
+    }
+
+    @Test func firstFlowerDateReturnsTheEarliestFlowerEvent() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        _ = try record(.firstFlower, on: planting, at: try day(45), in: fixture)
+        _ = try record(.firstFlower, on: planting, at: try day(41), in: fixture)
+        #expect(
+            try fixture.observations.firstFlowerDate(forPlanting: planting.id) == (try day(41)))
+    }
+
+    @Test func neverFruitedFlipsOnAFruitSetEvent() throws {
+        let fixture = try ObservationFixture()
+        let planting = try plantedPlanting(fixture, plantedOn: try day(0))
+        _ = try record(.firstFlower, on: planting, at: try day(41), in: fixture)
+        #expect(try fixture.observations.neverFruited(forPlanting: planting.id))
+        _ = try record(.firstFruitSet, on: planting, at: try day(50), in: fixture)
+        #expect(try fixture.observations.neverFruited(forPlanting: planting.id) == false)
     }
 }
