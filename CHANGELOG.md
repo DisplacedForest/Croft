@@ -15,6 +15,9 @@ All notable changes to Croft are documented here. The format follows
 - A season view under Garden: planting windows computed from your frost dates
   and each plant's profile, what is plantable now and coming up with reasons,
   the year at a glance, and planned plantings created straight from the list.
+- A rotation warning when assigning a planting to a bed that held the same
+  plant family in the last three seasons, with the bed's recent family history
+  shown while planning and an honest note when nothing is recorded yet.
 - Harvests record a harvested part and structured yield in any mass, volume,
   or count unit, entered in your preferred measurement system, with totals
   that add up across units and a first-harvest date on the planting timeline.

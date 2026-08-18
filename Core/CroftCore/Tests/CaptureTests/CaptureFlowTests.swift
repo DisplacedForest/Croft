@@ -3,6 +3,7 @@ import Foundation
 import GRDB
 import Graph
 import Persistence
+import PlantCatalog
 import Testing
 
 @testable import Capture
@@ -62,6 +63,52 @@ struct AddPlantingFormTests {
         #expect(edges.lineage == [lot.id.rawValue])
         #expect(fixture.context.defaults.lastBedID == fixture.bed.id)
         #expect(planting.status == .active)
+    }
+
+    @Test func rotationStateTracksBedAndIdentitySelection() throws {
+        let fixture = try CaptureFixture()
+        let calendar = PlantingWindows.utcCalendar
+        var planted = DateComponents()
+        planted.year = 2025
+        planted.month = 5
+        planted.day = 15
+        var ended = planted
+        ended.month = 9
+        var referenceParts = planted
+        referenceParts.year = 2026
+        let reference = calendar.date(from: referenceParts)!
+        try fixture.context.plantings.insert(
+            Planting(
+                identity: .species(fixture.species.id),
+                bedID: fixture.bed.id,
+                plantedOn: calendar.date(from: planted)!,
+                status: .finished,
+                endedOn: calendar.date(from: ended)!
+            ))
+
+        let form = AddPlantingForm(context: fixture.context, bedID: fixture.bed.id, planned: true)
+        form.refreshRotation(on: reference)
+        #expect(form.rotationWarning == nil)
+        #expect(form.bedHistory.map(\.familyName) == ["Solanaceae"])
+        #expect(!form.showsEmptyHistoryNote)
+
+        form.identity = .cultivar(fixture.cultivar.id)
+        form.refreshRotation(on: reference)
+        #expect(form.rotationWarning == RotationWarning(familyName: "Solanaceae", year: 2025))
+
+        form.bedID = fixture.secondBed.id
+        form.refreshRotation(on: reference)
+        #expect(form.rotationWarning == nil)
+        #expect(form.bedHistory.isEmpty)
+        #expect(form.showsEmptyHistoryNote)
+    }
+
+    @Test func activeModeSkipsHistoryAndEmptyNote() throws {
+        let fixture = try CaptureFixture()
+        let form = AddPlantingForm(context: fixture.context, bedID: fixture.bed.id)
+        form.refreshRotation()
+        #expect(form.bedHistory.isEmpty)
+        #expect(!form.showsEmptyHistoryNote)
     }
 
     @Test func aPreselectedIdentityArrivesReadyToSave() throws {

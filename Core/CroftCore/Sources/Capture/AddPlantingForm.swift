@@ -18,6 +18,9 @@ public final class AddPlantingForm {
     public var notes: String = ""
     public private(set) var validationMessage: String?
     public let intendedStatus: PlantingStatus
+    public private(set) var rotationWarning: RotationWarning?
+    public private(set) var bedHistory: [FamilyOccupancy] = []
+    public private(set) var showsEmptyHistoryNote = false
 
     private let context: CaptureContext
 
@@ -37,6 +40,27 @@ public final class AddPlantingForm {
 
     public var canSave: Bool {
         identity != nil && bedID != nil
+    }
+
+    public func refreshRotation(on reference: Date = Date()) {
+        guard let bedID else {
+            rotationWarning = nil
+            bedHistory = []
+            showsEmptyHistoryNote = false
+            return
+        }
+        let rotation = context.rotationHistory
+        rotationWarning = identity.flatMap {
+            try? rotation.warning(for: $0, inBed: bedID, on: reference)
+        }
+        if intendedStatus == .planned {
+            let lines = try? rotation.historyLines(inBed: bedID, on: reference)
+            bedHistory = lines ?? []
+            showsEmptyHistoryNote = lines?.isEmpty == true
+        } else {
+            bedHistory = []
+            showsEmptyHistoryNote = false
+        }
     }
 
     @discardableResult
