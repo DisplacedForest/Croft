@@ -35,6 +35,16 @@ All notable changes to Croft are documented here. The format follows
   plantings gone quiet, and a Recently card, each with its reason, capped so
   a busy June stays readable. The weather chip opens a seven-day forecast,
   and a quiet winter day says so calmly instead of showing a blank page.
+- Croft updates itself: releases are offered in the app through Sparkle, with
+  a Check for Updates menu item and scheduled background checks you consent
+  to on first launch.
+
+### Fixed
+
+- A property record Croft can't read now shows an explicit message in
+  Settings instead of posing as a fresh install, first-run setup stays out of
+  the way so the stored record can't be overwritten, and a save that reaches
+  the database no longer reports failure.
 
 ## 0.1.0 - 2026-08-18
 

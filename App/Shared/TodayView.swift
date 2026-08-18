@@ -1,4 +1,5 @@
 import Design
+import Persistence
 import SwiftUI
 import Today
 
@@ -37,6 +38,7 @@ struct TodayView: View {
         }
         .task {
             await model.loadWeather()
+            await recordTodayWeather()
         }
         .task {
             if feed == nil {
@@ -48,6 +50,19 @@ struct TodayView: View {
         .task {
             await model.startClock()
         }
+    }
+
+    private func recordTodayWeather() async {
+        guard let database = stores?.database,
+            let property = try? GardenStructureRepository(database).properties().first
+        else {
+            return
+        }
+        let recorder = WeatherHistoryRecorder(
+            provider: SystemWeatherProvider(),
+            store: DailyWeatherRepository(database)
+        )
+        await recorder.recordToday(for: property)
     }
 
     private var header: some View {

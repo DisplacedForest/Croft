@@ -294,6 +294,10 @@ private struct FailingWeather: WeatherProviding {
     func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot {
         throw UnreachableError()
     }
+
+    func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary {
+        throw UnreachableError()
+    }
 }
 
 struct ForecastStateTests {

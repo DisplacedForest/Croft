@@ -44,9 +44,10 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
         run: |
           missing=""
-          for name in MACOS_SIGNING_CERT_P12_BASE64 MACOS_SIGNING_CERT_PASSWORD MACOS_PROVISIONING_PROFILE_BASE64 APPLE_API_KEY_P8_BASE64 APPLE_API_KEY_ID APPLE_API_ISSUER_ID APPLE_TEAM_ID; do
+          for name in MACOS_SIGNING_CERT_P12_BASE64 MACOS_SIGNING_CERT_PASSWORD MACOS_PROVISIONING_PROFILE_BASE64 APPLE_API_KEY_P8_BASE64 APPLE_API_KEY_ID APPLE_API_ISSUER_ID APPLE_TEAM_ID SPARKLE_ED_PRIVATE_KEY; do
             if [ -z "${!name}" ]; then
               missing="$missing $name"
             fi
@@ -246,25 +247,72 @@ jobs:
           spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG_PATH"
           shasum -a 256 "$DMG_PATH"
 
+      - name: Sign update with the Sparkle key and write the appcast
+        id: appcast
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+          DMG_PATH: ${{ steps.package.outputs.dmg }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          sparkle_version="2.9.6"
+          sparkle_sha256="52bf9e88cdd972fc0c81501377a880e90d47031bd8ca5462488f843e2609e192"
+          archive="$RUNNER_TEMP/Sparkle-dist.tar.xz"
+          curl -sSfL -o "$archive" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/$sparkle_version/Sparkle-$sparkle_version.tar.xz"
+          echo "$sparkle_sha256  $archive" | shasum -a 256 -c -
+          mkdir -p "$RUNNER_TEMP/sparkle-dist"
+          tar -xJf "$archive" -C "$RUNNER_TEMP/sparkle-dist"
+          signature="$(printf '%s' "$SPARKLE_ED_PRIVATE_KEY" \
+            | "$RUNNER_TEMP/sparkle-dist/bin/sign_update" --ed-key-file - "$DMG_PATH")"
+          case "$signature" in
+            *sparkle:edSignature=*) ;;
+            *) echo "sign_update produced unexpected output" >&2; exit 1 ;;
+          esac
+          published="$(date -u '+%a, %d %b %Y %H:%M:%S +0000')"
+          dmg_url="https://github.com/DisplacedForest/Croft/releases/download/v$VERSION/Croft-$VERSION.dmg"
+          cat > build/appcast.xml <<APPCAST
+          <?xml version="1.0" encoding="utf-8"?>
+          <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+            <channel>
+              <title>Croft</title>
+              <item>
+                <title>Croft $VERSION</title>
+                <pubDate>$published</pubDate>
+                <sparkle:version>$GITHUB_RUN_NUMBER</sparkle:version>
+                <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+                <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+                <link>https://github.com/DisplacedForest/Croft/releases/tag/v$VERSION</link>
+                <enclosure url="$dmg_url" $signature type="application/octet-stream"/>
+              </item>
+            </channel>
+          </rss>
+          APPCAST
+          echo "appcast=build/appcast.xml" >> "$GITHUB_OUTPUT"
+          cat build/appcast.xml
+
       - name: Attach to GitHub release
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           DMG_PATH: ${{ steps.package.outputs.dmg }}
+          APPCAST_PATH: ${{ steps.appcast.outputs.appcast }}
         run: |
           set -euo pipefail
           tag="$GITHUB_REF_NAME"
           if ! gh release view "$tag" > /dev/null 2>&1; then
             gh release create "$tag" --verify-tag --title "$tag" --generate-notes
           fi
-          gh release upload "$tag" "$DMG_PATH" --clobber
+          gh release upload "$tag" "$DMG_PATH" "$APPCAST_PATH" --clobber
 
       - name: Upload rehearsal artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: Croft-${{ steps.version.outputs.version }}-dmg
-          path: ${{ steps.package.outputs.dmg }}
+          path: |
+            ${{ steps.package.outputs.dmg }}
+            ${{ steps.appcast.outputs.appcast }}
           if-no-files-found: error
 
       - name: Clean up signing material

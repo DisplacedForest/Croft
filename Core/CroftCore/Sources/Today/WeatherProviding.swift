@@ -48,12 +48,29 @@ public struct DayForecast: Sendable, Equatable {
     }
 }
 
+public struct DailyWeatherSummary: Sendable, Equatable {
+    public let highCelsius: Double?
+    public let lowCelsius: Double?
+    public let precipitationMillimeters: Double?
+
+    public init(
+        highCelsius: Double?,
+        lowCelsius: Double?,
+        precipitationMillimeters: Double?
+    ) {
+        self.highCelsius = highCelsius
+        self.lowCelsius = lowCelsius
+        self.precipitationMillimeters = precipitationMillimeters
+    }
+}
+
 public protocol LocationProviding: Sendable {
     func currentLocation() async throws -> GeoLocation
 }
 
 public protocol WeatherProviding: Sendable {
     func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot
+    func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary
 }
 
 public protocol ForecastProviding: Sendable {
