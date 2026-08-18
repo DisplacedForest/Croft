@@ -64,4 +64,16 @@ import Testing
         #expect(usItem.displayName == "Eggplant")
         #expect(usItem.otherNames.contains("aubergine"))
     }
+
+    @Test func theDetailPageTitleFollowsTheLocaleToo() throws {
+        let fixture = try seed()
+        let melongena = try #require(
+            try fixture.species.fetchAll().first { $0.scientificName == "Solanum melongena" })
+        let british = try loader(fixture, locale: "en_GB").page(for: .species(melongena.id))
+        #expect(british?.displayName == "Aubergine")
+        #expect(british?.commonNames.contains("aubergine") == true)
+        let american = try loader(fixture, locale: "en_US").page(for: .species(melongena.id))
+        #expect(american?.displayName == "Eggplant")
+        #expect(american?.commonNames.contains("eggplant") == true)
+    }
 }

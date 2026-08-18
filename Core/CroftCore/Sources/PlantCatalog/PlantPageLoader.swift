@@ -153,8 +153,10 @@ public struct PlantPageLoader: Sendable {
 
         return PlantPage(
             identity: identity,
-            displayName: cultivar?.name ?? titled(one.commonNames.first) ?? one.scientificName,
-            commonNames: cultivar?.commonNames ?? one.commonNames,
+            displayName: cultivar?.name
+                ?? titled(one.preferredCommonName(for: locale))
+                ?? one.scientificName,
+            commonNames: cultivar?.commonNames ?? one.allCommonNames,
             taxonomy: PlantTaxonomy(
                 familyName: family?.name,
                 genusName: genus?.name,
