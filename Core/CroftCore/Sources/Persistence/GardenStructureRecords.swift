@@ -20,21 +20,81 @@ struct PropertyRecord: StructureRecord {
     var name: String
     var notes: String?
     var archived: Bool
+    var latitude: Double?
+    var longitude: Double?
+    var hardinessZone: Int?
+    var lastFrostMonth: Int?
+    var lastFrostDay: Int?
+    var firstFrostMonth: Int?
+    var firstFrostDay: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case notes
+        case archived
+        case latitude
+        case longitude
+        case hardinessZone = "hardiness_zone"
+        case lastFrostMonth = "last_frost_month"
+        case lastFrostDay = "last_frost_day"
+        case firstFrostMonth = "first_frost_month"
+        case firstFrostDay = "first_frost_day"
+    }
 
     init(_ model: Property) {
         id = model.id.rawValue
         name = model.name
         notes = model.notes
         archived = model.isArchived
+        latitude = model.location?.latitude
+        longitude = model.location?.longitude
+        hardinessZone = model.hardinessZone
+        lastFrostMonth = model.lastFrost?.month
+        lastFrostDay = model.lastFrost?.day
+        firstFrostMonth = model.firstFrost?.month
+        firstFrostDay = model.firstFrost?.day
     }
 
-    func model() -> Property {
+    func model() throws -> Property {
         Property(
             id: Property.ID(rawValue: id),
             name: name,
             notes: notes,
-            isArchived: archived
+            isArchived: archived,
+            location: try coordinate(),
+            hardinessZone: hardinessZone,
+            lastFrost: try frost(lastFrostMonth, lastFrostDay, column: "last_frost"),
+            firstFrost: try frost(firstFrostMonth, firstFrostDay, column: "first_frost")
         )
+    }
+
+    private func coordinate() throws -> GeoCoordinate? {
+        switch (latitude, longitude) {
+        case (nil, nil):
+            return nil
+        case (let lat?, let lon?):
+            guard let coordinate = GeoCoordinate(latitude: lat, longitude: lon) else {
+                throw GardenStructureError.invalidPropertyDetails("coordinate \(lat), \(lon)")
+            }
+            return coordinate
+        default:
+            throw GardenStructureError.invalidPropertyDetails("unpaired coordinate")
+        }
+    }
+
+    private func frost(_ month: Int?, _ day: Int?, column: String) throws -> MonthDay? {
+        switch (month, day) {
+        case (nil, nil):
+            return nil
+        case (let month?, let day?):
+            guard let monthDay = MonthDay(month: month, day: day) else {
+                throw GardenStructureError.invalidPropertyDetails("\(column) \(month)-\(day)")
+            }
+            return monthDay
+        default:
+            throw GardenStructureError.invalidPropertyDetails("unpaired \(column)")
+        }
     }
 }
 

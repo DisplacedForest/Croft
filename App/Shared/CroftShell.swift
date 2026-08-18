@@ -1,4 +1,5 @@
 import Design
+import GardenModel
 import SwiftUI
 
 struct CroftShell: View {
@@ -7,6 +8,8 @@ struct CroftShell: View {
     @Environment(\.appStores) private var appStores
     @State private var captureStore = CaptureStore(stores: nil)
     @State private var captureReady = false
+    @State private var propertyForm: PropertyDetailsForm?
+    @State private var showsPropertySetup = false
     private let initialRoute: SectionRoute?
 
     init(
@@ -20,6 +23,29 @@ struct CroftShell: View {
     }
 
     var body: some View {
+        shell
+            .sheet(isPresented: $showsPropertySetup) {
+                propertyForm?.markPrompted()
+            } content: {
+                if let propertyForm {
+                    PropertySetupSheet(form: propertyForm)
+                }
+            }
+            .task {
+                guard propertyForm == nil, let database = appStores?.database else {
+                    return
+                }
+                let form = PropertyDetailsForm(
+                    database: database,
+                    fillCoordinate: PropertyLocationFill.system
+                )
+                form.load()
+                propertyForm = form
+                showsPropertySetup = form.shouldOfferSetup
+            }
+    }
+
+    @ViewBuilder private var shell: some View {
         #if os(macOS)
             NavigationSplitView {
                 List(selection: $selection) {
