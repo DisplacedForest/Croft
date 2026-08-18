@@ -35,6 +35,10 @@ public struct CaptureContext {
         PlantAdopter(personal: personal, knowledge: knowledge)
     }
 
+    public var rotationHistory: RotationHistory {
+        RotationHistory(knowledge: knowledge ?? personal, personal: personal)
+    }
+
     public func plantChoices() throws -> [PlantListItem] {
         let loader: PlantPageLoader =
             if let knowledge {

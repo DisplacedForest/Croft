@@ -75,6 +75,16 @@ public struct PlantingRepository: Sendable {
         }
     }
 
+    public func plantings(inBed bedID: Bed.ID) throws -> [Planting] {
+        try writer.read { db in
+            try PlantingRecord
+                .filter(Column("bed_id") == bedID.rawValue)
+                .order(Column("planted_on").desc, Column("id"))
+                .fetchAll(db)
+                .map { try $0.model() }
+        }
+    }
+
     public func activePlantings(inBed bedID: Bed.ID) throws -> [Planting] {
         try writer.read { db in
             try PlantingRecord

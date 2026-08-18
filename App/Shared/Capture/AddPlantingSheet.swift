@@ -1,4 +1,5 @@
 import Capture
+import Design
 import PlantCatalog
 import SwiftUI
 
@@ -47,6 +48,7 @@ struct AddPlantingSheet: View {
                         .tag(Bed.ID?.some(entry.bed.id))
                 }
             }
+            rotationAdvice
             if !lots.isEmpty {
                 Picker("From seed lot", selection: $form.source) {
                     Text("None").tag(PlantingSource?.none)
@@ -72,6 +74,35 @@ struct AddPlantingSheet: View {
         .task { load() }
         .onChange(of: form.identity) { _, _ in
             loadLots()
+            form.refreshRotation()
+        }
+        .onChange(of: form.bedID) { _, _ in
+            form.refreshRotation()
+        }
+    }
+
+    @ViewBuilder
+    private var rotationAdvice: some View {
+        if let warning = form.rotationWarning {
+            Label(
+                "\(warning.familyName) was here in \(String(warning.year))",
+                systemImage: "arrow.triangle.2.circlepath"
+            )
+            .font(.caption)
+            .foregroundStyle(Color.domainHealth)
+        }
+        if !form.bedHistory.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(form.bedHistory, id: \.familyName) { line in
+                    Text("\(line.familyName) grew here in \(String(line.mostRecentYear))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } else if form.showsEmptyHistoryNote {
+            Text("Nothing recorded here yet.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -105,6 +136,7 @@ struct AddPlantingSheet: View {
         beds = (try? context.activeBeds()) ?? []
         preselectQuery()
         loadLots()
+        form.refreshRotation()
     }
 
     private func preselectQuery() {
