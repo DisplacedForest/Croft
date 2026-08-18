@@ -34,10 +34,66 @@ public enum PropertyDetailsError: Error, Equatable {
     }
 }
 
+public enum PropertySourceState: Equatable, Sendable {
+    case missing
+    case loaded
+    case unreadable
+}
+
+@MainActor
+protocol PropertyStoring {
+    func firstProperty() throws -> Property?
+    func ensureHomeProperty() throws -> Property
+    func updateDetails(
+        _ id: Property.ID,
+        location: GeoCoordinate?,
+        hardinessZone: Int?,
+        lastFrost: MonthDay?,
+        firstFrost: MonthDay?
+    ) throws
+}
+
+@MainActor
+private struct DatabasePropertyStore: PropertyStoring {
+    let editor: GardenEditor
+    let structures: GardenStructureRepository
+
+    init(database: AppDatabase) {
+        editor = GardenEditor(database)
+        structures = GardenStructureRepository(database)
+    }
+
+    func firstProperty() throws -> Property? {
+        try structures.properties(includeArchived: true).first
+    }
+
+    func ensureHomeProperty() throws -> Property {
+        try editor.homeProperty()
+    }
+
+    func updateDetails(
+        _ id: Property.ID,
+        location: GeoCoordinate?,
+        hardinessZone: Int?,
+        lastFrost: MonthDay?,
+        firstFrost: MonthDay?
+    ) throws {
+        try structures.updatePropertyDetails(
+            id,
+            location: location,
+            hardinessZone: hardinessZone,
+            lastFrost: lastFrost,
+            firstFrost: firstFrost
+        )
+    }
+}
+
 @MainActor
 @Observable
 public final class PropertyDetailsForm {
     public private(set) var property: Property?
+    public private(set) var sourceState: PropertySourceState = .missing
+    public private(set) var loadFailureMessage: String?
     public var latitudeText = ""
     public var longitudeText = ""
     public var zoneText = ""
@@ -49,18 +105,28 @@ public final class PropertyDetailsForm {
     public private(set) var locationMessage: String?
     public private(set) var isFillingLocation = false
 
-    private let editor: GardenEditor
-    private let structures: GardenStructureRepository
+    private let store: any PropertyStoring
     private let defaults: PropertySetupDefaults
     private let fillCoordinate: CoordinateFill?
 
-    public init(
+    public convenience init(
         database: AppDatabase,
         defaults: PropertySetupDefaults = PropertySetupDefaults(),
         fillCoordinate: CoordinateFill? = nil
     ) {
-        editor = GardenEditor(database)
-        structures = GardenStructureRepository(database)
+        self.init(
+            store: DatabasePropertyStore(database: database),
+            defaults: defaults,
+            fillCoordinate: fillCoordinate
+        )
+    }
+
+    init(
+        store: any PropertyStoring,
+        defaults: PropertySetupDefaults = PropertySetupDefaults(),
+        fillCoordinate: CoordinateFill? = nil
+    ) {
+        self.store = store
         self.defaults = defaults
         self.fillCoordinate = fillCoordinate
     }
@@ -70,11 +136,24 @@ public final class PropertyDetailsForm {
     }
 
     public var shouldOfferSetup: Bool {
-        PropertySetupGate.shouldOffer(property: property, defaults: defaults)
+        guard sourceState != .unreadable else {
+            return false
+        }
+        return PropertySetupGate.shouldOffer(property: property, defaults: defaults)
     }
 
     public func load() {
-        property = (try? structures.properties(includeArchived: true))?.first
+        do {
+            property = try store.firstProperty()
+            sourceState = property == nil ? .missing : .loaded
+            loadFailureMessage = nil
+        } catch {
+            property = nil
+            sourceState = .unreadable
+            loadFailureMessage =
+                "Croft can't read the saved property details. The stored record has been "
+                + "left untouched; back up your garden database file before changing anything."
+        }
         latitudeText = property?.location.map { Self.format($0.latitude) } ?? ""
         longitudeText = property?.location.map { Self.format($0.longitude) } ?? ""
         zoneText = property?.hardinessZone.map(String.init) ?? ""
@@ -89,13 +168,17 @@ public final class PropertyDetailsForm {
     @discardableResult
     public func save() -> Bool {
         validationMessage = nil
+        guard sourceState != .unreadable else {
+            validationMessage = "The property record can't be read, so saving is disabled."
+            return false
+        }
         do {
             let location = try parsedCoordinate()
             let zone = try parsedZone()
             let lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             let firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
-            let home = try editor.homeProperty()
-            try structures.updatePropertyDetails(
+            let home = try store.ensureHomeProperty()
+            try store.updateDetails(
                 home.id,
                 location: location,
                 hardinessZone: zone,
@@ -103,7 +186,13 @@ public final class PropertyDetailsForm {
                 firstFrost: firstFrost
             )
             defaults.hasBeenPrompted = true
-            property = try structures.property(id: home.id)
+            var saved = home
+            saved.location = location
+            saved.hardinessZone = zone
+            saved.lastFrost = lastFrost
+            saved.firstFrost = firstFrost
+            property = saved
+            sourceState = .loaded
             return true
         } catch let error as PropertyDetailsError {
             validationMessage = error.message
