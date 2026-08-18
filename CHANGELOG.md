@@ -4,6 +4,13 @@ All notable changes to Croft are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- Observations can record a typed lifecycle stage (germinated, transplanted,
+  first flower, first fruit set, pulled) alongside the note.
+
 ## 0.1.0 - 2026-08-18
 
 ### Added
