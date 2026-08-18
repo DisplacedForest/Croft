@@ -6,12 +6,20 @@ import Testing
 struct DayStampTests {
     @Test func validDaysConstructAndInvalidDaysDoNot() {
         #expect(DayStamp(year: 2026, month: 8, day: 18) != nil)
-        #expect(DayStamp(year: 2026, month: 2, day: 29) != nil)
         #expect(DayStamp(year: 2026, month: 2, day: 30) == nil)
         #expect(DayStamp(year: 2026, month: 13, day: 1) == nil)
         #expect(DayStamp(year: 2026, month: 0, day: 1) == nil)
         #expect(DayStamp(year: 2026, month: 4, day: 31) == nil)
         #expect(DayStamp(year: 0, month: 1, day: 1) == nil)
+    }
+
+    @Test func februaryTwentyNinthExistsOnlyInLeapYears() {
+        #expect(DayStamp(year: 2024, month: 2, day: 29) != nil)
+        #expect(DayStamp(year: 2000, month: 2, day: 29) != nil)
+        #expect(DayStamp(year: 2026, month: 2, day: 29) == nil)
+        #expect(DayStamp(year: 1900, month: 2, day: 29) == nil)
+        #expect(DayStamp(storageValue: "2026-02-29") == nil)
+        #expect(DayStamp(storageValue: "2024-02-29") != nil)
     }
 
     @Test func storageFormRoundTrips() throws {

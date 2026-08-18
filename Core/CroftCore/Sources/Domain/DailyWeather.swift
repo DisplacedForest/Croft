@@ -5,17 +5,24 @@ public struct DayStamp: Equatable, Hashable, Sendable, Codable, Comparable {
     public let month: Int
     public let day: Int
 
-    private static let daysInMonth = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    private static let daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
     public init?(year: Int, month: Int, day: Int) {
         guard (1...9999).contains(year), (1...12).contains(month),
-            (1...DayStamp.daysInMonth[month - 1]).contains(day)
+            (1...DayStamp.lastDay(ofMonth: month, in: year)).contains(day)
         else {
             return nil
         }
         self.year = year
         self.month = month
         self.day = day
+    }
+
+    private static func lastDay(ofMonth month: Int, in year: Int) -> Int {
+        if month == 2, year % 4 == 0, year % 100 != 0 || year % 400 == 0 {
+            return 29
+        }
+        return daysInMonth[month - 1]
     }
 
     public init(_ date: Date, calendar: Calendar = .current) {
