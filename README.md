@@ -8,44 +8,40 @@
 
 Open-source, local-first garden operating system built on a horticultural knowledge graph. Native Swift and SwiftUI for macOS.
 
+Croft models a real garden and the knowledge to run it, entirely on your machine. Everything lives in a local SQLite database: no account, no sync service, no network dependency. And the knowledge is accountable: plant relationships cite their sources, so unsourced folklore doesn't get in.
+
+<img src=".github/assets/screenshot_garden.png" alt="Garden view with beds and plantings" width="100%">
+
+## Install
+
+Download the latest `Croft.dmg` from [Releases](https://github.com/DisplacedForest/Croft/releases), open it, and drag Croft to Applications. Builds are signed and notarized. Requires macOS 15 or later.
+
 ## What Croft does
 
-Croft models a real garden and the knowledge to run it, entirely on your machine. Everything lives in a local SQLite database. There's no account, no sync service, and no network dependency.
+- Knows plants. Family down to cultivar, with cultivation profiles covering sun, water, soil pH, spacing, germination, sowing, frost tolerance, and days to maturity: 32 common crops and over a thousand cultivars, bundled offline.
+- Knows what threatens them. The major home-garden pests and diseases, what they attack, which cultivars resist them, and identification imagery.
+- Maps your garden the way it's actually laid out. Properties contain gardens, gardens contain growing areas and beds (raised, in-ground, or container), and every planting is a real crop in a real bed, traced back to the seed lot or starter batch it came from.
+- Remembers what happened. Observations with photos, harvests, and tasks, each connected to the planting, bed, or plant it belongs to.
+- Captures fast. Add a planting, log an observation, record a harvest, manage tasks, or add a seed lot from wherever you are, keyboard friendly and prefilled with the current date and your last-used bed and unit.
+- Starts your day. A Today screen with local weather and the garden tasks that are due or overdue.
 
-What ships today:
+Plant pages cover everything in the bundled catalog: browse, search, and per-plant detail with growing conditions, cultivars, threats, and imagery.
 
-- A full plant taxonomy: family, genus, species, and cultivar, with typed cultivation attributes covering life cycle, sun and water needs, soil pH, spacing, germination temperatures and days, sowing method and depth, frost tolerance, transplant timing, and days to maturity.
-- Garden structure the way gardens are actually laid out: properties contain gardens, gardens contain growing areas and beds (raised, in-ground, or container), all tracked as graph containment so every bed knows where it lives.
-- Plantings, the working heart of the graph: an actual crop in an actual bed, tied to its cultivar (or species when the cultivar is unknown), with a small planned-to-finished lifecycle, in-place transplant handling, and lineage back to the seed lot or starter batch it came from.
-- Seed lots and starter batches with propagation lineage, so a plant in the ground traces back to the packet it started as.
-- Pests, beneficials, and diseases as first-class entities: host relationships, parasitism and predation, pathogens, disease vectors, and cultivar resistance, all typed edges in the graph.
-- Plant-to-plant claims (companions, antagonists, rotation warnings) that require provenance. Unsourced folklore doesn't get in.
-- A bundled offline knowledge snapshot: 32 common crops with metric cultivation profiles, over a thousand cultivars, and the major home-garden pests and diseases, imported deterministically from pinned, cited sources. See [knowledge/](knowledge/) for how it's built and attributed.
-
-Bundled plant, pest, and disease imagery is sourced from Wikimedia Commons, iNaturalist, and Flickr under public domain, CC0, and CC BY licenses; per-image attribution and provenance live in [knowledge/ATTRIBUTION.md](knowledge/ATTRIBUTION.md).
-
-In the app, that graph turns into:
-
-- A Today screen with the date, local weather, and the garden tasks that are due or overdue.
-- A garden view that walks property, garden, growing area, and bed, down to per-bed planting detail with what's growing now and what grew before.
-- Plant pages for everything in the bundled catalog: browse, search, and per-plant detail with cultivation conditions, cultivars, threats, and identification imagery.
-- Capture flows built for speed: add a planting, log an observation (with photos via file picker or drag and drop), record a harvest, add and complete tasks, and add seed lots, all reachable from where they belong plus a global Record menu, prefilled with the current date and your last-used bed and unit.
-
-Under it all is one typed knowledge graph over SQLite ([GRDB](https://github.com/groue/GRDB.swift)): entities and relationships carry provenance and confidence, single-cardinality edges are enforced with partial unique indexes, and every schema change lands as a migration with preservation tests. The `CroftCore` package splits into `Domain`, `Persistence`, `Graph`, `Knowledge`, and feature modules under `Core/`.
+The knowledge snapshot is imported deterministically from pinned, cited sources; [knowledge/](knowledge/) documents how it's built. Bundled imagery comes from Wikimedia Commons, iNaturalist, and Flickr under public domain, CC0, and CC BY licenses, with per-image attribution in [knowledge/ATTRIBUTION.md](knowledge/ATTRIBUTION.md).
 
 ## Screenshots
 
 <img src=".github/assets/screenshot_today.png" alt="Today screen with due and overdue garden tasks" width="100%">
-<img src=".github/assets/screenshot_garden.png" alt="Garden view with beds and plantings" width="100%">
 <img src=".github/assets/screenshot_plant_page.png" alt="Plant page with cultivation detail and imagery" width="100%">
 <img src=".github/assets/screenshot_capture.png" alt="Capture sheet recording a harvest" width="100%">
 
-## Requirements
+## Architecture
 
-- macOS with Xcode 26 or later
-- [mise](https://mise.jdx.dev)
+One typed knowledge graph over SQLite ([GRDB](https://github.com/groue/GRDB.swift)). Entities and relationships carry provenance and confidence, single-cardinality edges are enforced with partial unique indexes, and every schema change lands as a migration with preservation tests. The `CroftCore` package splits into `Domain`, `Persistence`, `Graph`, `Knowledge`, and feature modules under `Core/`.
 
-## Build and run
+## Building from source
+
+Requires macOS with Xcode 26 or later and [mise](https://mise.jdx.dev).
 
 ```
 mise install
