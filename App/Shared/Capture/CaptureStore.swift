@@ -7,10 +7,23 @@ import struct Domain.Bed
 import enum Domain.GardenTaskTarget
 import enum Domain.LifecycleStage
 import enum Domain.ObservationTarget
+import enum Domain.PlantIdentity
 import struct Domain.Planting
 
+struct AddPlantingIntent: Hashable {
+    var bedID: Bed.ID?
+    var identity: PlantIdentity?
+    var planned: Bool
+
+    init(bedID: Bed.ID? = nil, identity: PlantIdentity? = nil, planned: Bool = false) {
+        self.bedID = bedID
+        self.identity = identity
+        self.planned = planned
+    }
+}
+
 enum CaptureSheet: Identifiable, Hashable {
-    case addPlanting(Bed.ID?)
+    case addPlanting(AddPlantingIntent)
     case logObservation(ObservationTarget?, stage: LifecycleStage?)
     case recordHarvest(Planting.ID?)
     case tasks

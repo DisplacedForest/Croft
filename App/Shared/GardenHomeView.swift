@@ -62,12 +62,44 @@ struct GardenHomeView: View {
     private func overviewList(_ overview: GardenOverview) -> some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: CroftTheme.space(8)) {
+                seasonEntry
                 ForEach(overview.gardens) { group in
                     gardenSection(group)
                 }
             }
             .padding(CroftTheme.space(6))
         }
+    }
+
+    private var seasonEntry: some View {
+        Button {
+            navigate(.season)
+        } label: {
+            HStack(spacing: CroftTheme.space(3)) {
+                Image(systemName: "calendar")
+                    .font(.title3)
+                    .foregroundStyle(Color.domainGarden)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Season")
+                        .font(.body.weight(.medium))
+                    Text("Planting windows and the year at a glance")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(CroftTheme.space(4))
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                Color.domainGarden.opacity(0.12),
+                in: RoundedRectangle(cornerRadius: CroftTheme.space(3))
+            )
+            .contentShape(RoundedRectangle(cornerRadius: CroftTheme.space(3)))
+        }
+        .buttonStyle(.plain)
     }
 
     private func gardenSection(_ group: GardenGroup) -> some View {

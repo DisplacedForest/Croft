@@ -64,6 +64,38 @@ struct AddPlantingFormTests {
         #expect(planting.status == .active)
     }
 
+    @Test func aPreselectedIdentityArrivesReadyToSave() throws {
+        let fixture = try CaptureFixture()
+        let form = AddPlantingForm(
+            context: fixture.context,
+            bedID: fixture.bed.id,
+            identity: .cultivar(fixture.cultivar.id)
+        )
+        #expect(form.identity == .cultivar(fixture.cultivar.id))
+        #expect(form.canSave)
+    }
+
+    @Test func plannedModeSavesWithoutAPlantedDate() throws {
+        let fixture = try CaptureFixture()
+        let form = AddPlantingForm(
+            context: fixture.context,
+            bedID: fixture.bed.id,
+            identity: .cultivar(fixture.cultivar.id),
+            planned: true
+        )
+        let planting = try form.save()
+        #expect(planting.status == .planned)
+        #expect(planting.plantedOn == nil)
+        let stored = try #require(try fixture.context.plantings.fetch(id: planting.id))
+        #expect(stored.status == .planned)
+        #expect(stored.plantedOn == nil)
+        let located = try fixture.context.personal.writer.read { db in
+            try GraphStore.outgoing(from: planting.id.rawValue, via: .locatedIn, in: db)
+                .map(\.target.id)
+        }
+        #expect(located == [fixture.bed.id.rawValue])
+    }
+
     @Test func aKnowledgeCultivarIsAdoptedIntoThePersonalDatabase() throws {
         let (knowledge, knowledgeCultivar) = try CaptureFixture.knowledgeDatabase()
         let fixture = try CaptureFixture(knowledge: knowledge)

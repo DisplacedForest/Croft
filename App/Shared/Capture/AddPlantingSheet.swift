@@ -14,18 +14,27 @@ struct AddPlantingSheet: View {
     @State private var beds: [(bed: Bed, gardenName: String)] = []
     @State private var lots: [SeedLot] = []
     let context: CaptureContext
+    let intent: AddPlantingIntent
     let onSaved: () -> Void
 
-    init(context: CaptureContext, bedID: Bed.ID?, onSaved: @escaping () -> Void) {
+    init(context: CaptureContext, intent: AddPlantingIntent, onSaved: @escaping () -> Void) {
         self.context = context
+        self.intent = intent
         self.onSaved = onSaved
-        _form = State(initialValue: AddPlantingForm(context: context, bedID: bedID))
+        _form = State(
+            initialValue: AddPlantingForm(
+                context: context,
+                bedID: intent.bedID,
+                identity: intent.identity,
+                planned: intent.planned
+            )
+        )
     }
 
     var body: some View {
         CaptureSheetScaffold(
-            title: "Add Planting",
-            confirm: "Plant",
+            title: intent.planned ? "Plan Planting" : "Add Planting",
+            confirm: intent.planned ? "Plan" : "Plant",
             canConfirm: form.canSave,
             minHeight: 460,
             commit: saveAction
@@ -53,7 +62,9 @@ struct AddPlantingSheet: View {
                     value: $form.quantity, format: .number.precision(.fractionLength(0))
                 )
                 .frame(width: 120)
-                DatePicker("Planted", selection: $form.plantedOn, displayedComponents: .date)
+                if !intent.planned {
+                    DatePicker("Planted", selection: $form.plantedOn, displayedComponents: .date)
+                }
             }
             TextField("Notes", text: $form.notes, axis: .vertical)
                 .lineLimit(2...3)
@@ -92,7 +103,18 @@ struct AddPlantingSheet: View {
     private func load() {
         choices = (try? context.plantChoices()) ?? []
         beds = (try? context.activeBeds()) ?? []
+        preselectQuery()
         loadLots()
+    }
+
+    private func preselectQuery() {
+        guard query.isEmpty, let identity = form.identity else {
+            return
+        }
+        guard let preselected = choices.first(where: { $0.identity == identity }) else {
+            return
+        }
+        query = preselected.displayName
     }
 
     private func loadLots() {

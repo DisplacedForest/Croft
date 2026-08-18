@@ -26,7 +26,7 @@ struct BedDetailView: View {
             .navigationTitle(detail.bed.name)
             .toolbar {
                 Button {
-                    capture.present(.addPlanting(bedID))
+                    capture.present(.addPlanting(AddPlantingIntent(bedID: bedID)))
                 } label: {
                     Label("Add Planting", systemImage: "leaf.circle")
                 }
