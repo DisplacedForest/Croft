@@ -6,6 +6,7 @@ import struct Domain.Bed
 import enum Domain.PlantIdentity
 import struct Domain.Planting
 import enum Domain.PlantingSource
+import enum Domain.PlantingStatus
 
 @Observable
 public final class AddPlantingForm {
@@ -16,12 +17,21 @@ public final class AddPlantingForm {
     public var plantedOn: Date
     public var notes: String = ""
     public private(set) var validationMessage: String?
+    public let intendedStatus: PlantingStatus
 
     private let context: CaptureContext
 
-    public init(context: CaptureContext, bedID: Bed.ID? = nil, now: Date = Date()) {
+    public init(
+        context: CaptureContext,
+        bedID: Bed.ID? = nil,
+        identity: PlantIdentity? = nil,
+        planned: Bool = false,
+        now: Date = Date()
+    ) {
         self.context = context
         self.bedID = bedID ?? context.defaults.lastBedID
+        self.identity = identity
+        intendedStatus = planned ? .planned : .active
         plantedOn = now
     }
 
@@ -41,9 +51,9 @@ public final class AddPlantingForm {
             identity: identity,
             bedID: bedID,
             source: source,
-            plantedOn: plantedOn,
+            plantedOn: intendedStatus == .active ? plantedOn : nil,
             quantity: quantity,
-            status: .active,
+            status: intendedStatus,
             notes: trimmed.isEmpty ? nil : trimmed
         )
         do {

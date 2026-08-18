@@ -6,6 +6,8 @@ struct SectionDetailView: View {
 
     var body: some View {
         switch route {
+        case .season:
+            SeasonView()
         case .bed(let bedID):
             BedDetailView(bedID: bedID, navigate: navigate)
         case .planting(let plantingID):
