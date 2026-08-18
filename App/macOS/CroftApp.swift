@@ -10,5 +10,10 @@ struct CroftApp: App {
                 .environment(\.appStores, stores)
         }
         .defaultSize(width: 1040, height: 700)
+
+        Settings {
+            PropertySettingsView()
+                .environment(\.appStores, stores)
+        }
     }
 }

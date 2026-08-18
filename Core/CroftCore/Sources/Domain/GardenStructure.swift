@@ -5,17 +5,29 @@ public struct Property: Equatable, Sendable, Codable {
     public var name: String
     public var notes: String?
     public var isArchived: Bool
+    public var location: GeoCoordinate?
+    public var hardinessZone: Int?
+    public var lastFrost: MonthDay?
+    public var firstFrost: MonthDay?
 
     public init(
         id: ID = .generate(),
         name: String,
         notes: String? = nil,
-        isArchived: Bool = false
+        isArchived: Bool = false,
+        location: GeoCoordinate? = nil,
+        hardinessZone: Int? = nil,
+        lastFrost: MonthDay? = nil,
+        firstFrost: MonthDay? = nil
     ) {
         self.id = id
         self.name = name
         self.notes = notes
         self.isArchived = isArchived
+        self.location = location
+        self.hardinessZone = hardinessZone
+        self.lastFrost = lastFrost
+        self.firstFrost = firstFrost
     }
 }
 

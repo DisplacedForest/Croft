@@ -8,6 +8,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Observations can record a typed lifecycle stage (germinated, transplanted,
+  first flower, first fruit set, pulled) alongside the note.
+- Property settings for location, hardiness zone, and last and first frost
+  dates, with a one-time first-run setup prompt.
 - Harvests record a harvested part and structured yield in any mass, volume,
   or count unit, entered in your preferred measurement system, with totals
   that add up across units and a first-harvest date on the planting timeline.

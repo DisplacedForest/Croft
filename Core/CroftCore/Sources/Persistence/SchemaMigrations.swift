@@ -18,6 +18,7 @@ public enum SchemaMigrations {
         ("v013-harvests", applyHarvests),
         ("v014-garden-tasks", applyGardenTasks),
         ("v016-lifecycle-stages", applyLifecycleStages),
+        ("v017-property-location", applyPropertyLocation),
         ("v018-harvest-yield", applyHarvestYield),
     ]
 

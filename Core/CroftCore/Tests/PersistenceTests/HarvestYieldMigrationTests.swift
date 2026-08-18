@@ -30,7 +30,7 @@ struct HarvestYieldMigrationTests {
         let identifiers = SchemaMigrations.identifiers
         let index = try #require(identifiers.firstIndex(of: harvestYieldIdentifier))
         try #require(index > 0)
-        #expect(identifiers[index - 1] == lifecycleStageIdentifier)
+        #expect(identifiers[index - 1] == "v017-property-location")
         let queue = try MigrationHarness.database(through: identifiers[index - 1])
         try queue.write { db in
             try seedStructure(db)
