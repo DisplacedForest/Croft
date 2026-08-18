@@ -6,18 +6,16 @@ import Today
 struct TodayView: View {
     @Environment(\.appStores) private var stores
     @Environment(CaptureStore.self) private var capture: CaptureStore?
-    @State private var model = TodayViewModel(
-        weatherProvider: SystemWeatherProvider(),
-        locationProvider: SystemLocationProvider(),
-        forecastProvider: SystemWeatherProvider()
-    )
+    @State private var model: TodayViewModel?
     @State private var feed: TodayFeedStore?
     @State private var showingForecast = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
-                header
+                if let model {
+                    header(model)
+                }
                 if let feed {
                     if feed.items.isEmpty {
                         quietBlock(feed)
@@ -37,8 +35,11 @@ struct TodayView: View {
             feed?.refresh()
         }
         .task {
-            await model.loadWeather()
+            let ready = readyModel()
+            async let clock: Void = ready.startClock()
+            await ready.loadWeather()
             await recordTodayWeather()
+            await clock
         }
         .task {
             if feed == nil {
@@ -48,9 +49,23 @@ struct TodayView: View {
                 await store.loadFrostForecast()
             }
         }
-        .task {
-            await model.startClock()
+    }
+
+    private func readyModel() -> TodayViewModel {
+        if let model {
+            return model
         }
+        let database = stores?.database
+        let built = TodayViewModel(
+            weatherProvider: SystemWeatherProvider(),
+            locationProvider: StoredFirstLocationProvider(
+                stored: { storedLocation(in: database) },
+                fallback: SystemLocationProvider()
+            ),
+            forecastProvider: SystemWeatherProvider()
+        )
+        model = built
+        return built
     }
 
     private func recordTodayWeather() async {
@@ -66,7 +81,7 @@ struct TodayView: View {
         await recorder.recordToday(for: property)
     }
 
-    private var header: some View {
+    private func header(_ model: TodayViewModel) -> some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
                 Text(model.now, format: .dateTime.weekday(.wide).month(.wide).day())
@@ -76,11 +91,11 @@ struct TodayView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: CroftTheme.space(4))
-            weatherChip
+            weatherChip(model)
         }
     }
 
-    @ViewBuilder private var weatherChip: some View {
+    @ViewBuilder private func weatherChip(_ model: TodayViewModel) -> some View {
         if case .loaded(let snapshot) = model.weather {
             Button {
                 showingForecast = true
@@ -110,13 +125,9 @@ struct TodayView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Seven day forecast")
             .popover(isPresented: $showingForecast, arrowEdge: .bottom) {
-                forecastPopover
+                ForecastPopover(model: model)
             }
         }
-    }
-
-    private var forecastPopover: some View {
-        ForecastPopover(model: model)
     }
 
     private func attentionCard(_ feed: TodayFeedStore) -> some View {
@@ -235,6 +246,15 @@ struct TodayView: View {
         case .quietLately: Color.primary.opacity(0.3)
         }
     }
+}
+
+private func storedLocation(in database: AppDatabase?) -> GeoLocation? {
+    guard let database,
+        let location = try? GardenStructureRepository(database).properties().first?.location
+    else {
+        return nil
+    }
+    return GeoLocation(latitude: location.latitude, longitude: location.longitude)
 }
 
 private struct ForecastPopover: View {
