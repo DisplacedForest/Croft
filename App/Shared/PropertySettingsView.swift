@@ -31,7 +31,12 @@ struct PropertySettingsView: View {
 
     var body: some View {
         Group {
-            if let form {
+            if let form, let message = form.loadFailureMessage {
+                Label(message, systemImage: "exclamationmark.triangle")
+                    .font(CroftTheme.supporting)
+                    .foregroundStyle(.secondary)
+                    .padding(CroftTheme.space(6))
+            } else if let form {
                 editor(form)
             } else {
                 Text("Property details are unavailable.")
