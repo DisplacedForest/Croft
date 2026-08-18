@@ -1,6 +1,8 @@
 import Capture
 import SwiftUI
 
+import enum Domain.LifecycleStage
+
 struct CaptureSheetHost: ViewModifier {
     @Environment(CaptureStore.self) private var capture
 
@@ -27,8 +29,9 @@ struct CaptureSheetHost: ViewModifier {
         switch sheet {
         case .addPlanting(let intent):
             AddPlantingSheet(context: context, intent: intent, onSaved: capture.didSave)
-        case .logObservation(let target):
-            LogObservationSheet(context: context, target: target, onSaved: capture.didSave)
+        case .logObservation(let target, let stage):
+            LogObservationSheet(
+                context: context, target: target, stage: stage, onSaved: capture.didSave)
         case .recordHarvest(let plantingID):
             RecordHarvestSheet(
                 context: context, plantingID: plantingID, onSaved: capture.didSave)
@@ -41,12 +44,24 @@ struct CaptureSheetHost: ViewModifier {
 }
 
 struct CaptureMenu: View {
-    @Environment(CaptureStore.self) private var capture
+    let capture: CaptureStore
 
     var body: some View {
         Menu {
-            Button("Add Planting…") { capture.present(.addPlanting(AddPlantingIntent())) }
-                .keyboardShortcut("p", modifiers: [.command, .shift])
+            Button("Log Observation…") {
+                capture.present(.logObservation(capture.visibleTarget, stage: nil))
+            }
+            .keyboardShortcut("o", modifiers: [.command, .shift])
+            stageMenu
+            Button("Record Harvest…") {
+                capture.present(.recordHarvest(capture.visiblePlanting))
+            }
+            .keyboardShortcut("h", modifiers: [.command, .shift])
+            Divider()
+            Button("Add Planting…") {
+                capture.present(.addPlanting(AddPlantingIntent(bedID: capture.visibleBed)))
+            }
+            .keyboardShortcut("p", modifiers: [.command, .shift])
             Button("Add Seed Lot…") { capture.present(.addSeedLot) }
                 .keyboardShortcut("l", modifiers: [.command, .shift])
             Button("Tasks…") { capture.present(.tasks) }
@@ -54,6 +69,23 @@ struct CaptureMenu: View {
         } label: {
             Label("Record", systemImage: "square.and.pencil")
         }
+    }
+
+    private var stageMenu: some View {
+        Menu("Record Stage") {
+            ForEach(Array(LifecycleStage.allCases.enumerated()), id: \.element) { index, stage in
+                Button(stage.menuName) { capture.recordStage(stage) }
+                    .keyboardShortcut(
+                        KeyEquivalent(Character("\(index + 1)")), modifiers: [.command, .shift])
+            }
+        }
+        .disabled(capture.visiblePlanting == nil)
+    }
+}
+
+extension LifecycleStage {
+    var menuName: String {
+        rawValue.replacingOccurrences(of: "_", with: " ").capitalized
     }
 }
 

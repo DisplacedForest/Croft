@@ -30,7 +30,6 @@ struct BedDetailView: View {
                 } label: {
                     Label("Add Planting", systemImage: "leaf.circle")
                 }
-                .keyboardShortcut("p", modifiers: [.command, .shift])
             }
 
             #if os(iOS)
