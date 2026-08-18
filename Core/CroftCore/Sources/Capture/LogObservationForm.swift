@@ -6,7 +6,7 @@ import enum Domain.ObservationTarget
 
 @Observable
 public final class LogObservationForm {
-    public let target: ObservationTarget
+    public var target: ObservationTarget?
     public var observedAt: Date
     public var notes: String = ""
     public var stage: LifecycleStage?
@@ -17,21 +17,26 @@ public final class LogObservationForm {
     private let context: CaptureContext
     private var attachedCount = 0
 
-    public init(context: CaptureContext, target: ObservationTarget, now: Date = Date()) {
+    public init(context: CaptureContext, target: ObservationTarget?, now: Date = Date()) {
         self.context = context
         self.target = target
         observedAt = now
     }
 
     public var canSave: Bool {
-        !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || stage != nil
-            || !photos.isEmpty
+        target != nil
+            && (!notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || stage != nil
+                || !photos.isEmpty)
     }
 
     @discardableResult
     public func save() throws -> ObservationRecord {
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard target != nil else {
+            validationMessage = "Pick what this observation is about."
+            throw CaptureValidationError.incomplete
+        }
         guard !trimmed.isEmpty || stage != nil || !photos.isEmpty else {
             validationMessage = "Pick a stage, write a note, or attach a photo."
             throw CaptureValidationError.incomplete
@@ -54,6 +59,9 @@ public final class LogObservationForm {
     }
 
     private func insertRecord(notes trimmed: String) throws -> ObservationRecord.ID {
+        guard let target else {
+            throw CaptureValidationError.incomplete
+        }
         let observation = ObservationRecord(
             target: target,
             observedAt: observedAt,

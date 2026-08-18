@@ -12,9 +12,16 @@ import enum Domain.UnitSystem
 
 @Observable
 public final class RecordHarvestForm {
-    public let plantingID: Planting.ID
     public let unitChoices: [HarvestUnitChoice]
-    public let partChoices: [HarvestablePart]
+    public private(set) var partChoices: [HarvestablePart] = []
+    public var plantingID: Planting.ID? {
+        didSet {
+            guard plantingID != oldValue else {
+                return
+            }
+            reseedParts()
+        }
+    }
     public var quantityText: String = ""
     public var unitChoice: HarvestUnitChoice
     public var customUnit: String = ""
@@ -27,16 +34,20 @@ public final class RecordHarvestForm {
 
     private let context: CaptureContext
 
-    public init(context: CaptureContext, plantingID: Planting.ID, now: Date = Date()) {
+    public init(context: CaptureContext, plantingID: Planting.ID?, now: Date = Date()) {
         self.context = context
         self.plantingID = plantingID
         let system = context.defaults.preferredUnitSystem
         unitChoices = HarvestUnitChoice.ordered(preferring: system)
         unitChoice =
             context.defaults.lastHarvestUnit ?? .unit(system == .metric ? .gram : .pound)
-        partChoices = (try? context.harvestableParts(for: plantingID)) ?? []
-        harvestedPart = partChoices.count == 1 ? partChoices.first : nil
         harvestedOn = now
+        reseedParts()
+    }
+
+    private func reseedParts() {
+        partChoices = plantingID.flatMap { try? context.harvestableParts(for: $0) } ?? []
+        harvestedPart = partChoices.count == 1 ? partChoices.first : nil
     }
 
     public var yield: HarvestYield? {
@@ -61,10 +72,14 @@ public final class RecordHarvestForm {
         }
     }
 
-    public var canSave: Bool { yield != nil }
+    public var canSave: Bool { plantingID != nil && yield != nil }
 
     @discardableResult
     public func save() throws -> Harvest {
+        guard let plantingID else {
+            validationMessage = "Pick a planting."
+            throw CaptureValidationError.incomplete
+        }
         guard let yield else {
             validationMessage = "Enter a quantity above zero."
             throw CaptureValidationError.incomplete
