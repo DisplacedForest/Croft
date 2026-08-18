@@ -8,6 +8,18 @@ public enum ObservationError: Error, Hashable {
     case malformedTarget(String)
 }
 
+public struct StageEvent: Equatable, Sendable {
+    public let observationID: Observation.ID
+    public let stage: LifecycleStage
+    public let observedAt: Date
+
+    public init(observationID: Observation.ID, stage: LifecycleStage, observedAt: Date) {
+        self.observationID = observationID
+        self.stage = stage
+        self.observedAt = observedAt
+    }
+}
+
 public struct ObservationRepository: Sendable {
     private let writer: any DatabaseWriter
     private let photoStore: PhotoStore
@@ -219,5 +231,76 @@ public struct ObservationRepository: Sendable {
         }
         try GraphStore.register(target, in: db)
         try GraphStore.relate(from: entity, type, to: target, in: db)
+    }
+}
+
+extension ObservationRepository {
+    public func stageHistory(forPlanting id: Planting.ID) throws -> [StageEvent] {
+        try writer.read { db in
+            try Self.stageEvents(forPlanting: id, in: db)
+        }
+    }
+
+    public func daysToGermination(forPlanting id: Planting.ID) throws -> Int? {
+        try writer.read { db in
+            guard
+                let plantedOn = try Date.fetchOne(
+                    db,
+                    sql: "SELECT planted_on FROM planting WHERE id = ?",
+                    arguments: [id.rawValue]),
+                let germinated = try Self.stageEvents(forPlanting: id, in: db)
+                    .first(where: { $0.stage == .germinated })
+            else {
+                return nil
+            }
+            return Self.wholeDays(from: plantedOn, to: germinated.observedAt)
+        }
+    }
+
+    public func firstFlowerDate(forPlanting id: Planting.ID) throws -> Date? {
+        try writer.read { db in
+            try Self.stageEvents(forPlanting: id, in: db)
+                .first(where: { $0.stage == .firstFlower })?
+                .observedAt
+        }
+    }
+
+    public func neverFruited(forPlanting id: Planting.ID) throws -> Bool {
+        try writer.read { db in
+            try !Self.stageEvents(forPlanting: id, in: db)
+                .contains { $0.stage == .firstFruitSet }
+        }
+    }
+
+    private static func stageEvents(
+        forPlanting id: Planting.ID,
+        in db: Database
+    ) throws -> [StageEvent] {
+        let decoder = TaxonomyRowDecoder(table: ObservationRecord.databaseTableName)
+        let records =
+            try ObservationRecord
+            .filter(Column("planting_id") == id.rawValue)
+            .filter(Column("stage") != nil)
+            .order(Column("observed_at"), Column("id"))
+            .fetchAll(db)
+        return try records.compactMap { record in
+            guard let raw = record.stage else {
+                return nil
+            }
+            return StageEvent(
+                observationID: Observation.ID(rawValue: record.id),
+                stage: try decoder.enumValue(LifecycleStage.self, from: raw, column: "stage"),
+                observedAt: record.observedAt
+            )
+        }
+    }
+
+    private static func wholeDays(from start: Date, to end: Date) -> Int? {
+        let calendar = Calendar.current
+        return calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: start),
+            to: calendar.startOfDay(for: end)
+        ).day
     }
 }
