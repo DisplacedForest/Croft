@@ -55,11 +55,14 @@ public struct PlantingTimeline: Equatable, Sendable {
             into: &entries)
         try appendPlantingEntries(
             planting, recordedStages: recordedStages, database: database, into: &entries)
+        let firstHarvestID = harvestRecords.min {
+            ($0.harvestedOn, $0.id.rawValue) < ($1.harvestedOn, $1.id.rawValue)
+        }?.id
         for harvest in harvestRecords {
             entries.append(
                 harvestEntry(
                     harvest,
-                    first: harvest.harvestedOn == firstHarvestDate,
+                    first: harvest.id == firstHarvestID,
                     plantedOn: planting.plantedOn,
                     formatter: formatter
                 ))

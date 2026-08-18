@@ -158,6 +158,24 @@ struct PlantingTimelineTests {
         #expect(timeline.entries.map(\.kind) == (try load(planting)).entries.map(\.kind))
     }
 
+    @Test func onlyOneHarvestOnTheEarliestDateIsMarkedFirst() throws {
+        let planting = try fixture.addPlanting(status: .active, plantedOn: try day(0))
+        let earliest = try day(100)
+        for amount in [410.0, 250.0] {
+            try harvests.insert(
+                Harvest(
+                    plantingID: planting.id,
+                    harvestedOn: earliest,
+                    yield: .measured(try Quantity(amount: amount, unit: .gram))))
+        }
+
+        let timeline = try load(planting)
+        let firsts = timeline.entries.filter { $0.kind == .harvest(first: true) }
+        #expect(firsts.count == 1)
+        #expect(timeline.entries.filter { $0.kind == .harvest(first: false) }.count == 1)
+        #expect(firsts.first?.detail == "100 days from sowing")
+    }
+
     @Test func photolessObservationsCarryNoPhotoPath() throws {
         let planting = try fixture.addPlanting(status: .active, plantedOn: try day(0))
         try observations.insert(
