@@ -40,7 +40,7 @@ final class AppearanceAuditTests: XCTestCase {
         let view: AnyView
     }
 
-    func testEveryScreenRendersOnTokenSurfacesInBothAppearances() throws {
+    func testEveryScreenRendersDetailContentOnTokenSurfacesInBothAppearances() throws {
         let scenery = try makeScenery()
         let empty = try makeScenery(seeded: false)
 
@@ -49,7 +49,7 @@ final class AppearanceAuditTests: XCTestCase {
                 let bitmap = try render(
                     screen.view, size: screen.size, appearance: appearance,
                     named: screen.name)
-                let luminances = try backgroundLuminances(of: bitmap)
+                let luminances = try detailSurfaceLuminances(of: bitmap)
                 if appearance == .darkAqua {
                     XCTAssertLessThan(
                         try XCTUnwrap(luminances.max()), 0.4,
@@ -240,7 +240,7 @@ final class AppearanceAuditTests: XCTestCase {
         try? data.write(to: directory.appendingPathComponent("\(named).png"))
     }
 
-    private func backgroundLuminances(of bitmap: NSBitmapImageRep) throws -> [CGFloat] {
+    private func detailSurfaceLuminances(of bitmap: NSBitmapImageRep) throws -> [CGFloat] {
         let inset = 6
         let points = [
             (bitmap.pixelsWide / 2, bitmap.pixelsHigh - inset),
