@@ -14,7 +14,7 @@ Croft models a real garden and the knowledge to run it, entirely on your machine
 
 ## Install
 
-Download the latest `Croft.dmg` from [Releases](https://github.com/DisplacedForest/Croft/releases), open it, and drag Croft to Applications. Builds are signed and notarized. Requires macOS 15 or later.
+Download `Croft-<version>.dmg` from the [latest release](https://github.com/DisplacedForest/Croft/releases/latest), open it, and drag Croft into Applications. Builds are signed and notarized, so macOS opens them without warnings. Requires macOS 15 or later.
 
 ## What Croft does
 
