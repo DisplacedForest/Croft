@@ -12,6 +12,11 @@ All notable changes to Croft are documented here. The format follows
   your plants care about, naming the at-risk plantings and their beds with
   the forecast low. Tolerances come from each plant's profile and are never
   guessed; no coordinates or no tender plantings means no alert.
+- Property setup by address: search any address or place with live
+  suggestions, and the matched coordinate derives a hardiness zone and frost
+  dates from ten years of weather history as prefills you confirm or edit,
+  never silent writes. Today's weather now follows the property's location
+  when one is set, with device location as the fallback.
 
 - Observations can record a typed lifecycle stage (germinated, transplanted,
   first flower, first fruit set, pulled) alongside the note.

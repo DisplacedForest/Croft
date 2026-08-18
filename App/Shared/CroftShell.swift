@@ -37,7 +37,9 @@ struct CroftShell: View {
                 }
                 let form = PropertyDetailsForm(
                     database: database,
-                    fillCoordinate: PropertyLocationFill.system
+                    fillCoordinate: PropertyLocationFill.system,
+                    addressSearch: SystemAddressSearch(),
+                    minima: PropertyClimateHistory.system
                 )
                 form.load()
                 propertyForm = form
