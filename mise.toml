@@ -82,5 +82,27 @@ run = [
   "mise run test-runtime-tokens",
 ]
 
+[tasks."changelog-draft"]
+run = '''
+set -euo pipefail
+last=$(git tag -l 'v[0-9]*' '[0-9]*' --sort=-v:refname | head -1)
+if [ -n "$last" ]; then range="$last..HEAD"; else range=HEAD; fi
+echo "## Draft changelog ($range)"
+for group in feat fix docs chore refactor test ci; do
+  lines=$(git log --no-merges --format='%s' "$range" | grep -E "^$group(\(|:|!)" || true)
+  if [ -n "$lines" ]; then
+    echo
+    echo "### $group"
+    echo "$lines" | sed -E "s/^$group(\([^)]*\))?!?: /- /"
+  fi
+done
+other=$(git log --no-merges --format='%s' "$range" | grep -vE '^(feat|fix|docs|chore|refactor|test|ci)(\(|:|!)' || true)
+if [ -n "$other" ]; then
+  echo
+  echo "### other"
+  echo "$other" | sed 's/^/- /'
+fi
+'''
+
 [tasks.security]
 run = "semgrep scan --config auto --error"

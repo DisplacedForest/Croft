@@ -1,20 +1,55 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+All notable changes to Croft are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
+## Unreleased
 
 ### Added
 
-- SQLite persistence foundation: versioned forward-only migrations, foreign
-  key enforcement, and a migration test harness that proves user data
-  survives schema changes.
+- Plant taxonomy: family, genus, species, and cultivar with typed cultivation
+  attributes (life cycle, sun, water, soil pH, spacing, germination, sowing,
+  frost tolerance, maturity), stored locally in SQLite.
+- Garden structure: properties, gardens, growing areas, and beds (raised,
+  in-ground, container) with graph-backed containment, renames, moves, and
+  archiving.
+- Plantings connecting crops to beds with a planned-to-finished lifecycle,
+  transplant handling, and propagation lineage from seed lots and starter
+  batches.
+- Seed lots and starter batches with graph lineage back to their cultivar.
+- Pests, beneficials, diseases, pathogens, and environmental conditions as
+  typed graph entities, with host, susceptibility, vector, and cultivar
+  resistance relationships.
+- Plant-to-plant relationships (companion, antagonist, rotation) that require
+  source provenance.
+- A deterministic knowledge importer producing the bundled offline snapshot:
+  32 crops with metric cultivation profiles, over a thousand cultivars, 31
+  pests, 37 diseases, typed relationships, and per-record citations, built
+  from pinned, checksum-verified, sanitized inputs.
+- Bundled identification imagery for plants, pests, and diseases, all public
+  domain, CC0, or CC BY, with per-image attribution generated into
+  knowledge/ATTRIBUTION.md.
+- Observations with notes, graph targeting, and photo storage.
+- Harvests with per-unit aggregation and planting lineage.
+- Garden tasks with typed verbs, optional graph targets, due dates, and
+  completion.
+- App shell with a Today screen (date, local weather, due and overdue tasks),
+  a garden view down to bed and planting detail, and plant pages with browse,
+  search, and per-plant detail from the bundled catalog.
+- Capture flows on macOS for plantings, observations (photos via file picker
+  and drag and drop), harvests, tasks, and seed lots, with last-used defaults
+  and keyboard shortcuts.
+- A domain color palette derived from the app icon, enforced by runtime
+  design-token tests.
 
 ### Fixed
 
-- Opening the app database now refuses to adopt a foreign SQLite file:
-  a file that is not empty and not stamped as a Croft database fails with
-  a typed error and is left untouched.
+- The app refuses to adopt a foreign SQLite file as its database.
+- Unknown enum raw values in stored rows fail loudly instead of decoding to
+  nil.
+- Species and cultivars register as graph entities on insert, so
+  repository-created plants are immediately visible to relationship queries.
+- Single-cardinality graph edges are enforced with partial unique indexes.
+- Project generation orders after the knowledge snapshot build, removing a
+  build race.
