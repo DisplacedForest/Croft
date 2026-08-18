@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -24,17 +25,15 @@ struct BedCardView<MenuItems: View>: View {
                     .foregroundStyle(summary.plantNamesLine == nil ? .tertiary : .primary)
                     .lineLimit(2, reservesSpace: true)
                     .multilineTextAlignment(.leading)
-                if let meta = metaLine {
-                    Text(meta)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                }
+                Text(metaLine ?? "")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2, reservesSpace: true)
+                    .multilineTextAlignment(.leading)
             }
             .padding(CroftTheme.space(4))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 12))
             .contentShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)

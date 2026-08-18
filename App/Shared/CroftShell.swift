@@ -2,11 +2,22 @@ import Design
 import SwiftUI
 
 struct CroftShell: View {
-    @State private var selection: AppSection? = .today
-    @State private var gardenStore = GardenStore.live()
+    @State private var selection: AppSection?
+    @State private var gardenStore: GardenStore
     @Environment(\.appStores) private var appStores
     @State private var captureStore = CaptureStore(stores: nil)
     @State private var captureReady = false
+    private let initialRoute: SectionRoute?
+
+    init(
+        gardenStore: GardenStore? = nil,
+        initialSection: AppSection = .today,
+        initialRoute: SectionRoute? = nil
+    ) {
+        _selection = State(initialValue: initialSection)
+        _gardenStore = State(initialValue: gardenStore ?? .live())
+        self.initialRoute = initialRoute
+    }
 
     var body: some View {
         #if os(macOS)
@@ -37,30 +48,53 @@ struct CroftShell: View {
     }
 
     private func sectionStack(for section: AppSection) -> some View {
-        SectionStack(section: section)
-            .toolbar {
-                CaptureMenu()
-                    .environment(captureStore)
+        SectionStack(
+            section: section,
+            gardenStore: gardenStore,
+            captureStore: captureStore,
+            initialRoute: initialRoute
+        )
+        .toolbar {
+            CaptureMenu()
+                .environment(captureStore)
+        }
+        .modifier(CaptureSheetHost())
+        .environment(captureStore)
+        .environment(gardenStore)
+        .tint(section.domainColor)
+        .task {
+            guard !captureReady else {
+                return
             }
-            .modifier(CaptureSheetHost())
-            .environment(captureStore)
-            .environment(gardenStore)
-            .tint(section.domainColor)
-            .task {
-                guard !captureReady else {
-                    return
-                }
-                captureReady = true
-                let store = CaptureStore(stores: appStores)
-                store.onSaved = { gardenStore.refresh() }
-                captureStore = store
-            }
+            captureReady = true
+            let store = CaptureStore(stores: appStores)
+            store.onSaved = { gardenStore.refresh() }
+            captureStore = store
+        }
     }
 }
 
-private struct SectionStack: View {
+struct SectionStack: View {
     let section: AppSection
-    @State private var path = NavigationPath()
+    let gardenStore: GardenStore
+    let captureStore: CaptureStore
+    @State private var path: NavigationPath
+
+    init(
+        section: AppSection,
+        gardenStore: GardenStore,
+        captureStore: CaptureStore,
+        initialRoute: SectionRoute? = nil
+    ) {
+        self.section = section
+        self.gardenStore = gardenStore
+        self.captureStore = captureStore
+        var path = NavigationPath()
+        if let initialRoute {
+            path.append(initialRoute)
+        }
+        _path = State(initialValue: path)
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -70,8 +104,13 @@ private struct SectionStack: View {
                     SectionDetailView(route: route) { next in
                         path.append(next)
                     }
+                    .croftScreenSurface()
+                    .environment(gardenStore)
+                    .environment(captureStore)
                 }
-                .background(Color.surfacePrimary)
+                .croftScreenSurface()
+                .environment(gardenStore)
+                .environment(captureStore)
         }
     }
 

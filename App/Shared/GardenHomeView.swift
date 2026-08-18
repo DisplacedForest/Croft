@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import Persistence
@@ -20,6 +21,7 @@ struct GardenHomeView: View {
     @State private var sheet: GardenSheet?
 
     var body: some View {
+        let gardens = store.overview?.gardens ?? []
         Group {
             if let message = store.startupError {
                 ContentUnavailableView(
@@ -38,19 +40,7 @@ struct GardenHomeView: View {
             }
         }
         .toolbar {
-            Menu {
-                Button("New Garden") { sheet = .newGarden }
-                if let overview = store.overview {
-                    ForEach(overview.gardens) { group in
-                        Menu(group.garden.name) {
-                            Button("New Bed") { sheet = .newBed(.garden(group.garden.id)) }
-                            Button("New Growing Area") { sheet = .newArea(group.garden.id) }
-                        }
-                    }
-                }
-            } label: {
-                Label("Add", systemImage: "plus")
-            }
+            GardenAddMenu(gardens: gardens) { sheet = $0 }
         }
         .sheet(item: $sheet) { sheet in
             sheetView(sheet)
@@ -161,7 +151,9 @@ struct GardenHomeView: View {
 
     private func bedGrid(_ beds: [BedSummary], parent: BedParent) -> some View {
         LazyVGrid(
-            columns: [GridItem(.adaptive(minimum: 230), spacing: CroftTheme.space(4))],
+            columns: [
+                GridItem(.adaptive(minimum: 230, maximum: 320), spacing: CroftTheme.space(4))
+            ],
             alignment: .leading,
             spacing: CroftTheme.space(4)
         ) {
@@ -208,7 +200,7 @@ struct GardenHomeView: View {
         }
         .padding(CroftTheme.space(4))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quinary, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 12))
     }
 
     @ViewBuilder
@@ -244,6 +236,25 @@ struct GardenHomeView: View {
             NameEntrySheet(title: "Rename Bed", initialName: current, confirm: "Rename") {
                 store.renameBed(id, to: $0)
             }
+        }
+    }
+}
+
+struct GardenAddMenu: View {
+    let gardens: [GardenGroup]
+    let choose: (GardenSheet) -> Void
+
+    var body: some View {
+        Menu {
+            Button("New Garden") { choose(.newGarden) }
+            ForEach(gardens) { group in
+                Menu(group.garden.name) {
+                    Button("New Bed") { choose(.newBed(.garden(group.garden.id))) }
+                    Button("New Growing Area") { choose(.newArea(group.garden.id)) }
+                }
+            }
+        } label: {
+            Label("Add", systemImage: "plus")
         }
     }
 }

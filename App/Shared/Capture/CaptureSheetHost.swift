@@ -52,7 +52,7 @@ struct CaptureMenu: View {
             Button("Tasks…") { capture.present(.tasks) }
                 .keyboardShortcut("t", modifiers: [.command, .shift])
         } label: {
-            Label("Record", systemImage: "plus.circle.fill")
+            Label("Record", systemImage: "square.and.pencil")
         }
     }
 }
@@ -91,5 +91,6 @@ struct CaptureSheetScaffold<Content: View>: View {
         }
         .padding(CroftTheme.space(6))
         .frame(minWidth: 420, maxWidth: 520, minHeight: minHeight)
+        .croftScreenSurface()
     }
 }

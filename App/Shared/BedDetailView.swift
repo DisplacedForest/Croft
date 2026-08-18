@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -9,6 +10,7 @@ struct BedDetailView: View {
     let navigate: (SectionRoute) -> Void
 
     var body: some View {
+        let capture = capture
         if let detail = store.bedDetail(bedID) {
             ScrollView {
                 VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
@@ -30,6 +32,7 @@ struct BedDetailView: View {
                 }
                 .keyboardShortcut("p", modifiers: [.command, .shift])
             }
+
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif
@@ -119,7 +122,7 @@ struct BedDetailView: View {
             }
             .padding(CroftTheme.space(3))
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
+            .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
             .contentShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(.plain)

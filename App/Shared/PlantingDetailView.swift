@@ -1,3 +1,4 @@
+import Design
 import Domain
 import GardenModel
 import SwiftUI
@@ -8,6 +9,7 @@ struct PlantingDetailView: View {
     let plantingID: Planting.ID
 
     var body: some View {
+        let capture = capture
         if let detail = store.plantingDetail(plantingID) {
             ScrollView {
                 VStack(alignment: .leading, spacing: CroftTheme.space(6)) {
@@ -177,6 +179,6 @@ struct PlantingDetailView: View {
         }
         .padding(CroftTheme.space(3))
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quinary, in: RoundedRectangle(cornerRadius: 10))
+        .background(Color.surfaceSecondary, in: RoundedRectangle(cornerRadius: 10))
     }
 }

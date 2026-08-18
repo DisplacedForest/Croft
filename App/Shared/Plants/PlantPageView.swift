@@ -33,21 +33,36 @@ struct PlantPageView: View {
 
 private struct PlantPageContent: View {
     let page: PlantPage
+    @State private var expandedGroups: Set<String> = []
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: CroftTheme.space(8)) {
                 header
-                conditionsSection
-                threatsSection
-                plantingsSection
-                activitySection
+                ForEach(PlantPage.sectionOrder, id: \.self) { kind in
+                    section(for: kind)
+                }
             }
             .padding(CroftTheme.space(6))
             .frame(maxWidth: 640, alignment: .leading)
             .frame(maxWidth: .infinity)
         }
         .navigationTitle(page.displayName)
+    }
+
+    @ViewBuilder private func section(for kind: PlantPageSectionKind) -> some View {
+        switch kind {
+        case .conditions:
+            conditionsSection
+        case .growingNow:
+            plantingsSection
+        case .recentActivity:
+            activitySection
+        case .pests:
+            threatGroup(title: "Pests", threats: page.pests, showsWhenEmpty: page.threats.isEmpty)
+        case .diseases:
+            threatGroup(title: "Diseases", threats: page.diseases, showsWhenEmpty: false)
+        }
     }
 
     private var header: some View {
@@ -162,16 +177,43 @@ private struct PlantPageContent: View {
         return rows
     }
 
-    private var threatsSection: some View {
-        PlantPageSection(title: "Common threats") {
-            if page.threats.isEmpty {
-                PlantPageEmptyRow(text: "No known pests or diseases recorded.")
-            } else {
-                VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
-                    ForEach(page.threats) { threat in
+    @ViewBuilder private func threatGroup(
+        title: String,
+        threats: [PlantThreat],
+        showsWhenEmpty: Bool
+    ) -> some View {
+        if !threats.isEmpty {
+            let expanded = expandedGroups.contains(title)
+            let visible = expanded ? threats : Array(threats.prefix(6))
+            VStack(alignment: .leading, spacing: CroftTheme.space(3)) {
+                HStack(spacing: CroftTheme.space(2)) {
+                    Text(title)
+                        .font(CroftTheme.heading)
+                    Text("\(threats.count)")
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, CroftTheme.space(2))
+                        .padding(.vertical, CroftTheme.space(0.5))
+                        .background(Color.domainHealth.opacity(0.15), in: Capsule())
+                        .foregroundStyle(Color.domainHealth)
+                }
+                VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
+                    ForEach(visible) { threat in
                         ThreatRow(threat: threat)
                     }
                 }
+                if threats.count > visible.count {
+                    Button("Show all \(threats.count)") {
+                        expandedGroups.insert(title)
+                    }
+                    .buttonStyle(.plain)
+                    .font(CroftTheme.supporting.weight(.medium))
+                    .foregroundStyle(Color.domainHealth)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        } else if showsWhenEmpty {
+            PlantPageSection(title: "Pests and diseases") {
+                PlantPageEmptyRow(text: "No known pests or diseases recorded.")
             }
         }
     }
@@ -258,38 +300,6 @@ private struct ConditionRow: View {
             }
         }
         .padding(.vertical, CroftTheme.space(2))
-    }
-}
-
-private struct ThreatRow: View {
-    let threat: PlantThreat
-
-    var body: some View {
-        HStack(alignment: .top, spacing: CroftTheme.space(3)) {
-            PlantThreatThumbnail(image: threat.image)
-            VStack(alignment: .leading, spacing: CroftTheme.space(1)) {
-                HStack(spacing: CroftTheme.space(2)) {
-                    Text(threat.name)
-                        .font(.body.weight(.medium))
-                    Text(threat.kind.displayName)
-                        .font(.caption2.weight(.medium))
-                        .padding(.horizontal, CroftTheme.space(1.5))
-                        .padding(.vertical, CroftTheme.space(0.5))
-                        .background(Color.domainHealth.opacity(0.15), in: Capsule())
-                        .foregroundStyle(Color.domainHealth)
-                }
-                if let agentName = threat.agentName {
-                    Text(agentName)
-                        .font(.callout.italic())
-                        .foregroundStyle(.secondary)
-                }
-                if let summary = threat.summary {
-                    Text(summary)
-                        .font(CroftTheme.supporting)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
     }
 }
 
