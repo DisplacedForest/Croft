@@ -11,7 +11,9 @@ public enum TaxonomyCodingError: Error, Equatable {
 
 enum TaxonomyCoding {
     static func encodeList<Element: Encodable>(_ list: [Element]) throws -> String {
-        let data = try JSONEncoder().encode(list)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let data = try encoder.encode(list)
         guard let text = String(bytes: data, encoding: .utf8) else {
             throw TaxonomyCodingError.unreadableListEncoding
         }
