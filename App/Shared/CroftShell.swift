@@ -136,6 +136,9 @@ struct SectionStack: View {
         .onChange(of: path, initial: true) { _, current in
             captureStore.visibleTarget = CaptureTargetResolver.target(for: current.last)
         }
+        .onAppear {
+            captureStore.visibleTarget = CaptureTargetResolver.target(for: path.last)
+        }
     }
 
     @ViewBuilder private var home: some View {
