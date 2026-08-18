@@ -1,6 +1,6 @@
 # Releasing Croft
 
-A release is a signed, notarized, stapled macOS app attached to a GitHub release. The `Release` workflow does all of it. It runs only on version tags and manual dispatch, never on pull requests, so signing material is never exposed to fork-triggered runs.
+A release is a notarized drag-to-install disk image: a signed, notarized, stapled `Croft.app` inside a signed, notarized, stapled `Croft-<version>.dmg` attached to the GitHub release. The `Release` workflow does all of it. It runs only on version tags and manual dispatch, never on pull requests, so signing material is never exposed to fork-triggered runs.
 
 ## Cutting a release
 
@@ -12,9 +12,9 @@ A release is a signed, notarized, stapled macOS app attached to a GitHub release
    git push origin v0.1.0
    ```
 
-3. The workflow builds Croft-macOS in Release, signs it with the Developer ID Application certificate, notarizes it through notarytool, staples the ticket, verifies the result with `codesign` and `spctl`, creates the GitHub release for the tag if one doesn't exist, and attaches `Croft-<version>-macOS.zip`.
+3. The workflow builds Croft-macOS in Release, signs it with the Developer ID Application certificate, notarizes it through notarytool, staples the ticket, and verifies the result with `codesign` and `spctl`. It then packages the stapled app into `Croft-<version>.dmg` (a volume named `Croft <version>` holding the app and an Applications symlink, built with hdiutil), signs the dmg with the same identity, notarizes and staples it too, and assesses it with `spctl --type open`. Finally it creates the GitHub release for the tag if one doesn't exist and attaches the dmg, the release's single canonical artifact.
 
-To rehearse without tagging, run the workflow manually from the Actions tab (workflow_dispatch) on any branch. A rehearsal signs and notarizes for real but uploads the zip as a workflow artifact instead of creating a release.
+To rehearse without tagging, run the workflow manually from the Actions tab (workflow_dispatch) on any branch. A rehearsal signs and notarizes for real but uploads the dmg as a workflow artifact instead of creating a release.
 
 ## Required repository secrets
 

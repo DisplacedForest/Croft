@@ -40,6 +40,16 @@ Under it all is one typed knowledge graph over SQLite ([GRDB](https://github.com
 <img src=".github/assets/screenshot_plant_page.png" alt="Plant page with cultivation detail and imagery" width="100%">
 <img src=".github/assets/screenshot_capture.png" alt="Capture sheet recording a harvest" width="100%">
 
+## Install
+
+Croft runs on macOS 15 or later.
+
+1. Download `Croft-<version>.dmg` from the [latest release](https://github.com/DisplacedForest/Croft/releases/latest).
+2. Open the disk image and drag Croft into Applications.
+3. Launch Croft from Applications.
+
+Builds are signed and notarized, so macOS opens them without any warnings or overrides. To build from source instead, keep reading.
+
 ## Requirements
 
 - macOS with Xcode 26 or later
