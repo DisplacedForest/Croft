@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+import enum Domain.LifecycleStage
 import enum Domain.ObservationTarget
 
 @Observable
@@ -8,6 +9,7 @@ public final class LogObservationForm {
     public let target: ObservationTarget
     public var observedAt: Date
     public var notes: String = ""
+    public var stage: LifecycleStage?
     public var photos: [Data] = []
     public private(set) var validationMessage: String?
     public private(set) var savedID: ObservationRecord.ID?
@@ -22,14 +24,16 @@ public final class LogObservationForm {
     }
 
     public var canSave: Bool {
-        !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !photos.isEmpty
+        !notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            || stage != nil
+            || !photos.isEmpty
     }
 
     @discardableResult
     public func save() throws -> ObservationRecord {
         let trimmed = notes.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty || !photos.isEmpty else {
-            validationMessage = "Write a note or attach a photo."
+        guard !trimmed.isEmpty || stage != nil || !photos.isEmpty else {
+            validationMessage = "Pick a stage, write a note, or attach a photo."
             throw CaptureValidationError.incomplete
         }
         do {
@@ -53,7 +57,8 @@ public final class LogObservationForm {
         let observation = ObservationRecord(
             target: target,
             observedAt: observedAt,
-            notes: trimmed.isEmpty ? nil : trimmed
+            notes: trimmed.isEmpty ? nil : trimmed,
+            stage: stage
         )
         try context.observations.insert(observation)
         savedID = observation.id

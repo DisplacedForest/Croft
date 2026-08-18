@@ -15,7 +15,7 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
     var gardenID: String?
     var observedAt: Date
     var notes: String?
-    var growthState: String?
+    var stage: String?
     var symptoms: String
     var measurements: String
     var tags: String
@@ -46,7 +46,7 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
         case gardenID = "garden_id"
         case observedAt = "observed_at"
         case notes
-        case growthState = "growth_state"
+        case stage
         case symptoms
         case measurements
         case tags
@@ -73,7 +73,7 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
         }
         observedAt = observation.observedAt
         notes = observation.notes
-        growthState = observation.growthState
+        stage = observation.stage?.rawValue
         symptoms = try TaxonomyCoding.encodeList(observation.symptoms)
         measurements = try TaxonomyCoding.encodeList(observation.measurements)
         tags = try TaxonomyCoding.encodeList(observation.tags)
@@ -86,7 +86,7 @@ struct ObservationRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
             target: try target(),
             observedAt: observedAt,
             notes: notes,
-            growthState: growthState,
+            stage: try decoder.enumValue(LifecycleStage.self, from: stage, column: "stage"),
             symptoms: try decoder.stringList(from: symptoms, column: "symptoms"),
             measurements: try measurementList(),
             tags: try decoder.stringList(from: tags, column: "tags"),

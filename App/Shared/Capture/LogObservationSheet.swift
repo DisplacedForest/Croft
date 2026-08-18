@@ -3,6 +3,7 @@ import Design
 import SwiftUI
 import UniformTypeIdentifiers
 
+import enum Domain.LifecycleStage
 import enum Domain.ObservationTarget
 
 struct LogObservationSheet: View {
@@ -25,6 +26,12 @@ struct LogObservationSheet: View {
             commit: saveAction
         ) {
             DatePicker("Observed", selection: $form.observedAt, displayedComponents: .date)
+            Picker("Stage", selection: $form.stage) {
+                Text("None").tag(LifecycleStage?.none)
+                ForEach(LifecycleStage.allCases, id: \.self) { stage in
+                    Text(stageLabel(stage)).tag(LifecycleStage?.some(stage))
+                }
+            }
             TextField("What did you notice?", text: $form.notes, axis: .vertical)
                 .lineLimit(4...8)
                 .textFieldStyle(.roundedBorder)
@@ -90,6 +97,10 @@ struct LogObservationSheet: View {
             }
         }
         attachmentNote = added == urls.count ? nil : "Some photos couldn't be read."
+    }
+
+    private func stageLabel(_ stage: LifecycleStage) -> String {
+        stage.rawValue.replacingOccurrences(of: "_", with: " ").capitalized
     }
 
     private func saveAction() -> Bool {

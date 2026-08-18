@@ -8,7 +8,7 @@ import Testing
 struct PropertyLocationMigrationTests {
     private static let priorIdentifier: String = {
         let identifiers = SchemaMigrations.identifiers
-        let index = identifiers.firstIndex(of: "v016-property-location")!
+        let index = identifiers.firstIndex(of: "v017-property-location")!
         return identifiers[index - 1]
     }()
 

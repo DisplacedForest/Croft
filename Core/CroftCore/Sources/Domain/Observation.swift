@@ -2,6 +2,14 @@ import Foundation
 
 public typealias ObservationID = PropagationID<Observation>
 
+public enum LifecycleStage: String, CaseIterable, Codable, Hashable, Sendable {
+    case germinated
+    case transplanted
+    case firstFlower = "first_flower"
+    case firstFruitSet = "first_fruit_set"
+    case pulled
+}
+
 public struct ObservationMeasurement: Hashable, Sendable, Codable {
     public var label: String
     public var value: Double
@@ -28,7 +36,7 @@ public struct Observation: Equatable, Sendable, Codable {
     public var target: ObservationTarget
     public var observedAt: Date
     public var notes: String?
-    public var growthState: String?
+    public var stage: LifecycleStage?
     public var symptoms: [String]
     public var measurements: [ObservationMeasurement]
     public var tags: [String]
@@ -39,7 +47,7 @@ public struct Observation: Equatable, Sendable, Codable {
         target: ObservationTarget,
         observedAt: Date,
         notes: String? = nil,
-        growthState: String? = nil,
+        stage: LifecycleStage? = nil,
         symptoms: [String] = [],
         measurements: [ObservationMeasurement] = [],
         tags: [String] = [],
@@ -49,7 +57,7 @@ public struct Observation: Equatable, Sendable, Codable {
         self.target = target
         self.observedAt = observedAt
         self.notes = notes
-        self.growthState = growthState
+        self.stage = stage
         self.symptoms = symptoms
         self.measurements = measurements
         self.tags = tags
