@@ -28,7 +28,7 @@ All of these live in GitHub under Settings, Secrets and variables, Actions. None
 | `APPLE_API_KEY_P8_BASE64` | App Store Connect API key (`.p8`), base64 encoded, used by notarytool |
 | `APPLE_API_KEY_ID` | Key ID of that API key |
 | `APPLE_API_ISSUER_ID` | Issuer ID from the App Store Connect API keys page |
-| `APPLE_TEAM_ID` | The 10-character Apple Developer team ID |
+| `APPLE_TEAM_ID` | The 10-character Apple Developer team ID, shown under Membership details on developer.apple.com or in Xcode, Settings, Accounts |
 
 ### Creating the material
 
