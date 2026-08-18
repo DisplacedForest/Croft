@@ -8,10 +8,13 @@ import enum Domain.QuantityUnit
 
 struct RecordHarvestSheet: View {
     @State private var form: RecordHarvestForm
+    @State private var plantings: [CapturePlantingChoice] = []
     @Environment(\.dismiss) private var dismiss
+    let context: CaptureContext
     let onSaved: () -> Void
 
-    init(context: CaptureContext, plantingID: Planting.ID, onSaved: @escaping () -> Void) {
+    init(context: CaptureContext, plantingID: Planting.ID?, onSaved: @escaping () -> Void) {
+        self.context = context
         self.onSaved = onSaved
         _form = State(initialValue: RecordHarvestForm(context: context, plantingID: plantingID))
     }
@@ -21,9 +24,17 @@ struct RecordHarvestSheet: View {
             title: "Record Harvest",
             confirm: "Save",
             canConfirm: form.canSave,
-            minHeight: 340,
+            minHeight: 360,
             commit: saveOnce
         ) {
+            Picker("Planting", selection: $form.plantingID) {
+                if form.plantingID == nil {
+                    Text("Pick a planting").tag(Planting.ID?.none)
+                }
+                ForEach(plantings) { choice in
+                    Text(choice.label).tag(Planting.ID?.some(choice.plantingID))
+                }
+            }
             HStack {
                 TextField("Quantity", text: $form.quantityText)
                     .textFieldStyle(.roundedBorder)
@@ -70,6 +81,9 @@ struct RecordHarvestSheet: View {
                 }
                 .disabled(!form.canSave)
             }
+        }
+        .task {
+            plantings = (try? context.plantingChoices()) ?? []
         }
     }
 
