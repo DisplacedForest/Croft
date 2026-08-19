@@ -69,4 +69,6 @@ jobs:
         run: mise run ci
       - name: Package.resolved unchanged
         if: steps.diff.outputs.code == 'true'
-        run: git diff --exit-code HEAD -- Core/CroftCore/Package.resolved
+        run: |
+          git diff --exit-code HEAD -- Core/CroftCore/Package.resolved
+          cmp project.resolved Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

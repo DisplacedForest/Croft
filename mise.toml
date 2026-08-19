@@ -82,6 +82,38 @@ if ! git diff --exit-code HEAD -- Core/CroftCore/Package.resolved; then
   echo "Core/CroftCore/Package.resolved drifted from HEAD. A resolver rewrote it; discard the churn, do not commit it." >&2
   exit 1
 fi
+ws="Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved"
+if [ -f "$ws" ] && ! cmp -s project.resolved "$ws"; then
+  echo "project.resolved no longer matches the generated workspace pins at $ws; the build re-resolved the project graph. Run mise run refresh-resolved and commit project.resolved." >&2
+  exit 1
+fi
+core_grdb=$(jq -r '.pins[] | select(.identity == "grdb.swift") | .state.revision' Core/CroftCore/Package.resolved)
+project_grdb=$(jq -r '.pins[] | select(.identity == "grdb.swift") | .state.revision' project.resolved)
+if [ "$core_grdb" != "$project_grdb" ]; then
+  echo "GRDB pins disagree: Core/CroftCore/Package.resolved has $core_grdb, project.resolved has $project_grdb. Run mise run refresh-resolved and commit project.resolved." >&2
+  exit 1
+fi
+sparkle_yml=$(awk '/^  Sparkle:/{f=1; next} f && /exactVersion:/{print $2; exit}' project.yml)
+sparkle_resolved=$(jq -r '.pins[] | select(.identity == "sparkle") | .state.version' project.resolved)
+if [ "$sparkle_yml" != "$sparkle_resolved" ]; then
+  echo "Sparkle pins disagree: project.yml wants $sparkle_yml, project.resolved has $sparkle_resolved. Run mise run refresh-resolved and commit project.resolved." >&2
+  exit 1
+fi
+'''
+
+[tasks."refresh-resolved"]
+run = '''
+set -euo pipefail
+xcodegen generate
+rm -f Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+keep=$(mktemp)
+cp Core/CroftCore/Package.resolved "$keep"
+xcodebuild -resolvePackageDependencies -project Croft.xcodeproj -scheme Croft-macOS -quiet
+cp Core/CroftCore/Package.resolved project.resolved
+cp "$keep" Core/CroftCore/Package.resolved
+rm -f "$keep"
+mkdir -p Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
+cp project.resolved Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 '''
 
 [tasks.ci]
