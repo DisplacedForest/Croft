@@ -3,11 +3,11 @@
     "british-common-names.json" : "fa4fc62c4e368a40a0a4d701b0df1ab45e56151eb327c4dba2ef57ee5bbaf3c3",
     "crop-profiles.json" : "6f8abdb87f52c8004854aad7ff0146e4816003c3f1453ffcbaa4c536f9372653",
     "cultivar-catalog.sanitized.json" : "3af6689e758d4265e0f53a9324f1d64bdae7eb6ecfdbd33f52d49850b9f40c71",
-    "pest-disease-cultivar-seed.sanitized.json" : "19bdf502f5bf9dd541c69a9b6784d6ea01187aee890e012132e406863698d456",
+    "pest-disease-cultivar-seed.sanitized.json" : "434e9d7762ed419616159cdad1fd2a81e17e0bbe34f0838beb834a612458b3c1",
     "plant-images.json" : "f84393aadc7afcb36c60146c880acc8b54041f9cd31875788f2bccce6d60188a"
   },
   "upstream" : {
     "cultivar-catalog.json" : "b3c70a41cb68e009ad15f7d60638fa3f1efdf1384c4034d960a50ded0ad6d27b",
-    "pest-disease-cultivar-seed.json" : "ddead16d06243682e0f709cb40104e43e0b44de8673a6546b2253dcda9475665"
+    "pest-disease-cultivar-seed.json" : "f4d9efb5bf03d88940f6d26e3390f33264d402ca94ee088035df71fda0dccf04"
   }
 }

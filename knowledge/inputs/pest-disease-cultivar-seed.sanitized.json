@@ -1418,7 +1418,7 @@
         "temperature_c" : "24-30"
       },
       "host_notes" : {
-        "pepper" : "Leaf spots shot-hole as they dry, leaving ragged holes; raised scabby spots on the fruit."
+        "pepper" : "Small water-soaked leaf spots turning dark and greasy, often with yellow halos, that shot-hole as they dry; raised scabby spots on the fruit."
       },
       "hosts" : [
         "tomato",
@@ -1928,7 +1928,7 @@
       "resistance_code" : "none",
       "seed_borne" : false,
       "survival" : "Sclerotia persist roughly 3-8 years in soil, some sources up to 10",
-      "symptoms" : "Water-soaked stem lesions grow cottony white mycelium with hard black sclerotia inside the stem; infected tissue bleaches and shreds.",
+      "symptoms" : "Water-soaked stem lesions grow cottony white mycelium, with hard black sclerotia forming inside the stem.",
       "transmission" : "Airborne ascospores from soil-borne sclerotia colonize senescing flowers first."
     },
     {
@@ -2097,7 +2097,7 @@
       },
       "host_notes" : {
         "pepper" : "Mosaic with fruit distortion.",
-        "potato" : "Stunted plants with mosaic and crinkled leaves; NTN strains add necrotic ringspots on the tubers."
+        "potato" : "Stunted plants with mosaic and crinkled leaves and reduced yield; NTN strains add necrotic ringspots on the tubers."
       },
       "hosts" : [
         "potato",
@@ -2117,7 +2117,7 @@
       "resistance_code" : "PVY (pepper: Pvr genes)",
       "seed_borne" : true,
       "survival" : "Not soil-persistent; carries over in infected seed tubers and volunteers, which is why certified seed is the control point",
-      "symptoms" : "Leaf mosaic, crinkling, and vein necrosis, with stunted plants and reduced yield.",
+      "symptoms" : "Leaf mosaic, crinkling, and vein necrosis.",
       "transmission" : "Many aphid species non-persistently (seconds to acquire, insecticides ineffective at prevention); infected seed potatoes are the main reservoir.",
       "vector_note" : "Green peach aphid is the most efficient vector; most current US field spread is by transient non-colonizing aphids (soybean aphid, corn leaf aphid, bird cherry-oat aphid, English grain aphid), which insecticides fail to stop",
       "vectors" : [
@@ -2307,12 +2307,12 @@
         "temperature_c" : "24-30"
       },
       "host_notes" : {
-        "cucumber" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses.",
-        "melon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses.",
-        "pepper" : "A dark water-soaked lesion girdles the stem at the soil line, then the plant wilts suddenly and permanently with the leaves still attached.",
-        "pumpkin" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses.",
-        "squash" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses.",
-        "watermelon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses."
+        "cucumber" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "melon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "pepper" : "A dark water-soaked lesion girdles the stem at the soil line, then the plant wilts suddenly and permanently with the leaves still attached; root rot, and dark leaf lesions with blighted shoots in humid weather.",
+        "pumpkin" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "squash" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "watermelon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line."
       },
       "hosts" : [
         "pepper",
@@ -2341,7 +2341,7 @@
       "resistance_code" : "PC (partial, crown-rot tolerance only)",
       "seed_borne" : false,
       "survival" : "Oospores survive several years in soil, cull piles and infested plant debris.",
-      "symptoms" : "Dark water-soaked lesions at the crown and stem base, root rot, blighted shoots in humid weather, and blackened crowns; fruit in contact with wet soil rots and collapses.",
+      "symptoms" : "Dark water-soaked lesions at the crown and stem base, with crowns blackening at the soil line.",
       "transmission" : "Swimming zoospores move through soil water and splash onto crowns and fruit; long-lived oospores survive years in soil and cull piles; spread on equipment, boots, runoff, surface irrigation water, and infected fruit that looks sound at harvest."
     },
     {
@@ -2380,7 +2380,7 @@
       "resistance_code" : "none (no commercial resistance)",
       "seed_borne" : false,
       "survival" : "Persists in the crowns and roots of infected perennial and biennial weeds for years, and for life in infected leafhoppers; does not survive in soil or residue.",
-      "symptoms" : "Virescence and phyllody (flowers turning green and leafy), yellowed twisted new growth, and stunting.",
+      "symptoms" : "Virescence and phyllody (flowers turning green and leafy) and stunting.",
       "transmission" : "Only by leafhoppers, chiefly the aster leafhopper, in a persistent propagative way: the insect feeds on an infected plant, then needs roughly 2-3 weeks of latent period before it can infect, after which it stays infective for life. Not seed-borne, not mechanically transmitted, not spread by touch or tools.",
       "vectors" : [
         "aster-leafhopper"
@@ -2500,7 +2500,7 @@
       "resistance_code" : "CLS (partial resistance)",
       "seed_borne" : true,
       "survival" : "Pseudostromata in infected leaf residue survive one to two years; also on Chenopodiaceae weeds such as lambsquarters.",
-      "symptoms" : "Small round spots 2 to 6 mm with a reddish-purple to brown border and a tan center that turns ash gray as it sporulates; centers may drop out. Spots coalesce, older leaves blight and collapse, and new leaves push from the crown at the cost of root size.",
+      "symptoms" : "Small round spots 2 to 6 mm with a reddish-purple to brown border and a tan center that turns ash gray as it sporulates; centers may drop out. Spots coalesce, older leaves blight and collapse, and the plant pushes new leaves from the crown.",
       "transmission" : "Overwinters as pseudostromata in infected crop residue and on beet-family weeds such as lambsquarters; conidia are splashed and wind-blown to new leaves. Low-level seed transmission."
     },
     {
@@ -3019,7 +3019,7 @@
         "https://extension.umd.edu/resource/corn-earworm-pheromone-trapping"
       ],
       "common_name" : "Corn earworm / tomato fruitworm",
-      "damage" : "Larvae chew into the fruiting parts of the plant and feed inside where sprays cannot reach, leaving moist frass at the entry hole.",
+      "damage" : "Larvae chew into the concealed, developing parts of the plant and feed inside where sprays cannot reach, leaving moist frass at the entry hole.",
       "favoring_conditions" : "Fresh silking corn during moth flights; late plantings hit hardest.",
       "host_notes" : {
         "corn" : "Ear-tip kernels eaten under the husk, with moist frass packed into the silk channel.",
@@ -3058,7 +3058,7 @@
         "https://cals.cornell.edu/integrated-pest-management/outreach-education/fact-sheets/pheromone-traps-for-sweet-corn"
       ],
       "common_name" : "European corn borer",
-      "damage" : "Young larvae riddle leaves with shot-hole feeding, then bore into stalks, stems, and fruit; weakened stalks break and internal rot follows the entry wounds.",
+      "damage" : "Young larvae riddle leaves with shot-hole feeding, then bore inside the plant; tunneled stalks weaken and break, and internal rot follows the entry wounds.",
       "favoring_conditions" : "Overwintered corn stubble nearby; regional populations have declined where Bt field corn is widespread.",
       "host_notes" : {
         "corn" : "Shot-hole feeding in the whorl, then broken tassels and stalks as larvae tunnel inside.",
@@ -3301,7 +3301,7 @@
         "https://cvp.cce.cornell.edu/submission.php?id=584"
       ],
       "common_name" : "Western flower thrips / onion thrips",
-      "damage" : "Rasping feeding leaves silvery streaks and flecks on leaves and scarred, distorted fruit; also a virus vector.",
+      "damage" : "Rasping feeding leaves silvery streaks, flecks, and scarred distorted growth where they feed; also a virus vector.",
       "favoring_conditions" : "Hot dry weather; onion thrips surge when nearby grain or hay is cut.",
       "host_notes" : {
         "onion" : "Silvery streaks and blotches along the leaf blades; heavy feeding cuts bulb size.",
