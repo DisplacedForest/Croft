@@ -41,7 +41,7 @@ struct PinnedInputsTests {
 
     @Test func theCommittedInputsMatchTheirPins() throws {
         let lock = try InputsLock.load(from: inputsDirectory)
-        #expect(lock.pinned.count == 4)
+        #expect(lock.pinned.count == 5)
         for (name, _) in lock.pinned.sorted(by: { $0.key < $1.key }) {
             let data = try Data(contentsOf: inputsDirectory.appendingPathComponent(name))
             try lock.verify(fileName: name, data: data)

@@ -48,6 +48,9 @@ All notable changes to Croft are documented here. The format follows
 - Croft updates itself: releases are offered in the app through Sparkle, with
   a Check for Updates menu item and scheduled background checks you consent
   to on first launch.
+- The catalog speaks British English on British systems: aubergine, courgette,
+  beetroot, and sweetcorn appear first on en-GB, and searching either the
+  British or American name finds the crop everywhere, on any system.
 - The plant catalog opens on plain-English crops (Tomato, Strawberry, Corn)
   with images and varietal counts instead of a flat list of 1,159 cultivar
   names; open a crop to browse its varietals, and search finds crops and
