@@ -127,7 +127,8 @@ struct SeasonPlannerGroupingTests {
         #expect(overview.finished.map(\.id) == [finishedThisYear.id.rawValue])
         #expect(overview.planned[0].plantName == "Radish")
         #expect(overview.planned[0].locationName == "Long Bed, Kitchen Garden")
-        #expect(overview.inGround[0].plantName == "Brandywine")
+        #expect(overview.inGround[0].plantName == "Tomato")
+        #expect(overview.inGround[0].varietal == "Brandywine")
         #expect(overview.inGround[0].locationName == "Tunnel Bed, Polytunnel")
     }
 
@@ -166,7 +167,8 @@ struct SeasonPlannerSplitStoreNameTests {
 
         let planner = SeasonPlanner(knowledge: knowledge.database, personal: personal.database)
         let overview = try planner.overview(on: day(2026, 7, 1), calendar: calendar)
-        #expect(overview.planned.map(\.plantName) == ["Nantes"])
+        #expect(overview.planned.map(\.plantName) == ["Carrot"])
+        #expect(overview.planned.map(\.varietal) == ["Nantes"])
         #expect(overview.inGround.map(\.plantName) == ["Carrot"])
         #expect(overview.finished.map(\.plantName) == ["Tomato"])
     }
