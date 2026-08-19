@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "name": "british-common-names",
+    "version": "0.1.0",
+    "generated": "2026-08-18",
+    "provenance": "British English crop names curated from Royal Horticultural Society grow-your-own guides; per-row citations. Only crops present in crop-profiles.json where British usage differs from the American name.",
+    "notes": [
+      "Locale tags are BCP 47 language-REGION. Untagged names in the catalog remain universal.",
+      "Rocket, coriander, swede, and mangetout are omitted because their crops are not in the catalog yet; add rows when the crops land."
+    ]
+  },
+  "names": [
+    {
+      "crop": "eggplant",
+      "locale": "en-GB",
+      "name": "aubergine",
+      "citations": ["https://www.rhs.org.uk/vegetables/aubergines/grow-your-own"]
+    },
+    {
+      "crop": "summer-squash",
+      "locale": "en-GB",
+      "name": "courgette",
+      "citations": ["https://www.rhs.org.uk/vegetables/courgettes/grow-your-own"]
+    },
+    {
+      "crop": "beet",
+      "locale": "en-GB",
+      "name": "beetroot",
+      "citations": ["https://www.rhs.org.uk/vegetables/beetroot/grow-your-own"]
+    },
+    {
+      "crop": "corn",
+      "locale": "en-GB",
+      "name": "sweetcorn",
+      "citations": ["https://www.rhs.org.uk/vegetables/sweetcorn/grow-your-own"]
+    }
+  ]
+}

@@ -91,6 +91,15 @@ struct AddPlantingSheet: View {
             .font(.caption)
             .foregroundStyle(Color.domainHealth)
         }
+        ForEach(form.companionNotes, id: \.plantName) { note in
+            Label(
+                companionLine(note),
+                systemImage: note.isAntagonist
+                    ? "exclamationmark.triangle" : "leaf"
+            )
+            .font(.caption)
+            .foregroundStyle(note.isAntagonist ? Color.domainHealth : Color.domainGarden)
+        }
         if !form.bedHistory.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(form.bedHistory, id: \.familyName) { line in
@@ -104,6 +113,12 @@ struct AddPlantingSheet: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private func companionLine(_ note: CompanionNote) -> String {
+        note.isAntagonist
+            ? "Antagonistic to the \(note.plantName) already here (\(note.source))"
+            : "Companion of the \(note.plantName) already here (\(note.source))"
     }
 
     private var plantPicker: some View {

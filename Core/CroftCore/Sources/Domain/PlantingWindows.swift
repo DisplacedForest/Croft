@@ -64,20 +64,14 @@ public struct PlantingWindowProfile: Equatable, Sendable {
 public struct FrostAnchors: Equatable, Sendable {
     public let lastFrost: MonthDay?
     public let firstFrost: MonthDay?
-    public let southernHemisphere: Bool
 
-    public init(lastFrost: MonthDay?, firstFrost: MonthDay?, southernHemisphere: Bool = false) {
+    public init(lastFrost: MonthDay?, firstFrost: MonthDay?) {
         self.lastFrost = lastFrost
         self.firstFrost = firstFrost
-        self.southernHemisphere = southernHemisphere
     }
 
     public init(property: Property) {
-        self.init(
-            lastFrost: property.lastFrost,
-            firstFrost: property.firstFrost,
-            southernHemisphere: (property.location?.latitude ?? 0) < 0
-        )
+        self.init(lastFrost: property.lastFrost, firstFrost: property.firstFrost)
     }
 }
 
@@ -108,24 +102,58 @@ public enum PlantingWindows {
         if !missing.isEmpty {
             return .cannotAssess(missing)
         }
+        let opportunities = candidateWindows(
+            profile: profile,
+            anchors: anchors,
+            reference: reference,
+            calendar: calendar
+        )
+
+        let open =
+            opportunities
+            .filter { $0.window.contains(reference) }
+            .min { $0.window.upperBound < $1.window.upperBound }
+        if let open {
+            return .act(open)
+        }
+        guard
+            let horizon = calendar.date(byAdding: .day, value: upcomingHorizonDays, to: reference)
+        else {
+            return .notApplicable
+        }
+        let next =
+            opportunities
+            .filter { $0.window.lowerBound > reference && $0.window.lowerBound <= horizon }
+            .min { $0.window.lowerBound < $1.window.lowerBound }
+        if let next {
+            return .upcoming(next)
+        }
+        return .notApplicable
+    }
+
+    private static func candidateWindows(
+        profile: PlantingWindowProfile,
+        anchors: FrostAnchors,
+        reference: Date,
+        calendar: Calendar
+    ) -> [SowingOpportunity] {
         guard
             let lastFrost = anchors.lastFrost,
             let method = profile.sowingMethod,
             let tolerance = profile.frostTolerance
         else {
-            return .cannotAssess([.lastFrost])
+            return []
         }
-
         var opportunities: [SowingOpportunity] = []
         for yearOffset in [-1, 0, 1] {
             guard
                 let anchor = nearestAnchor(
-                    of: lastFrost, to: reference, yearOffset: yearOffset, calendar: calendar)
+                    of: lastFrost, to: reference, yearOffset: yearOffset, calendar: calendar),
+                let safeDate = calendar.date(
+                    byAdding: .day, value: offsetDays(for: tolerance), to: anchor)
             else {
                 continue
             }
-            let safeDate = calendar.date(
-                byAdding: .day, value: offsetDays(for: tolerance), to: anchor)!
             let firstFrostDate = firstFrostDate(after: anchor, anchors: anchors, calendar: calendar)
             opportunities.append(
                 contentsOf: windows(
@@ -136,23 +164,7 @@ public enum PlantingWindows {
                     calendar: calendar
                 ))
         }
-
-        let open =
-            opportunities
-            .filter { $0.window.contains(reference) }
-            .min { $0.window.upperBound < $1.window.upperBound }
-        if let open {
-            return .act(open)
-        }
-        let horizon = calendar.date(byAdding: .day, value: upcomingHorizonDays, to: reference)!
-        let next =
-            opportunities
-            .filter { $0.window.lowerBound > reference && $0.window.lowerBound <= horizon }
-            .min { $0.window.lowerBound < $1.window.lowerBound }
-        if let next {
-            return .upcoming(next)
-        }
-        return .notApplicable
+        return opportunities
     }
 
     public static func offsetDays(for tolerance: FrostTolerance) -> Int {
@@ -184,6 +196,23 @@ public enum PlantingWindows {
         return missing
     }
 
+    private static func indoorWindow(
+        weeks: ClosedRange<Int>,
+        safeDate: Date,
+        calendar: Calendar
+    ) -> SowingOpportunity? {
+        guard
+            let start = calendar.date(
+                byAdding: .day, value: -weeks.upperBound * 7, to: safeDate),
+            let end = calendar.date(
+                byAdding: .day, value: -weeks.lowerBound * 7, to: safeDate),
+            start <= end
+        else {
+            return nil
+        }
+        return SowingOpportunity(action: .sowIndoors, window: start...end)
+    }
+
     private static func windows(
         profile: PlantingWindowProfile,
         method: SowingMethod,
@@ -195,34 +224,32 @@ public enum PlantingWindows {
         let raisesTransplants = method == .transplant || method == .both
 
         if raisesTransplants, let weeks = profile.weeksIndoorsBeforeTransplant {
-            let start = calendar.date(
-                byAdding: .day, value: -weeks.upperBound * 7, to: safeDate)!
-            let end = calendar.date(
-                byAdding: .day, value: -weeks.lowerBound * 7, to: safeDate)!
-            if start <= end {
-                result.append(SowingOpportunity(action: .sowIndoors, window: start...end))
+            if let indoors = indoorWindow(weeks: weeks, safeDate: safeDate, calendar: calendar) {
+                result.append(indoors)
             }
             let transplantEnd = calendar.date(
-                byAdding: .day, value: transplantWindowDays, to: safeDate)!
-            result.append(
-                SowingOpportunity(action: .transplantOut, window: safeDate...transplantEnd))
+                byAdding: .day, value: transplantWindowDays, to: safeDate)
+            if let transplantEnd {
+                result.append(
+                    SowingOpportunity(action: .transplantOut, window: safeDate...transplantEnd))
+            }
         }
 
         if method == .direct || method == .both {
-            var end: Date
+            var end: Date?
             if let firstFrostDate {
                 end = firstFrostDate
                 let basis = profile.daysToMaturityBasis
                 let countsBackFromFrost = basis != .fromTransplant && basis != .fromPlantingStock
                 if let maturity = profile.daysToMaturity, countsBackFromFrost {
                     end = calendar.date(
-                        byAdding: .day, value: -maturity.upperBound, to: firstFrostDate)!
+                        byAdding: .day, value: -maturity.upperBound, to: firstFrostDate)
                 }
             } else {
                 end = calendar.date(
-                    byAdding: .day, value: defaultDirectWindowDays, to: safeDate)!
+                    byAdding: .day, value: defaultDirectWindowDays, to: safeDate)
             }
-            if safeDate <= end {
+            if let end, safeDate <= end {
                 result.append(SowingOpportunity(action: .directSow, window: safeDate...end))
             }
         }

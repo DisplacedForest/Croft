@@ -111,6 +111,47 @@ struct AddPlantingFormTests {
         #expect(!form.showsEmptyHistoryNote)
     }
 
+    @Test func companionNotesTrackBedAndIdentitySelection() throws {
+        let fixture = try CaptureFixture()
+        let neighbor = Species(
+            genusID: fixture.species.genusID,
+            scientificName: "Ocimum basilicum",
+            commonNames: ["Basil"]
+        )
+        try SpeciesRepository(fixture.context.personal).insert(neighbor)
+        try fixture.context.plantings.insert(
+            Planting(
+                identity: .species(neighbor.id),
+                bedID: fixture.bed.id,
+                plantedOn: Date(timeIntervalSince1970: 1_715_000_000),
+                status: .active
+            ))
+        try fixture.context.personal.writer.write { db in
+            _ = try GraphStore.relate(
+                from: EntityRef(id: fixture.species.id.rawValue, type: .plant),
+                .companionWith,
+                to: EntityRef(id: neighbor.id.rawValue, type: .plant),
+                provenance: Provenance(source: "trials", sourceType: .reference),
+                in: db
+            )
+        }
+
+        let form = AddPlantingForm(
+            context: fixture.context,
+            bedID: fixture.bed.id,
+            identity: .species(fixture.species.id)
+        )
+        form.refreshRotation()
+        #expect(
+            form.companionNotes == [
+                CompanionNote(plantName: "Basil", source: "trials", isAntagonist: false)
+            ])
+
+        form.bedID = fixture.secondBed.id
+        form.refreshRotation()
+        #expect(form.companionNotes.isEmpty)
+    }
+
     @Test func aPreselectedIdentityArrivesReadyToSave() throws {
         let fixture = try CaptureFixture()
         let form = AddPlantingForm(

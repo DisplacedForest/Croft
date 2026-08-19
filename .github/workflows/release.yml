@@ -159,6 +159,26 @@ jobs:
             CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
             -quiet
 
+      - name: Re-sign Sparkle components with the release identity
+        run: |
+          set -euo pipefail
+          app="build/Croft.xcarchive/Products/Applications/Croft.app"
+          framework="$app/Contents/Frameworks/Sparkle.framework"
+          identity="Developer ID Application"
+          codesign --force --options runtime --timestamp \
+            --preserve-metadata=entitlements --sign "$identity" \
+            "$framework/Versions/B/XPCServices/Downloader.xpc"
+          codesign --force --options runtime --timestamp --sign "$identity" \
+            "$framework/Versions/B/XPCServices/Installer.xpc"
+          codesign --force --options runtime --timestamp --sign "$identity" \
+            "$framework/Versions/B/Autoupdate"
+          codesign --force --options runtime --timestamp --sign "$identity" \
+            "$framework/Versions/B/Updater.app"
+          codesign --force --options runtime --timestamp --sign "$identity" "$framework"
+          codesign --force --options runtime --timestamp \
+            --preserve-metadata=entitlements --sign "$identity" "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+
       - name: Notarize and staple
         env:
           APPLE_API_KEY_P8_BASE64: ${{ secrets.APPLE_API_KEY_P8_BASE64 }}

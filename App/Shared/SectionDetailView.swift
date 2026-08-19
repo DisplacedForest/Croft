@@ -14,6 +14,8 @@ struct SectionDetailView: View {
             PlantingDetailView(plantingID: plantingID)
         case .plant(let identity):
             PlantPageView(identity: identity)
+        case .crop(let speciesID):
+            CropVarietalsView(speciesID: speciesID, navigate: navigate)
         }
     }
 }

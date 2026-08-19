@@ -2,7 +2,9 @@ import CoreLocation
 import Foundation
 import WeatherKit
 
-public struct SystemWeatherProvider: WeatherProviding {
+import struct Domain.DailyMinimum
+
+public struct SystemWeatherProvider: WeatherProviding, ForecastProviding {
     public init() {}
 
     public func currentWeather(at location: GeoLocation) async throws -> WeatherSnapshot {
@@ -13,6 +15,20 @@ public struct SystemWeatherProvider: WeatherProviding {
             conditionDescription: current.condition.description,
             temperature: current.temperature
         )
+    }
+
+    public func dailyForecast(at location: GeoLocation) async throws -> [DayForecast] {
+        let place = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        let daily = try await WeatherService.shared.weather(for: place, including: .daily)
+        return daily.forecast.prefix(7).map { day in
+            DayForecast(
+                date: day.date,
+                symbolName: day.symbolName,
+                high: day.highTemperature,
+                low: day.lowTemperature,
+                precipitationChance: day.precipitationChance
+            )
+        }
     }
 
     public func todaySummary(at location: GeoLocation) async throws -> DailyWeatherSummary {
@@ -30,6 +46,35 @@ public struct SystemWeatherProvider: WeatherProviding {
             lowCelsius: today.lowTemperature.converted(to: .celsius).value,
             precipitationMillimeters: today.precipitationAmount.converted(to: .millimeters).value
         )
+    }
+}
+
+extension SystemWeatherProvider: HistoricalMinimaProviding {
+    public func dailyMinima(
+        at location: GeoLocation,
+        from start: Date,
+        to end: Date
+    ) async throws -> [DailyMinimum] {
+        let place = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        var minima: [DailyMinimum] = []
+        var chunkStart = start
+        let calendar = Calendar(identifier: .gregorian)
+        while chunkStart < end {
+            let chunkEnd = Swift.min(
+                calendar.date(byAdding: .year, value: 1, to: chunkStart) ?? end, end)
+            let daily = try await WeatherService.shared.weather(
+                for: place,
+                including: .daily(startDate: chunkStart, endDate: chunkEnd)
+            )
+            minima += daily.forecast.map { day in
+                DailyMinimum(
+                    date: day.date,
+                    celsius: day.lowTemperature.converted(to: .celsius).value
+                )
+            }
+            chunkStart = chunkEnd
+        }
+        return minima
     }
 }
 

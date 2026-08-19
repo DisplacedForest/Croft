@@ -23,6 +23,23 @@ enum PropertyLocationFill {
     }
 }
 
+enum PropertyClimateHistory {
+    static let years = 10
+
+    static let system: HistoricalMinima = { coordinate in
+        let calendar = Calendar.current
+        let end = calendar.startOfDay(for: Date())
+        guard let start = calendar.date(byAdding: .year, value: -years, to: end) else {
+            return []
+        }
+        return try await SystemWeatherProvider().dailyMinima(
+            at: GeoLocation(latitude: coordinate.latitude, longitude: coordinate.longitude),
+            from: start,
+            to: end
+        )
+    }
+}
+
 struct PropertySettingsView: View {
     @Environment(\.appStores) private var stores
     @State private var form: PropertyDetailsForm?
@@ -49,7 +66,9 @@ struct PropertySettingsView: View {
             if form == nil, let database = stores?.database {
                 let details = PropertyDetailsForm(
                     database: database,
-                    fillCoordinate: PropertyLocationFill.system
+                    fillCoordinate: PropertyLocationFill.system,
+                    addressSearch: SystemAddressSearch(),
+                    minima: PropertyClimateHistory.system
                 )
                 details.load()
                 form = details

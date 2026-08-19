@@ -1,3 +1,5 @@
+import Foundation
+
 public struct Species: Equatable, Sendable, Codable {
     public typealias ID = TaxonID<Species>
 
@@ -5,6 +7,7 @@ public struct Species: Equatable, Sendable, Codable {
     public var genusID: Genus.ID
     public var scientificName: String
     public var commonNames: [String]
+    public var localizedCommonNames: [LocalizedPlantName]
     public var lifeCycle: LifeCycle?
     public var growthHabit: GrowthHabit?
     public var sunExposure: SunExposure?
@@ -31,6 +34,7 @@ public struct Species: Equatable, Sendable, Codable {
         genusID: Genus.ID,
         scientificName: String,
         commonNames: [String] = [],
+        localizedCommonNames: [LocalizedPlantName] = [],
         lifeCycle: LifeCycle? = nil,
         growthHabit: GrowthHabit? = nil,
         sunExposure: SunExposure? = nil,
@@ -56,6 +60,7 @@ public struct Species: Equatable, Sendable, Codable {
         self.genusID = genusID
         self.scientificName = scientificName
         self.commonNames = commonNames
+        self.localizedCommonNames = localizedCommonNames
         self.lifeCycle = lifeCycle
         self.growthHabit = growthHabit
         self.sunExposure = sunExposure
@@ -76,5 +81,34 @@ public struct Species: Equatable, Sendable, Codable {
         self.transplantSoilTempMin = transplantSoilTempMin
         self.daysToMaturityBasis = daysToMaturityBasis
         self.harvestableParts = harvestableParts
+    }
+}
+
+public struct LocalizedPlantName: Hashable, Codable, Sendable {
+    public var locale: String
+    public var name: String
+
+    public init(locale: String, name: String) {
+        self.locale = locale
+        self.name = name
+    }
+}
+
+extension Species {
+    public func preferredCommonName(for locale: Locale) -> String? {
+        let localized = localizedCommonNames.first { tagged in
+            Self.matches(tag: tagged.locale, locale: locale)
+        }
+        return localized?.name ?? commonNames.first
+    }
+
+    public var allCommonNames: [String] {
+        commonNames + localizedCommonNames.map(\.name)
+    }
+
+    static func matches(tag: String, locale: Locale) -> Bool {
+        let tagLocale = Locale(identifier: tag)
+        return tagLocale.language.languageCode == locale.language.languageCode
+            && tagLocale.region == locale.region
     }
 }

@@ -8,6 +8,19 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Companion advisories at bed assignment: picking a bed tells you when the
+  plant is a companion or antagonist of something already growing there,
+  naming the plant and the source, never blocking the save.
+- A frost alert at the top of Today when the next two nights dip to a level
+  your plants care about, naming the at-risk plantings and their beds with
+  the forecast low. Tolerances come from each plant's profile and are never
+  guessed; no coordinates or no tender plantings means no alert.
+- Property setup by address: search any address or place with live
+  suggestions, and the matched coordinate derives a hardiness zone and frost
+  dates from ten years of weather history as prefills you confirm or edit,
+  never silent writes. Today's weather now follows the property's location
+  when one is set, with device location as the fallback.
+
 - Observations can record a typed lifecycle stage (germinated, transplanted,
   first flower, first fruit set, pulled) alongside the note.
 - Property settings for location, hardiness zone, and last and first frost
@@ -30,12 +43,26 @@ All notable changes to Croft are documented here. The format follows
   lineage, stage pills with day counts, observations with notes and photos,
   harvests with yields, and the first harvest called out with days from
   sowing, plus header stats for days to first harvest and total yield.
+- Today is a ranked attention list: overdue and due tasks completable in
+  place, harvest checks past expected maturity, what is plantable now,
+  plantings gone quiet, and a Recently card, each with its reason, capped so
+  a busy June stays readable. The weather chip opens a seven-day forecast,
+  and a quiet winter day says so calmly instead of showing a blank page.
 - Croft updates itself: releases are offered in the app through Sparkle, with
   a Check for Updates menu item and scheduled background checks you consent
   to on first launch.
+- The catalog speaks British English on British systems: aubergine, courgette,
+  beetroot, and sweetcorn appear first on en-GB, and searching either the
+  British or American name finds the crop everywhere, on any system.
+- The plant catalog opens on plain-English crops (Tomato, Strawberry, Corn)
+  with images and varietal counts instead of a flat list of 1,159 cultivar
+  names; open a crop to browse its varietals, and search finds crops and
+  varietals from anywhere by common name, varietal name, or binomial.
 
 ### Fixed
 
+- The Record menu now stays in the toolbar on bed, planting, and plant detail
+  screens instead of disappearing when you navigate into them.
 - A property record Croft can't read now shows an explicit message in
   Settings instead of posing as a fresh install, first-run setup stays out of
   the way so the stored record can't be overwritten, and a save that reaches

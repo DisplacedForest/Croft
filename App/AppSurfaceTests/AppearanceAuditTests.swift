@@ -11,6 +11,7 @@ import enum Domain.GardenTaskType
 import enum Domain.ObservationTarget
 import enum Domain.PlantIdentity
 import struct Domain.Planting
+import struct Domain.Species
 
 @MainActor
 final class AppearanceAuditTests: XCTestCase {
@@ -22,6 +23,7 @@ final class AppearanceAuditTests: XCTestCase {
         let bedID: Bed.ID
         let plantingID: Planting.ID?
         let plantIdentity: PlantIdentity?
+        let cropSpeciesID: Species.ID?
     }
 
     private nonisolated(unsafe) var cleanupDirectories: [URL] = []
@@ -83,6 +85,13 @@ final class AppearanceAuditTests: XCTestCase {
                 Screen(
                     name: "plant-page", size: shellSize,
                     view: shell(scenery, section: .plants, route: .plant(identity))))
+        }
+        if let cropSpeciesID = scenery.cropSpeciesID {
+            screens.append(
+                Screen(
+                    name: "crop-varietals",
+                    size: shellSize,
+                    view: shell(scenery, section: .plants, route: .crop(cropSpeciesID))))
         }
         if let plantingID = scenery.plantingID {
             screens.append(
@@ -179,6 +188,9 @@ final class AppearanceAuditTests: XCTestCase {
             gardenStore.refresh()
         }
 
+        let cropSpeciesID = (try? stores.plantPages.cropCatalog())?
+            .crops.first { $0.varietalCount > 0 }?
+            .speciesID
         let scenery = Scenery(
             directory: directory,
             stores: stores,
@@ -186,7 +198,8 @@ final class AppearanceAuditTests: XCTestCase {
             context: context,
             bedID: bedID,
             plantingID: plantingID,
-            plantIdentity: plantIdentity
+            plantIdentity: plantIdentity,
+            cropSpeciesID: seeded ? cropSpeciesID : nil
         )
         cleanupDirectories.append(directory)
         return scenery
