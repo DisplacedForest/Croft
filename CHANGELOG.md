@@ -69,6 +69,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Varietal rows show a photo only when the varietal has its own image; the
+  rest carry a quiet leaf placeholder instead of repeating the species photo
+  down the whole list. The detail page keeps its species fallback.
 - The eye and basket buttons on the planting page now open observation and
   harvest capture prefilled with that planting on macOS, instead of doing
   nothing.
