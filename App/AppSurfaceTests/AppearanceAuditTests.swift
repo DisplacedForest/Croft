@@ -67,6 +67,46 @@ final class AppearanceAuditTests: XCTestCase {
 
     private let shellSize = NSSize(width: 1040, height: 700)
     private let sheetSize = NSSize(width: 480, height: 380)
+
+    func testSectionsRenderIdenticalChromeAndBackground() throws {
+        let scenery = try makeScenery()
+        for appearance in [NSAppearance.Name.darkAqua, .aqua] {
+            var bitmaps: [(AppSection, NSBitmapImageRep)] = []
+            for section in [AppSection.today, .garden, .plants] {
+                bitmaps.append(
+                    (
+                        section,
+                        try render(
+                            shell(scenery, section: section), size: shellSize,
+                            appearance: appearance,
+                            named: "chrome-\(section)")
+                    ))
+            }
+            let reference = bitmaps[0].1
+            let inset = 8
+            let points = [
+                (60, reference.pixelsHigh - inset),
+                (200, reference.pixelsHigh - inset),
+                (reference.pixelsWide - inset, reference.pixelsHigh / 2),
+                (reference.pixelsWide - inset, reference.pixelsHigh - inset),
+                (reference.pixelsWide * 11 / 20, inset),
+            ]
+            for (section, bitmap) in bitmaps.dropFirst() {
+                for point in points {
+                    let expected = try sample(reference, at: point)
+                    let actual = try sample(bitmap, at: point)
+                    let label =
+                        "\(section) differs from today at \(point) in \(appearance.rawValue)"
+                    XCTAssertEqual(
+                        actual.redComponent, expected.redComponent, accuracy: 0.01, label)
+                    XCTAssertEqual(
+                        actual.greenComponent, expected.greenComponent, accuracy: 0.01, label)
+                    XCTAssertEqual(
+                        actual.blueComponent, expected.blueComponent, accuracy: 0.01, label)
+                }
+            }
+        }
+    }
 }
 
 extension AppearanceAuditTests {
