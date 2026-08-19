@@ -186,6 +186,7 @@ public struct PestInput: Decodable, Sendable {
     public let commonName: String
     public let scientificName: String?
     public let hosts: [String]
+    public let hostNotes: [String: String]?
     public let biology: Biology?
     public let damage: String?
     public let vectorOf: [String]?
@@ -197,6 +198,7 @@ public struct PestInput: Decodable, Sendable {
         case commonName = "common_name"
         case scientificName = "scientific_name"
         case hosts
+        case hostNotes = "host_notes"
         case biology
         case damage
         case vectorOf = "vector_of"
@@ -211,6 +213,7 @@ public struct DiseaseInput: Decodable, Sendable {
     public let pathogen: String?
     public let pathogenType: String
     public let hosts: [String]
+    public let hostNotes: [String: String]?
     public let symptoms: String?
     public let transmission: String?
     public let management: [String]?
@@ -223,6 +226,7 @@ public struct DiseaseInput: Decodable, Sendable {
         case pathogen
         case pathogenType = "pathogen_type"
         case hosts
+        case hostNotes = "host_notes"
         case symptoms
         case transmission
         case management

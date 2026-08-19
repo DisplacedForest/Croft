@@ -207,6 +207,10 @@ extension KnowledgeFixture {
               "common_name": "Green peach aphid",
               "scientific_name": "Myzus persicae",
               "hosts": ["tomato", "squash"],
+              "host_notes": {
+                "tomato": "Clusters on the newest growth.",
+                "squash": "Colonies spread along the vine tips."
+              },
               "vector_of": ["mosaic-virus"],
               "citations": ["https://example.org/aphid"]
             }

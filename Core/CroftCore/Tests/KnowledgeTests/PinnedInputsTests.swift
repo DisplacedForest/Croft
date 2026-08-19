@@ -199,6 +199,57 @@ struct PinnedInputsTests {
         #expect(summary.skips["catalog_ambiguous_squash"] == nil)
     }
 
+    @Test func threatDisplayTextNamesNoOtherCrop() throws {
+        let profilesData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent("crop-profiles.json"))
+        let profilesJSON = try JSONSerialization.jsonObject(with: profilesData) as? [String: Any]
+        let profiles = try #require(profilesJSON?["crops"] as? [[String: Any]])
+        let cropSlugs = profiles.compactMap { $0["crop"] as? String }
+
+        let seedData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent(
+                KnowledgeImporter.pestDiseaseFile))
+        let seedJSON = try JSONSerialization.jsonObject(with: seedData) as? [String: Any]
+        let pests = try #require(seedJSON?["pests"] as? [[String: Any]])
+        let diseases = try #require(seedJSON?["diseases"] as? [[String: Any]])
+
+        var patterns: [String: NSRegularExpression] = [:]
+        for slug in cropSlugs {
+            let name = NSRegularExpression.escapedPattern(
+                for: slug.replacingOccurrences(of: "-", with: " "))
+            patterns[slug] = try NSRegularExpression(
+                pattern: "\\b\(name)(es|s)?\\b", options: [.caseInsensitive])
+        }
+
+        func mentions(_ text: String, _ slug: String) -> Bool {
+            guard let pattern = patterns[slug] else { return false }
+            let range = NSRange(text.startIndex..., in: text)
+            return pattern.firstMatch(in: text, range: range) != nil
+        }
+
+        func audit(_ records: [[String: Any]], idKey: String, proseKey: String) {
+            for record in records {
+                let id = record[idKey] as? String ?? "?"
+                let hosts = record["hosts"] as? [String] ?? []
+                let notes = record["host_notes"] as? [String: String] ?? [:]
+                let prose = record[proseKey] as? String ?? ""
+                for host in hosts {
+                    let display = notes[host] ?? prose
+                    let selfCrops =
+                        host == "squash" ? ["summer-squash", "winter-squash"] : [host]
+                    for slug in cropSlugs where !selfCrops.contains(slug) {
+                        #expect(
+                            !mentions(display, slug),
+                            "\(id) on \(host) names \(slug): \(display)")
+                    }
+                }
+            }
+        }
+
+        audit(pests, idKey: "id", proseKey: "damage")
+        audit(diseases, idKey: "id", proseKey: "symptoms")
+    }
+
     @Test func knownFactsSurviveTheRealImport() throws {
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("facts-\(UUID().uuidString).sqlite")
