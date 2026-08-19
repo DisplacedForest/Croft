@@ -214,6 +214,9 @@ struct SeasonView: View {
 
     private func plantingSubtitle(_ item: SeasonPlanting) -> String {
         var parts: [String] = []
+        if let varietal = item.varietal {
+            parts.append(varietal)
+        }
         if let location = item.locationName {
             parts.append(location)
         }

@@ -69,6 +69,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Planting rows everywhere now lead with the crop (Carrot, Pepper) and show
+  the varietal small in the subtitle, so beds read at a glance; the planting
+  detail page still heroes the varietal.
+- Season view cards now show the crop or varietal name for every planting,
+  including ones recorded before 0.2.0, instead of "Unknown plant".
 - Navigating between Today, Garden, bed detail, and plant pages no longer
   reads as a background shift: every level frames its content in the same
   centered column, and the garden structure and property sheets sit on the

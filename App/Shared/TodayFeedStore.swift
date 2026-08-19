@@ -28,7 +28,7 @@ private struct GardenTaskStore {
 }
 
 private struct PlantIndex {
-    var names: [PlantIdentity: String] = [:]
+    var display: PlantDisplayIndex?
     var daysToMaturity: [PlantIdentity: ClosedRange<Int>] = [:]
     var basis: [PlantIdentity: DaysToMaturityBasis] = [:]
     var frostTolerance: [PlantIdentity: FrostTolerance] = [:]
@@ -39,10 +39,10 @@ private struct PlantIndex {
             databases.append(knowledge)
         }
         databases.append(stores.database)
+        display = try? PlantDisplayIndex(databases: databases)
         for database in databases {
             for one in (try? SpeciesRepository(database).fetchAll()) ?? [] {
                 let identity = PlantIdentity.species(one.id)
-                names[identity] = PlantIndex.titled(one.commonNames.first) ?? one.scientificName
                 daysToMaturity[identity] = one.daysToMaturity
                 basis[identity] = one.daysToMaturityBasis
                 frostTolerance[identity] = one.frostTolerance
@@ -52,7 +52,6 @@ private struct PlantIndex {
             for one in (try? CultivarRepository(database).fetchAll()) ?? [] {
                 let identity = PlantIdentity.cultivar(one.id)
                 let parent = PlantIdentity.species(one.speciesID)
-                names[identity] = one.name
                 daysToMaturity[identity] = one.daysToMaturity ?? daysToMaturity[parent]
                 basis[identity] = basis[parent]
                 frostTolerance[identity] = frostTolerance[parent]
@@ -60,11 +59,8 @@ private struct PlantIndex {
         }
     }
 
-    private static func titled(_ name: String?) -> String? {
-        guard let name, let first = name.first else {
-            return name
-        }
-        return first.uppercased() + name.dropFirst()
+    func title(for identity: PlantIdentity) -> String? {
+        display?.display(for: identity).title
     }
 }
 
@@ -117,7 +113,7 @@ final class TodayFeedStore {
         let plantings = (try? PlantingRepository(stores.database).fetchAll()) ?? []
         var names: [Planting.ID: String] = [:]
         for planting in plantings {
-            names[planting.id] = index.names[planting.identity] ?? "unknown plant"
+            names[planting.id] = index.title(for: planting.identity) ?? "unknown plant"
         }
         let active = plantings.filter { $0.status == .active }
         let overview = seasonOverview(stores, now: now, calendar: calendar)
