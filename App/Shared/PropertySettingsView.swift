@@ -68,6 +68,7 @@ struct PropertySettingsView: View {
                     database: database,
                     fillCoordinate: PropertyLocationFill.system,
                     addressSearch: SystemAddressSearch(),
+                    reverseGeocode: SystemAddressSearch.reverseGeocode,
                     minima: PropertyClimateHistory.system
                 )
                 details.load()
