@@ -69,6 +69,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The eye and basket buttons on the planting page now open observation and
+  harvest capture prefilled with that planting on macOS, instead of doing
+  nothing.
 - Planting rows everywhere now lead with the crop (Carrot, Pepper) and show
   the varietal small in the subtitle, so beds read at a glance; the planting
   detail page still heroes the varietal.
