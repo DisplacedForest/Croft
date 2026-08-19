@@ -35,13 +35,17 @@ enum CaptureSheet: Identifiable, Hashable {
 @MainActor
 @Observable
 final class CaptureStore {
-    let context: CaptureContext?
+    private(set) var context: CaptureContext?
     var activeSheet: CaptureSheet?
     var visibleTarget: ObservationTarget?
     var onSaved: () -> Void = {}
     private(set) var saveCount = 0
 
     init(stores: AppStores?) {
+        adopt(stores: stores)
+    }
+
+    func adopt(stores: AppStores?) {
         guard let stores else {
             context = nil
             return

@@ -69,6 +69,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The eye and basket buttons on the planting page now open observation and
+  harvest capture prefilled with that planting on macOS, instead of doing
+  nothing.
 - The summer squash and winter squash pages now list their varietals. The
   catalog filed all 116 squash cultivars under a generic squash label that
   mapped to neither crop; they now classify by type into summer squash (40),
