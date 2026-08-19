@@ -72,6 +72,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Development builds no longer pop an "Unable to Check For Updates" dialog
+  at launch. The updater only starts when the app carries a Developer ID
+  signature; otherwise Check for Updates stays visible but disabled, with a
+  note that updates need a signed build.
 - A fresh install shows the property setup sheet again on first launch; a
   capture plumbing change had stopped it from ever appearing.
 - Switching sections no longer washes the window in that section's color.
