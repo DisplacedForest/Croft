@@ -108,6 +108,7 @@ public final class PropertyDetailsForm {
     public internal(set) var addressSuggestions: [AddressSuggestion] = []
     public internal(set) var addressMessage: String?
     public internal(set) var isDerivingClimate = false
+    public internal(set) var derivationMessage: String?
     public internal(set) var derivedClimate: DerivedClimate?
     public internal(set) var derivedPrefilled: Set<PropertyClimateField> = []
     public internal(set) var climateSuggestions: [PropertyClimateField] = []

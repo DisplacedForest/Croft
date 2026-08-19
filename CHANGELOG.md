@@ -72,11 +72,19 @@ All notable changes to Croft are documented here. The format follows
 - The eye and basket buttons on the planting page now open observation and
   harvest capture prefilled with that planting on macOS, instead of doing
   nothing.
+- When weather can't load, Today now says so quietly instead of showing
+  nothing: one line tells you whether a property location is missing or the
+  weather service is unavailable. Property setup is equally honest when zone
+  and frost dates can't be derived from weather history.
 - Planting rows everywhere now lead with the crop (Carrot, Pepper) and show
   the varietal small in the subtitle, so beds read at a glance; the planting
   detail page still heroes the varietal.
 - Season view cards now show the crop or varietal name for every planting,
   including ones recorded before 0.2.0, instead of "Unknown plant".
+- Navigating between Today, Garden, bed detail, and plant pages no longer
+  reads as a background shift: every level frames its content in the same
+  centered column, and the garden structure and property sheets sit on the
+  app surface instead of the system background, in light and dark mode.
 - The property location form no longer repeats the matched address in a
   caption under the search field, and Use Current Location now fills in a
   readable address for the spot and derives your zone and frost dates just

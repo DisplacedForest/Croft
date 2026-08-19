@@ -22,6 +22,7 @@ struct BedDetailView: View {
                 }
                 .padding(CroftTheme.space(6))
                 .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .navigationTitle(detail.bed.name)
             .toolbar {

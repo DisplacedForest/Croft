@@ -89,6 +89,7 @@ private struct SheetScaffold<Content: View>: View {
         }
         .padding(CroftTheme.space(6))
         .frame(minWidth: 320, maxWidth: 420)
+        .croftScreenSurface()
         .presentationDetents([.height(220)])
     }
 }
