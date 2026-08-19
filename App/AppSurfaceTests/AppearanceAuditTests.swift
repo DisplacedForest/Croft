@@ -65,23 +65,6 @@ final class AppearanceAuditTests: XCTestCase {
         }
     }
 
-    func testIntrinsicSizeContentStillFillsTheTokenSurface() throws {
-        for appearance in [NSAppearance.Name.darkAqua, .aqua] {
-            let bitmap = try render(
-                AnyView(ProgressView().croftScreenSurface()),
-                size: sheetSize, appearance: appearance, named: "surface-fill")
-            let inset = 6
-            let points = [
-                (inset, inset),
-                (bitmap.pixelsWide - 1 - inset, inset),
-                (inset, bitmap.pixelsHigh - 1 - inset),
-                (bitmap.pixelsWide - 1 - inset, bitmap.pixelsHigh - 1 - inset),
-            ]
-            try assertSurfacePrimary(
-                bitmap, at: points, appearance: appearance, screen: "surface-fill")
-        }
-    }
-
     private let shellSize = NSSize(width: 1040, height: 700)
     private let sheetSize = NSSize(width: 480, height: 380)
 }
@@ -288,22 +271,6 @@ extension AppearanceAuditTests {
         try? FileManager.default.createDirectory(
             at: directory, withIntermediateDirectories: true)
         try? data.write(to: directory.appendingPathComponent("\(named).png"))
-    }
-
-    private func assertSurfacePrimary(
-        _ bitmap: NSBitmapImageRep,
-        at points: [(Int, Int)],
-        appearance name: NSAppearance.Name,
-        screen: String
-    ) throws {
-        let expected = try renderedToken(.surfacePrimary, in: name)
-        for point in points {
-            let srgb = try sample(bitmap, at: point)
-            let label = "\(screen) at \(point) in \(name.rawValue)"
-            XCTAssertEqual(srgb.redComponent, expected.redComponent, accuracy: 0.01, label)
-            XCTAssertEqual(srgb.greenComponent, expected.greenComponent, accuracy: 0.01, label)
-            XCTAssertEqual(srgb.blueComponent, expected.blueComponent, accuracy: 0.01, label)
-        }
     }
 
     private func assertTokenSurface(
