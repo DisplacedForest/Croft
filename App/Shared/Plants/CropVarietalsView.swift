@@ -12,29 +12,7 @@ struct CropVarietalsView: View {
     var body: some View {
         Group {
             if let group {
-                List {
-                    Section {
-                        Button {
-                            navigate(.plant(group.crop.identity))
-                        } label: {
-                            CropRowView(group: group)
-                        }
-                        .buttonStyle(.plain)
-                    } header: {
-                        Text("Crop")
-                    }
-                    Section("Varietals") {
-                        ForEach(group.varietals) { item in
-                            Button {
-                                navigate(.plant(item.identity))
-                            } label: {
-                                VarietalRowView(item: item)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-                .navigationTitle(group.crop.displayName)
+                LoadedCropPage(group: group, navigate: navigate)
             } else if didLoad {
                 ContentUnavailableView(
                     "This crop is gone",
@@ -53,6 +31,86 @@ struct CropVarietalsView: View {
                 (try? loader.cropCatalog())?.group(for: speciesID)
             }.value
             didLoad = true
+        }
+    }
+}
+
+enum CropVarietalSectionContent: Equatable {
+    case rows([PlantListItem])
+    case noMatches(query: String)
+}
+
+struct CropPageContent: Equatable {
+    let cropRow: PlantListItem
+    let varietals: CropVarietalSectionContent
+
+    static func build(group: CropGroup, query: String) -> CropPageContent {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        let matched = PlantSearch.filter(group.varietals, matching: trimmed)
+        let varietals: CropVarietalSectionContent =
+            if matched.isEmpty && !trimmed.isEmpty {
+                .noMatches(query: trimmed)
+            } else {
+                .rows(matched)
+            }
+        return CropPageContent(cropRow: group.crop, varietals: varietals)
+    }
+}
+
+struct LoadedCropPage: View {
+    let group: CropGroup
+    let navigate: (SectionRoute) -> Void
+    @State private var query: String
+
+    init(group: CropGroup, query: String = "", navigate: @escaping (SectionRoute) -> Void) {
+        self.group = group
+        self.navigate = navigate
+        _query = State(initialValue: query)
+    }
+
+    var body: some View {
+        CropVarietalsList(
+            content: CropPageContent.build(group: group, query: query),
+            group: group,
+            navigate: navigate
+        )
+        .searchable(text: $query, prompt: "Search varietals")
+        .navigationTitle(group.crop.displayName)
+    }
+}
+
+struct CropVarietalsList: View {
+    let content: CropPageContent
+    let group: CropGroup
+    let navigate: (SectionRoute) -> Void
+
+    var body: some View {
+        List {
+            Section {
+                Button {
+                    navigate(.plant(content.cropRow.identity))
+                } label: {
+                    CropRowView(group: group)
+                }
+                .buttonStyle(.plain)
+            } header: {
+                Text("Crop")
+            }
+            Section("Varietals") {
+                switch content.varietals {
+                case .rows(let items):
+                    ForEach(items) { item in
+                        Button {
+                            navigate(.plant(item.identity))
+                        } label: {
+                            VarietalRowView(item: item)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                case .noMatches(let query):
+                    ContentUnavailableView.search(text: query)
+                }
+            }
         }
     }
 }
