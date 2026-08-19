@@ -155,7 +155,7 @@ private func makeForm(
     #expect(form.save())
 }
 
-@Test @MainActor func aFailedMinimaFetchIsSilent() async throws {
+@Test @MainActor func aFailedMinimaFetchSaysSoAndLeavesManualEntryWorking() async throws {
     let form = try makeForm(series: nil)
     form.load()
     form.latitudeText = "44.26"
@@ -165,7 +165,48 @@ private func makeForm(
     #expect(form.derivedClimate == nil)
     #expect(form.derivedPrefilled.isEmpty)
     #expect(form.zoneText.isEmpty)
+    #expect(form.derivationMessage != nil)
     #expect(form.save())
+}
+
+@Test @MainActor func anEmptyWeatherHistorySaysSo() async throws {
+    let form = try makeForm(series: [])
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+
+    #expect(form.derivedClimate == nil)
+    #expect(form.derivationMessage != nil)
+}
+
+@Test @MainActor func aSuccessfulDerivationClearsTheFailureMessage() async throws {
+    struct MinimaFailure: Error {}
+    let counter = MinimaCounter()
+    let database = try AppDatabase.inMemory()
+    let defaults = UserDefaults(suiteName: "climate-tests-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { _ in
+        counter.bump()
+        if counter.count == 1 {
+            throw MinimaFailure()
+        }
+        return temperateSeries
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+    #expect(form.derivationMessage != nil)
+
+    await form.deriveClimate()
+    #expect(form.derivationMessage == nil)
+    #expect(form.zoneText == "5")
 }
 
 @Test @MainActor func derivationIsCachedPerCoordinate() async throws {
