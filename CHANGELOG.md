@@ -4,7 +4,7 @@ All notable changes to Croft are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## 0.2.0 - 2026-08-19
 
 ### Added
 
@@ -23,7 +23,6 @@ All notable changes to Croft are documented here. The format follows
   dates from ten years of weather history as prefills you confirm or edit,
   never silent writes. Today's weather now follows the property's location
   when one is set, with device location as the fallback.
-
 - Observations can record a typed lifecycle stage (germinated, transplanted,
   first flower, first fruit set, pulled) alongside the note.
 - Property settings for location, hardiness zone, and last and first frost
@@ -61,7 +60,6 @@ All notable changes to Croft are documented here. The format follows
   with images and varietal counts instead of a flat list of 1,159 cultivar
   names; open a crop to browse its varietals, and search finds crops and
   varietals from anywhere by common name, varietal name, or binomial.
-
 - Threat pages now show what an attack looks like on your crop: early blight
   lesions on tomato leaves, and the imported cabbageworm on kale as
   caterpillar, frass, and feeding damage, each preferred over the generic
