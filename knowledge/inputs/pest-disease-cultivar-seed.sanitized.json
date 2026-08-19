@@ -1417,6 +1417,9 @@
         "other" : "Seed-borne and transplant-borne; survives on residue",
         "temperature_c" : "24-30"
       },
+      "host_notes" : {
+        "pepper" : "Small water-soaked leaf spots turning dark and greasy, often with yellow halos, that shot-hole as they dry; raised scabby spots on the fruit."
+      },
       "hosts" : [
         "tomato",
         "pepper"
@@ -1435,7 +1438,7 @@
       "resistance_code" : "BLS (pepper races e.g. X 0-10); BSp",
       "seed_borne" : true,
       "survival" : "Persists on crop debris, volunteers, and weed hosts between seasons, and on or in untreated seed",
-      "symptoms" : "Small water-soaked leaf spots turning dark and greasy, often with yellow halos, shot-holing in pepper; raised scabby spots on fruit.",
+      "symptoms" : "Small water-soaked leaf spots turning dark and greasy, often with yellow halos; raised scabby spots on fruit.",
       "transmission" : "Contaminated seed and transplants, splash, tools and hands on wet foliage."
     },
     {
@@ -1684,6 +1687,9 @@
         "other" : "Obligate parasite; overwinters only in frost-free areas and migrates north each summer (tracked by the Cucurbit Downy Mildew ipmPIPE forecast)",
         "temperature_c" : "15-25"
       },
+      "host_notes" : {
+        "cucumber" : "Hit hardest of the cucurbits: angular vein-bounded spots yellow and brown fast, and the canopy can collapse within days."
+      },
       "hosts" : [
         "cucumber",
         "melon",
@@ -1703,7 +1709,7 @@
       "resistance_code" : "DM",
       "seed_borne" : false,
       "survival" : "Obligate parasite with no soil survival in frost-prone regions; oversummers in frost-free areas and reinvades north each season",
-      "symptoms" : "Angular yellow leaf spots bounded by veins, turning brown; gray-purple downy sporulation on undersides in humid mornings; rapid canopy death, cucumbers hit hardest.",
+      "symptoms" : "Angular yellow leaf spots bounded by the veins, turning brown; gray-purple downy sporulation on the undersides in humid mornings; rapid canopy death.",
       "transmission" : "Long-distance airborne sporangia; splash locally."
     },
     {
@@ -1785,6 +1791,9 @@
         "other" : "Seed-borne and residue-borne",
         "temperature_c" : "22-27"
       },
+      "host_notes" : {
+        "bean" : "Dark sunken lesions on the pods with salmon-pink spore masses, and angular brown spots along the leaf veins."
+      },
       "hosts" : [
         "cucumber",
         "melon",
@@ -1805,7 +1814,7 @@
       "resistance_code" : "AN / A",
       "seed_borne" : true,
       "survival" : "Overwinters on the previous crop's residue and on or in seed",
-      "symptoms" : "Sunken circular fruit lesions with salmon-pink spore masses in wet weather; angular brown leaf spots; dark sunken pod lesions on beans.",
+      "symptoms" : "Sunken circular lesions on fruit with salmon-pink spore masses in wet weather; angular brown leaf spots.",
       "transmission" : "Infected seed, splash from residue, workers in wet foliage."
     },
     {
@@ -1892,6 +1901,10 @@
         "other" : "Sclerotia persist 5+ years; 400+ host species",
         "temperature_c" : "15-24"
       },
+      "host_notes" : {
+        "bean" : "Stems bleach and shred around cottony white mold, with hard black sclerotia inside.",
+        "lettuce" : "Lettuce drop: the plant wilts and collapses flat as the stem rots at the soil line."
+      },
       "hosts" : [
         "bean",
         "lettuce",
@@ -1915,7 +1928,7 @@
       "resistance_code" : "none",
       "seed_borne" : false,
       "survival" : "Sclerotia persist roughly 3-8 years in soil, some sources up to 10",
-      "symptoms" : "Water-soaked stem lesions with cottony white mycelium and hard black sclerotia inside stems; lettuce drop; bean stems bleach and shred.",
+      "symptoms" : "Water-soaked stem lesions grow cottony white mycelium, with hard black sclerotia forming inside the stem.",
       "transmission" : "Airborne ascospores from soil-borne sclerotia colonize senescing flowers first."
     },
     {
@@ -2082,6 +2095,10 @@
         "other" : "Carried between seasons in infected seed tubers; symptomless infections spread it silently",
         "temperature_c" : "builds with summer aphid flights"
       },
+      "host_notes" : {
+        "pepper" : "Mosaic with fruit distortion.",
+        "potato" : "Stunted plants with mosaic and crinkled leaves and reduced yield; NTN strains add necrotic ringspots on the tubers."
+      },
       "hosts" : [
         "potato",
         "tomato",
@@ -2100,7 +2117,7 @@
       "resistance_code" : "PVY (pepper: Pvr genes)",
       "seed_borne" : true,
       "survival" : "Not soil-persistent; carries over in infected seed tubers and volunteers, which is why certified seed is the control point",
-      "symptoms" : "Leaf mosaic, crinkling, and vein necrosis; stunted potato plants with reduced yield; necrotic ringspots on tubers with NTN strains; mosaic and fruit distortion in pepper.",
+      "symptoms" : "Leaf mosaic, crinkling, and vein necrosis.",
       "transmission" : "Many aphid species non-persistently (seconds to acquire, insecticides ineffective at prevention); infected seed potatoes are the main reservoir.",
       "vector_note" : "Green peach aphid is the most efficient vector; most current US field spread is by transient non-colonizing aphids (soybean aphid, corn leaf aphid, bird cherry-oat aphid, English grain aphid), which insecticides fail to stop",
       "vectors" : [
@@ -2116,6 +2133,9 @@
         "moisture" : "Sandy soils worst",
         "other" : "Wide host range; populations build under continuous susceptible crops",
         "temperature_c" : "warm soils; southern species need 18+, M. hapla tolerates cool climates"
+      },
+      "host_notes" : {
+        "carrot" : "Forked, hairy, stubby taproots covered in small galls."
       },
       "hosts" : [
         "tomato",
@@ -2141,7 +2161,7 @@
       "resistance_code" : "N (Mi gene in tomato)",
       "seed_borne" : false,
       "survival" : "Eggs and juveniles persist in soil between susceptible crops, building under continuous host cropping, worst in sandy soils",
-      "symptoms" : "Stunting, midday wilt, nutrient-deficiency look above ground; distinctive galls and swellings on roots; forked hairy carrots.",
+      "symptoms" : "Stunting, midday wilt, and a nutrient-deficient look above ground; below ground, distinctive galls and swellings fused into the roots.",
       "transmission" : "Soil-borne; moved with soil, transplants, tools, and water."
     },
     {
@@ -2286,6 +2306,14 @@
         "other" : "Poorly drained or compacted ground, flat beds, and fields with a history of cucurbits or peppers",
         "temperature_c" : "24-30"
       },
+      "host_notes" : {
+        "cucumber" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "melon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "pepper" : "A dark water-soaked lesion girdles the stem at the soil line, then the plant wilts suddenly and permanently with the leaves still attached; root rot, and dark leaf lesions with blighted shoots in humid weather; crowns blacken at the soil line.",
+        "pumpkin" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "squash" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line.",
+        "watermelon" : "Fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses; crowns blacken at the soil line."
+      },
       "hosts" : [
         "pepper",
         "cucumber",
@@ -2313,7 +2341,7 @@
       "resistance_code" : "PC (partial, crown-rot tolerance only)",
       "seed_borne" : false,
       "survival" : "Oospores survive several years in soil, cull piles and infested plant debris.",
-      "symptoms" : "On pepper, a dark water-soaked lesion girdling the stem at the soil line followed by sudden permanent wilt with leaves still attached; root rot; dark leaf lesions and blighted shoots in humid weather. On cucurbits, fruit sitting on wet soil develops soft depressed spots covered in dense white yeast-like spore growth, then collapses ('melts'). Blackened crowns on all hosts.",
+      "symptoms" : "Dark water-soaked lesions at the crown and stem base, with crowns blackening at the soil line.",
       "transmission" : "Swimming zoospores move through soil water and splash onto crowns and fruit; long-lived oospores survive years in soil and cull piles; spread on equipment, boots, runoff, surface irrigation water, and infected fruit that looks sound at harvest."
     },
     {
@@ -2326,6 +2354,10 @@
         "moisture" : "n/a",
         "other" : "Big spring leafhopper flights carrying a high aster yellows infectivity index; perennial weeds and biennial hosts hold the phytoplasma between seasons; over 300 plant species in 38 families are hosts",
         "temperature_c" : "cool to moderate summers; transmission drops when days run above 32"
+      },
+      "host_notes" : {
+        "carrot" : "Yellow or reddish twisted new growth, a broom of hairy shoots from the crown, masses of white hairy rootlets, and bitter woody taproots that rot in storage.",
+        "lettuce" : "Stunted plants with yellowed twisted inner leaves, pink to brown latex discoloration, and failure to head."
       },
       "hosts" : [
         "carrot",
@@ -2348,7 +2380,7 @@
       "resistance_code" : "none (no commercial resistance)",
       "seed_borne" : false,
       "survival" : "Persists in the crowns and roots of infected perennial and biennial weeds for years, and for life in infected leafhoppers; does not survive in soil or residue.",
-      "symptoms" : "Carrot: yellow or reddish twisted new growth, a broom of hairy secondary shoots from the crown, masses of white hairy rootlets, bitter woody taproots that rot in storage. Lettuce: stunted heads, yellowed twisted inner leaves, pink to brown latex discoloration, failure to head. Generally, virescence and phyllody (flowers turning green and leafy) and stunting.",
+      "symptoms" : "Virescence and phyllody (flowers turning green and leafy) and stunting.",
       "transmission" : "Only by leafhoppers, chiefly the aster leafhopper, in a persistent propagative way: the insect feeds on an infected plant, then needs roughly 2-3 weeks of latent period before it can infect, after which it stays infective for life. Not seed-borne, not mechanically transmitted, not spread by touch or tools.",
       "vectors" : [
         "aster-leafhopper"
@@ -2364,6 +2396,13 @@
         "moisture" : "Dry soil during the 4-6 weeks after tuber set; scab is suppressed by keeping soil near field capacity through that window",
         "other" : "Soil pH above about 5.2 (common scab); light sandy or gravelly soils; fresh manure, lime, or wood ash raising pH. Acid scab breaks the pH rule and survives down to pH 4.0",
         "temperature_c" : "20-22 soil during tuber initiation"
+      },
+      "host_notes" : {
+        "beet" : "Rough dark corky lesions on the root surface.",
+        "carrot" : "Rough dark corky lesions on the root surface.",
+        "potato" : "Corky russeted to warty or deep-pitted lesions on the tuber skin; pitted scab cuts usable yield.",
+        "radish" : "Rough dark corky lesions on the root surface.",
+        "turnip" : "Rough dark corky lesions on the root surface."
       },
       "hosts" : [
         "potato",
@@ -2387,7 +2426,7 @@
       "resistance_code" : "scab tolerance (cultivar-level, no catalog code)",
       "seed_borne" : true,
       "survival" : "Survives for many years in soil, on seed tubers, and passes through livestock manure.",
-      "symptoms" : "Tan to dark brown corky lesions on the tuber skin, either superficial and russeted, raised and warty, or deep pitted. Cosmetic on the plate but disfiguring, and pitted scab cuts usable yield. Foliage looks normal. On beets and root crops, similar rough dark surface lesions.",
+      "symptoms" : "Tan to dark brown corky lesions on the skin of the below-ground parts: superficial and russeted, raised and warty, or deep pitted. Foliage looks normal; cosmetic at its mildest, while pitted lesions cut usable yield.",
       "transmission" : "Soil-borne and seed-borne; the bacteria persist for years in soil and on seed tubers, and pass through livestock manure. Thaxtomin toxin production drives lesion formation on young expanding tubers."
     },
     {
@@ -2437,6 +2476,10 @@
         "other" : "Dense canopies after row closure; a full infection cycle takes 7-21 days, so it compounds quickly in a warm humid stretch",
         "temperature_c" : "25-35 days with nights above 16"
       },
+      "host_notes" : {
+        "beet" : "Greens become unusable fast as spots coalesce, and repeated defoliation costs root size.",
+        "chard" : "Leaves become unusable fast as spots coalesce and older leaves collapse."
+      },
       "hosts" : [
         "beet",
         "chard",
@@ -2457,7 +2500,7 @@
       "resistance_code" : "CLS (partial resistance)",
       "seed_borne" : true,
       "survival" : "Pseudostromata in infected leaf residue survive one to two years; also on Chenopodiaceae weeds such as lambsquarters.",
-      "symptoms" : "Small round spots 2-6 mm with a distinct reddish-purple to brown border and a tan center that turns ash gray as it sporulates; centers may drop out. Spots coalesce, older leaves blight and collapse, and the plant pushes new leaves from the crown at the cost of root size. Makes chard and beet greens unsellable fast.",
+      "symptoms" : "Small round spots 2 to 6 mm with a reddish-purple to brown border and a tan center that turns ash gray as it sporulates; centers may drop out. Spots coalesce, older leaves blight and collapse, and the plant pushes new leaves from the crown.",
       "transmission" : "Overwinters as pseudostromata in infected crop residue and on beet-family weeds such as lambsquarters; conidia are splashed and wind-blown to new leaves. Low-level seed transmission."
     },
     {
@@ -2976,8 +3019,12 @@
         "https://extension.umd.edu/resource/corn-earworm-pheromone-trapping"
       ],
       "common_name" : "Corn earworm / tomato fruitworm",
-      "damage" : "Ear-tip kernels eaten with frass; round holes into tomato fruit near the calyx.",
+      "damage" : "Larvae chew into the concealed, developing parts of the plant and feed inside where sprays cannot reach, leaving moist frass at the entry hole.",
       "favoring_conditions" : "Fresh silking corn during moth flights; late plantings hit hardest.",
+      "host_notes" : {
+        "corn" : "Ear-tip kernels eaten under the husk, with moist frass packed into the silk channel.",
+        "tomato" : "Round holes chewed into fruit near the calyx, with the caterpillar feeding inside."
+      },
       "hosts" : [
         "corn",
         "tomato",
@@ -3011,8 +3058,12 @@
         "https://cals.cornell.edu/integrated-pest-management/outreach-education/fact-sheets/pheromone-traps-for-sweet-corn"
       ],
       "common_name" : "European corn borer",
-      "damage" : "Broken tassels and stalks, shot-hole leaf feeding, internal pepper fruit rot from entry wounds.",
+      "damage" : "Young larvae riddle leaves with shot-hole feeding, then bore inside the plant; tunneled stalks weaken and break, and internal rot follows the entry wounds.",
       "favoring_conditions" : "Overwintered corn stubble nearby; regional populations have declined where Bt field corn is widespread.",
+      "host_notes" : {
+        "corn" : "Shot-hole feeding in the whorl, then broken tassels and stalks as larvae tunnel inside.",
+        "pepper" : "Larvae enter the fruit under the cap and feed inside; internal rot follows the entry wound."
+      },
       "hosts" : [
         "corn",
         "pepper",
@@ -3045,8 +3096,11 @@
         "https://richland.extension.wisc.edu/files/2012/07/Flea-Beetle.pdf"
       ],
       "common_name" : "Flea beetles (crucifer, potato, eggplant)",
-      "damage" : "Shot-hole pitting that can kill seedlings; cosmetic damage on leafy greens; eggplant seedlings especially vulnerable.",
+      "damage" : "Shot-hole pitting across the leaves that can kill seedlings; cosmetic pitting on leafy greens; seedlings and young transplants are hit hardest.",
       "favoring_conditions" : "Hot dry spring weather, weedy brassica field edges, direct-seeded crops emerging into peak adult activity.",
+      "host_notes" : {
+        "eggplant" : "Seedlings are especially vulnerable; heavy shot-hole pitting can stunt or kill young plants before they outgrow the feeding."
+      },
       "hosts" : [
         "cabbage",
         "broccoli",
@@ -3123,8 +3177,14 @@
         "https://s3.wp.wsu.edu/uploads/sites/2075/2013/05/Wireworm-Scouting-FS059E1.pdf"
       ],
       "common_name" : "Wireworms",
-      "damage" : "Holes and tunnels in potatoes and carrots, poor stands from hollowed seeds.",
+      "damage" : "Larvae tunnel into roots, tubers, and germinating seeds below ground, and stands come up patchy where seeds were hollowed out.",
       "favoring_conditions" : "New gardens broken from lawn or grass; cool moist spring soils.",
+      "host_notes" : {
+        "bean" : "Germinating seeds hollowed out below ground, leaving gappy stands.",
+        "carrot" : "Holes and winding tunnels through the taproot that invite rot in storage.",
+        "corn" : "Germinating seeds hollowed out below ground, leaving gappy stands.",
+        "potato" : "Clean round holes and shallow tunnels bored into the tubers, often plugged with frass."
+      },
       "hosts" : [
         "potato",
         "carrot",
@@ -3198,8 +3258,12 @@
         "https://www.lsuagcenter.com/articles/page1636498241547"
       ],
       "common_name" : "Silverleaf / sweetpotato whitefly",
-      "damage" : "Honeydew, sooty mold, irregular fruit ripening, squash silverleaf disorder; devastating as the vector of tomato yellow leaf curl virus.",
+      "damage" : "Sticky honeydew and sooty mold on the foliage, uneven fruit ripening, and general decline; the worst damage comes from the viruses it carries.",
       "favoring_conditions" : "Hot climates, greenhouse transplant production, continuous host availability.",
+      "host_notes" : {
+        "squash" : "Nymph feeding turns new leaves silvery (silverleaf disorder) on top of the honeydew and sooty mold.",
+        "tomato" : "Honeydew, sooty mold, and irregular ripening, and it is the vector of tomato yellow leaf curl virus, which does far more damage than the feeding."
+      },
       "hosts" : [
         "tomato",
         "pepper",
@@ -3237,8 +3301,12 @@
         "https://cvp.cce.cornell.edu/submission.php?id=584"
       ],
       "common_name" : "Western flower thrips / onion thrips",
-      "damage" : "Silvery streaks on onion leaves, scarred fruit; western flower thrips transmits tomato spotted wilt virus.",
+      "damage" : "Rasping feeding leaves silvery streaks, flecks, and scarred distorted growth where they feed; also a virus vector.",
       "favoring_conditions" : "Hot dry weather; onion thrips surge when nearby grain or hay is cut.",
+      "host_notes" : {
+        "onion" : "Silvery streaks and blotches along the leaf blades; heavy feeding cuts bulb size.",
+        "tomato" : "Scarred, dimpled fruit from feeding in the flowers, and western flower thrips transmits tomato spotted wilt virus."
+      },
       "hosts" : [
         "onion",
         "garlic",
@@ -3350,8 +3418,14 @@
         "https://extension.umn.edu/yard-and-garden-insects/root-maggots"
       ],
       "common_name" : "Cabbage root maggot / onion maggot / seedcorn maggot",
-      "damage" : "Wilting midday, stunted or collapsing seedlings, tunneled radishes and onion bulbs; seedcorn maggot kills germinating seeds in cold wet soil.",
+      "damage" : "Maggots feed on roots and seeds below ground: plants wilt at midday, seedlings stunt or collapse, and germinating seeds are killed in cold wet soil.",
       "favoring_conditions" : "Cool wet springs, fresh organic matter or manure worked in just before seeding.",
+      "host_notes" : {
+        "bean" : "Seedcorn maggot hollows germinating seeds in cold wet soil, so stands come up gappy or not at all.",
+        "corn" : "Seedcorn maggot hollows germinating seeds in cold wet soil, so stands come up gappy or not at all.",
+        "onion" : "Maggots tunnel the developing bulb and kill seedlings.",
+        "radish" : "Brown tunnels riddle the root, ruining it even when the tops still look fine."
+      },
       "hosts" : [
         "cabbage",
         "broccoli",
@@ -3502,8 +3576,12 @@
         "https://crops.extension.iastate.edu/encyclopedia/potato-leafhopper"
       ],
       "common_name" : "Potato leafhopper",
-      "damage" : "Hopperburn: leaf tips and margins yellow then brown and go brittle, leaves cup downward and crinkle, plants dwarf. Beans bronze and stop setting pods; potatoes look drought-stressed and lose yield well before symptoms are obvious. Damage is from injected toxic saliva, not tissue removal, so a small population does real harm and the injury does not reverse.",
+      "damage" : "Hopperburn from injected saliva: leaf tips and margins yellow then brown and go brittle, leaves cup downward and crinkle, and plants dwarf. A small population does real harm and the injury does not reverse.",
       "favoring_conditions" : "Hot dry weather after a June arrival flight; young succulent regrowth; adjacent alfalfa fields, which push a mass of leafhoppers into gardens the day they are cut.",
+      "host_notes" : {
+        "bean" : "Leaves bronze and cup, and plants stop setting pods; the burn does not reverse.",
+        "potato" : "Plants look drought-stressed and lose yield well before hopperburn is obvious."
+      },
       "hosts" : [
         "bean",
         "potato",
@@ -3536,8 +3614,12 @@
         "https://extension.umaine.edu/home-and-garden-ipm/fact-sheets/common-name-listing/aster-leafhopper/"
       ],
       "common_name" : "Aster leafhopper (six-spotted leafhopper)",
-      "damage" : "Direct feeding damage is minor and only matters at very high densities. The pest matters as the vector of aster yellows: a single infective leafhopper can condemn a carrot or lettuce plant, so scouting is aimed at the proportion of the population carrying the phytoplasma (the aster yellows infectivity index) rather than at raw numbers.",
+      "damage" : "Direct feeding damage is minor and only matters at very high densities. The pest matters as the vector of aster yellows, so scouting targets the proportion of the population carrying the phytoplasma (the infectivity index) rather than raw numbers.",
       "favoring_conditions" : "Big spring migrations arriving on southerly winds; nearby small grains, alfalfa or weedy field margins, especially at cutting or drydown when leafhoppers move out; cooler summers, which favor phytoplasma transmission.",
+      "host_notes" : {
+        "carrot" : "A single infective leafhopper can condemn a plant to aster yellows, so the infectivity of the population matters more than its size.",
+        "lettuce" : "A single infective leafhopper can condemn a plant to aster yellows, so the infectivity of the population matters more than its size."
+      },
       "hosts" : [
         "carrot",
         "lettuce",
@@ -3570,8 +3652,14 @@
         "https://extension.umd.edu/resource/brown-marmorated-stink-bug"
       ],
       "common_name" : "Brown marmorated stink bug",
-      "damage" : "Cloudy corky white or brown pithy spots under the skin of tomatoes and peppers, often invisible until the fruit is cut; distorted 'cat-faced' fruit; dimpled and aborted bean pods with shriveled seed; stunted kernels on sweet corn ears fed through the husk. Feeding wounds admit yeasts and rot organisms. Damage runs highest at field and garden edges next to woods or buildings.",
+      "damage" : "Feeding through the skin leaves cloudy corky spots under the surface and distorted fruit, often invisible until cut; the wounds admit yeasts and rot organisms. Damage runs highest at garden edges next to woods or buildings.",
       "favoring_conditions" : "Gardens bordered by wooded edges, tree-of-heaven, or fruit trees; warm falls that build a large overwintering population; late-season plantings that stay green while surrounding crops dry down.",
+      "host_notes" : {
+        "bean" : "Dimpled, aborted pods with shriveled seed.",
+        "corn" : "Stunted kernels on ears fed through the husk.",
+        "pepper" : "Cloudy corky spots under the skin and distorted fruit, often invisible until cut.",
+        "tomato" : "Cloudy white to brown corky spots under the skin and cat-faced distortion, often invisible until the fruit is cut."
+      },
       "hosts" : [
         "tomato",
         "pepper",
@@ -3607,8 +3695,15 @@
         "https://ipm.ucanr.edu/agriculture/cole-crops/beet-armyworm/"
       ],
       "common_name" : "Beet armyworm",
-      "damage" : "Skeletonized patches with webbing early, then heavy defoliation and boring into hearts and buds. Damage concentrates at growing points, so a small number of larvae can destroy a lettuce head or a pepper terminal. On tomato as little as one caterpillar per 20 plants is enough to cause economic loss.",
+      "damage" : "Skeletonized patches with webbing early, then heavy defoliation and boring into hearts, buds, and growing points, where a few larvae do outsized damage.",
       "favoring_conditions" : "Hot dry summers, weedy plantings with pigweed and purslane, and gardens that have been sprayed with broad-spectrum insecticides, which remove the parasitoids and the natural virus epizootic that normally crash populations.",
+      "host_notes" : {
+        "broccoli" : "Larvae bore into the developing buds and growing points.",
+        "cabbage" : "Larvae bore into the developing head and growing point.",
+        "lettuce" : "Larvae bore into the head and growing point; a small number can destroy a head.",
+        "pepper" : "Larvae concentrate at the growing points; a few can destroy a terminal.",
+        "tomato" : "As little as one caterpillar per 20 plants is enough to cause economic loss."
+      },
       "hosts" : [
         "beet",
         "chard",

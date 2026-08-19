@@ -69,6 +69,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Pest and disease text on a plant page now speaks about that plant. Damage
+  and symptom notes written for a specific host render on that host's page,
+  organism descriptions read host-neutral everywhere else, and no page
+  lectures you about some other crop's problems.
 - Varietal rows show a photo only when the varietal has its own image; the
   rest carry a quiet leaf placeholder instead of repeating the species photo
   down the whole list. The detail page keeps its species fallback.
