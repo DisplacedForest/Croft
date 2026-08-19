@@ -8,6 +8,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Companion advisories at bed assignment: picking a bed tells you when the
+  plant is a companion or antagonist of something already growing there,
+  naming the plant and the source, never blocking the save.
 - A frost alert at the top of Today when the next two nights dip to a level
   your plants care about, naming the at-risk plantings and their beds with
   the forecast low. Tolerances come from each plant's profile and are never
