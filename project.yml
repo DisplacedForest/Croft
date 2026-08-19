@@ -1,5 +1,6 @@
 name: Croft
 options:
+  postGenCommand: mkdir -p Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm && cp project.resolved Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
   bundleIdPrefix: com.displacedforest
   createIntermediateGroups: true
   deploymentTarget:
