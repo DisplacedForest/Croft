@@ -85,7 +85,7 @@ struct CatalogFixture {
     static let transplantDate = Date(timeIntervalSince1970: 1_717_000_000)
     static let endDate = Date(timeIntervalSince1970: 1_719_000_000)
 
-    init() throws {
+    init(hornwormTomatoNote: String? = nil) throws {
         database = try AppDatabase.inMemory()
         loader = PlantPageLoader(database)
         families = PlantFamilyRepository(database)
@@ -114,7 +114,8 @@ struct CatalogFixture {
         try structures.create(tunnelBed, in: .growingArea(polytunnel.id))
         try relate(
             plantRef(tomato.id.rawValue), .hostOf,
-            EntityRef(id: hornworm.id.rawValue, type: .pest))
+            EntityRef(id: hornworm.id.rawValue, type: .pest),
+            notes: hornwormTomatoNote)
         try relate(
             plantRef(tomato.id.rawValue), .susceptibleTo,
             EntityRef(id: earlyBlight.id.rawValue, type: .disease))
@@ -177,10 +178,13 @@ struct CatalogFixture {
     func relate(
         _ source: EntityRef,
         _ type: RelationshipType,
-        _ target: EntityRef
+        _ target: EntityRef,
+        notes: String? = nil
     ) throws {
         try database.writer.write { db in
-            _ = try GraphStore.relate(from: source, type, to: target, in: db)
+            _ = try GraphStore.relate(
+                from: source, type, to: target,
+                provenance: Provenance(notes: notes), in: db)
         }
     }
 }

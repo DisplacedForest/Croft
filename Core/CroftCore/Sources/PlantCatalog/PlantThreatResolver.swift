@@ -39,7 +39,7 @@ struct PlantThreatResolver: Sendable {
                         kind: .pest,
                         name: pest.commonName,
                         agentName: pest.scientificName,
-                        summary: pest.typicalDamage ?? pest.description,
+                        summary: edge.provenance.notes ?? pest.typicalDamage ?? pest.description,
                         affectedParts: pest.affectedPlantParts
                     ))
             case .disease:
@@ -51,7 +51,7 @@ struct PlantThreatResolver: Sendable {
                         kind: .disease,
                         name: disease.name,
                         agentName: disease.pathogen,
-                        summary: disease.symptoms,
+                        summary: edge.provenance.notes ?? disease.symptoms,
                         affectedParts: disease.affectedPlantParts
                     ))
             default:
