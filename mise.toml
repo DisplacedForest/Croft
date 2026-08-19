@@ -12,6 +12,7 @@ run = "xcodegen generate"
 run = "xcrun swift-format format --in-place --recursive App Core"
 
 [tasks.lint]
+wait_for = ["fmt"]
 run = [
   "xcrun swift-format lint --strict --recursive App Core",
   "swiftlint lint --strict --quiet",
@@ -29,6 +30,7 @@ depends = ["generate"]
 run = "xcodebuild test -project Croft.xcodeproj -scheme Croft-iOS -destination 'platform=iOS Simulator,name=iPhone 17' -quiet"
 
 [tasks.test]
+wait_for = ["fmt"]
 run = ["mise run test-macos"]
 
 [tasks."test-all"]
@@ -42,6 +44,7 @@ run = [
 run = "swift run --package-path Core/CroftCore -c release knowledge-importer pin knowledge/inputs"
 
 [tasks.knowledge]
+wait_for = ["fmt"]
 run = [
   "swift run --package-path Core/CroftCore -c release knowledge-importer build knowledge/inputs App/Shared/Resources/PlantImages App/Shared/Resources/knowledge.sqlite",
   "swift run --package-path Core/CroftCore -c release knowledge-importer attribution App/Shared/Resources/knowledge.sqlite knowledge/ATTRIBUTION.md",
@@ -49,10 +52,12 @@ run = [
 
 [tasks."test-runtime-tokens"]
 depends = ["generate"]
+wait_for = ["build", "check"]
 run = "xcodebuild test -project Croft.xcodeproj -scheme Croft-macOS -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -quiet"
 
 [tasks.build]
 depends = ["generate"]
+wait_for = ["check-fast"]
 run = [
   "xcodebuild build -project Croft.xcodeproj -scheme Croft-macOS -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO -quiet",
 ]
@@ -64,23 +69,13 @@ run = [
 ]
 
 [tasks."check-fast"]
-run = [
-  "mise run fmt",
-  "mise run lint",
-  "mise run test",
-]
+depends = ["fmt", "lint", "test"]
 
 [tasks.check]
-run = [
-  "mise run check-fast",
-  "mise run build",
-]
+depends = ["check-fast", "build"]
 
 [tasks.ci]
-run = [
-  "mise run check",
-  "mise run test-runtime-tokens",
-]
+depends = ["check", "test-runtime-tokens"]
 
 [tasks."changelog-draft"]
 run = '''
