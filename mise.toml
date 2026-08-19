@@ -44,6 +44,7 @@ run = [
 run = "swift run --package-path Core/CroftCore -c release knowledge-importer pin knowledge/inputs"
 
 [tasks.knowledge]
+wait_for = ["fmt"]
 run = [
   "swift run --package-path Core/CroftCore -c release knowledge-importer build knowledge/inputs App/Shared/Resources/PlantImages App/Shared/Resources/knowledge.sqlite",
   "swift run --package-path Core/CroftCore -c release knowledge-importer attribution App/Shared/Resources/knowledge.sqlite knowledge/ATTRIBUTION.md",
