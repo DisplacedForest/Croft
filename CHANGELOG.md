@@ -8,6 +8,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- A search field on every crop page filters its varietals live by bare name,
+  full vendor name, or binomial, with a plain empty state when nothing
+  matches.
 - Cultivar imagery grown from 11 to 43 varietals across sixteen crops, each
   image individually licensed (public domain, CC0, or CC BY) and attributed,
   so more cultivar pages show their own look instead of the species fallback.
