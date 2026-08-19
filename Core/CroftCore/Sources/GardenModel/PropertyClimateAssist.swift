@@ -28,11 +28,9 @@ extension PropertyDetailsForm {
             let place = try await addressSearch.resolve(suggestion)
             latitudeText = PropertyDetailsForm.format(place.coordinate.latitude)
             longitudeText = PropertyDetailsForm.format(place.coordinate.longitude)
-            matchConfirmation = "Matched \(place.name)"
             addressQuery = place.name
             await deriveClimate()
         } catch {
-            matchConfirmation = nil
             addressMessage = "That address didn't resolve. Enter coordinates manually."
         }
     }

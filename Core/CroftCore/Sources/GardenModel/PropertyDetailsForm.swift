@@ -106,7 +106,6 @@ public final class PropertyDetailsForm {
     public private(set) var isFillingLocation = false
     public var addressQuery = ""
     public internal(set) var addressSuggestions: [AddressSuggestion] = []
-    public internal(set) var matchConfirmation: String?
     public internal(set) var addressMessage: String?
     public internal(set) var isDerivingClimate = false
     public internal(set) var derivedClimate: DerivedClimate?
@@ -117,6 +116,7 @@ public final class PropertyDetailsForm {
     private let defaults: PropertySetupDefaults
     private let fillCoordinate: CoordinateFill?
     let addressSearch: (any AddressSearching)?
+    private let reverseGeocode: ReverseGeocode?
     let minima: HistoricalMinima?
     let climateCache: ClimateCache
 
@@ -125,6 +125,7 @@ public final class PropertyDetailsForm {
         defaults: PropertySetupDefaults = PropertySetupDefaults(),
         fillCoordinate: CoordinateFill? = nil,
         addressSearch: (any AddressSearching)? = nil,
+        reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
         climateCache: ClimateCache = ClimateCache()
     ) {
@@ -133,6 +134,7 @@ public final class PropertyDetailsForm {
             defaults: defaults,
             fillCoordinate: fillCoordinate,
             addressSearch: addressSearch,
+            reverseGeocode: reverseGeocode,
             minima: minima,
             climateCache: climateCache
         )
@@ -143,6 +145,7 @@ public final class PropertyDetailsForm {
         defaults: PropertySetupDefaults = PropertySetupDefaults(),
         fillCoordinate: CoordinateFill? = nil,
         addressSearch: (any AddressSearching)? = nil,
+        reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
         climateCache: ClimateCache = ClimateCache()
     ) {
@@ -150,6 +153,7 @@ public final class PropertyDetailsForm {
         self.defaults = defaults
         self.fillCoordinate = fillCoordinate
         self.addressSearch = addressSearch
+        self.reverseGeocode = reverseGeocode
         self.minima = minima
         self.climateCache = climateCache
     }
@@ -237,14 +241,28 @@ public final class PropertyDetailsForm {
         locationMessage = nil
         isFillingLocation = true
         defer { isFillingLocation = false }
+        let coordinate: GeoCoordinate
         do {
-            let coordinate = try await fillCoordinate()
-            latitudeText = Self.format(coordinate.latitude)
-            longitudeText = Self.format(coordinate.longitude)
+            coordinate = try await fillCoordinate()
         } catch {
             locationMessage =
                 "Location is unavailable. Allow location access in System Settings or enter coordinates manually."
+            return
         }
+        latitudeText = Self.format(coordinate.latitude)
+        longitudeText = Self.format(coordinate.longitude)
+        if let reverseGeocode {
+            addressMessage = nil
+            do {
+                let place = try await reverseGeocode(coordinate)
+                addressQuery = place.name
+                addressSuggestions = []
+            } catch {
+                addressMessage =
+                    "No address was found for this spot, so it stays as coordinates."
+            }
+        }
+        await deriveClimate()
     }
 
     func parsedCoordinate() throws -> GeoCoordinate? {
