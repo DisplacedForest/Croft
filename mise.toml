@@ -88,8 +88,8 @@ if [ -f "$ws" ] && ! cmp -s project.resolved "$ws"; then
   echo "project.resolved no longer matches the generated workspace pins at $ws; the build re-resolved the project graph. Run mise run refresh-resolved and commit project.resolved." >&2
   exit 1
 fi
-core_grdb=$(jq -r '[.pins[] | select(.identity == "grdb.swift")] | if length == 1 then .[0].state.revision else "" end' Core/CroftCore/Package.resolved)
-project_grdb=$(jq -r '[.pins[] | select(.identity == "grdb.swift")] | if length == 1 then .[0].state.revision else "" end' project.resolved)
+core_grdb=$(jq -r '[.pins[] | select(.identity == "grdb.swift")] | if length == 1 then (.[0].state.revision // "") else "" end' Core/CroftCore/Package.resolved)
+project_grdb=$(jq -r '[.pins[] | select(.identity == "grdb.swift")] | if length == 1 then (.[0].state.revision // "") else "" end' project.resolved)
 if [ -z "$core_grdb" ] || [ -z "$project_grdb" ]; then
   echo "Could not extract exactly one GRDB pin from Core/CroftCore/Package.resolved and project.resolved; a pin is missing or the lockfile format changed." >&2
   exit 1
@@ -99,7 +99,7 @@ if [ "$core_grdb" != "$project_grdb" ]; then
   exit 1
 fi
 sparkle_yml=$(awk '/^  Sparkle:$/{f=1; next} f && /^ {0,2}[^ ]/{f=0} f && $1 == "exactVersion:"{print $2; exit}' project.yml)
-sparkle_resolved=$(jq -r '[.pins[] | select(.identity == "sparkle")] | if length == 1 then .[0].state.version else "" end' project.resolved)
+sparkle_resolved=$(jq -r '[.pins[] | select(.identity == "sparkle")] | if length == 1 then (.[0].state.version // "") else "" end' project.resolved)
 if [ -z "$sparkle_yml" ] || [ -z "$sparkle_resolved" ]; then
   echo "Could not extract the Sparkle version from project.yml and project.resolved; the pin is missing or the format changed." >&2
   exit 1
@@ -117,7 +117,7 @@ xcodegen generate
 rm -f Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 keep=$(mktemp)
 cp Core/CroftCore/Package.resolved "$keep"
-trap 'cp "$keep" Core/CroftCore/Package.resolved; rm -f "$keep"' EXIT
+trap 'if [ -f "$keep" ]; then cp "$keep" Core/CroftCore/Package.resolved; rm -f "$keep"; fi' EXIT INT TERM
 xcodebuild -resolvePackageDependencies -project Croft.xcodeproj -scheme Croft-macOS -quiet
 cp Core/CroftCore/Package.resolved project.resolved
 mkdir -p Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
