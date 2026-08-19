@@ -69,6 +69,8 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Season view cards now show the crop or varietal name for every planting,
+  including ones recorded before 0.2.0, instead of "Unknown plant".
 - The Record menu now stays in the toolbar on bed, planting, and plant detail
   screens instead of disappearing when you navigate into them.
 - A property record Croft can't read now shows an explicit message in
