@@ -152,4 +152,39 @@ import Testing
         #expect(row.displayName == "Brandywine")
         #expect(row.otherNames.isEmpty)
     }
+
+    @Test func collidingBareNamesFallBackToTheirStoredNames() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let bare = Cultivar(speciesID: tomato.id, name: "Big Beef Plus")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - Big Beef Plus")
+        try fixture.cultivars.insert(bare)
+        try fixture.cultivars.insert(prefixed)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            tomatoGroup.varietals.map(\.displayName)
+                == ["Big Beef Plus", "Brandywine", "Tomato - Big Beef Plus"])
+    }
+
+    @Test func theDetailPageUsesTheBareNameForTitleAndTaxonomy() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let page = try #require(try fixture.loader.page(for: .cultivar(roma.id)))
+        #expect(page.displayName == "Roma")
+        #expect(page.taxonomy.cultivarName == "Roma")
+    }
+
+    @Test func aCollidingDetailPageKeepsTheStoredName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let bare = Cultivar(speciesID: tomato.id, name: "Crimson Sweet")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - Crimson Sweet")
+        try fixture.cultivars.insert(bare)
+        try fixture.cultivars.insert(prefixed)
+        let page = try #require(try fixture.loader.page(for: .cultivar(prefixed.id)))
+        #expect(page.displayName == "Tomato - Crimson Sweet")
+    }
 }

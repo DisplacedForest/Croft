@@ -88,10 +88,20 @@ public struct PlantPageLoader: Sendable {
         let cultivarsBySpecies = Dictionary(grouping: allCultivars, by: \.speciesID)
         let groups = allSpecies.map { one in
             let crop = speciesItem(one, imagesByOwner: imagesByOwner)
-            let varietals = (cultivarsBySpecies[one.id] ?? [])
+            let siblings = cultivarsBySpecies[one.id] ?? []
+            let bareNames = Dictionary(
+                siblings.map {
+                    (VarietalName.bare($0.name, cropNames: one.allCommonNames).lowercased(), 1)
+                },
+                uniquingKeysWith: +
+            )
+            let varietals =
+                siblings
                 .map { cultivar -> PlantListItem in
-                    let bareName = VarietalName.bare(
+                    let candidate = VarietalName.bare(
                         cultivar.name, cropNames: one.allCommonNames)
+                    let collides = (bareNames[candidate.lowercased()] ?? 0) > 1
+                    let bareName = collides ? cultivar.name : candidate
                     var otherNames = cultivar.commonNames
                     if bareName != cultivar.name {
                         otherNames.append(cultivar.name)
@@ -157,8 +167,14 @@ public struct PlantPageLoader: Sendable {
             locationNames[planting.bedID] = try locationName(ofBed: planting.bedID)
         }
 
-        let bareCultivarName = cultivar.map {
-            VarietalName.bare($0.name, cropNames: one.allCommonNames)
+        let bareCultivarName = try cultivar.map { current in
+            let candidate = VarietalName.bare(current.name, cropNames: one.allCommonNames)
+            let collides = try cultivars.cultivars(ofSpecies: one.id).contains { sibling in
+                sibling.id != current.id
+                    && VarietalName.bare(sibling.name, cropNames: one.allCommonNames)
+                        .caseInsensitiveCompare(candidate) == .orderedSame
+            }
+            return collides ? current.name : candidate
         }
         return PlantPage(
             identity: identity,
