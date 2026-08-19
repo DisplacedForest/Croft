@@ -21,6 +21,7 @@ public final class AddPlantingForm {
     public private(set) var rotationWarning: RotationWarning?
     public private(set) var bedHistory: [FamilyOccupancy] = []
     public private(set) var showsEmptyHistoryNote = false
+    public private(set) var companionNotes: [CompanionNote] = []
 
     private let context: CaptureContext
 
@@ -47,12 +48,17 @@ public final class AddPlantingForm {
             rotationWarning = nil
             bedHistory = []
             showsEmptyHistoryNote = false
+            companionNotes = []
             return
         }
         let rotation = context.rotationHistory
         rotationWarning = identity.flatMap {
             try? rotation.warning(for: $0, inBed: bedID, on: reference)
         }
+        companionNotes =
+            identity.flatMap {
+                try? context.companionAdvice.notes(for: $0, inBed: bedID)
+            } ?? []
         if intendedStatus == .planned {
             let lines = try? rotation.historyLines(inBed: bedID, on: reference)
             bedHistory = lines ?? []
