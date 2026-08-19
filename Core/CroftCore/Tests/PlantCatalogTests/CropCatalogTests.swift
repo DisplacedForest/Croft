@@ -27,14 +27,23 @@ import Testing
         #expect(group.crop.displayName == "Solanum zeta")
     }
 
-    @Test func varietalsFallBackToTheSpeciesImage() throws {
+    @Test func varietalsWithoutTheirOwnImageShowNoPhoto() throws {
         let fixture = try CatalogFixture()
         try fixture.insertImage(
             ownerKind: "species", ownerID: tomato.id.rawValue, file: "tomato.jpg")
         let catalog = try fixture.loader.cropCatalog()
         let tomatoGroup = try #require(catalog.group(for: tomato.id))
         #expect(tomatoGroup.crop.imageFile == "tomato.jpg")
-        #expect(tomatoGroup.varietals.first?.imageFile == "tomato.jpg")
+        #expect(tomatoGroup.varietals.first?.imageFile == nil)
+    }
+
+    @Test func aCropWithNoImagesLeavesEveryRowBare() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(tomatoGroup.crop.imageFile == nil)
+        #expect(tomatoGroup.varietals.allSatisfy { $0.imageFile == nil })
     }
 
     @Test func aVarietalKeepsItsOwnImageWhenItHasOne() throws {

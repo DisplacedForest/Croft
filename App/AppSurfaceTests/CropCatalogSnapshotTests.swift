@@ -41,14 +41,17 @@ final class CropCatalogSnapshotTests: XCTestCase {
         XCTAssertTrue(catalog.crops.allSatisfy { $0.crop.kind == .species })
     }
 
-    func testVarietalsUnderAnImagedCropAlwaysCarryAnImage() throws {
+    func testVarietalRowsNeverBorrowTheSpeciesImage() throws {
         let catalog = try snapshotLoader().cropCatalog()
-        let orphaned = catalog.crops
-            .filter { $0.crop.imageFile != nil }
-            .flatMap(\.varietals)
-            .filter { $0.imageFile == nil }
+        let borrowed = catalog.crops.flatMap { group in
+            group.varietals.filter { varietal in
+                varietal.imageFile != nil && varietal.imageFile == group.crop.imageFile
+            }
+        }
         XCTAssertTrue(
-            orphaned.isEmpty,
-            "varietals missing the species fallback image: \(orphaned.map(\.displayName))")
+            borrowed.isEmpty,
+            "varietal rows repeating the species image: \(borrowed.map(\.displayName))")
+        let owned = catalog.crops.flatMap(\.varietals).count { $0.imageFile != nil }
+        XCTAssertGreaterThan(owned, 0)
     }
 }

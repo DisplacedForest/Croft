@@ -73,6 +73,9 @@ All notable changes to Croft are documented here. The format follows
   and symptom notes written for a specific host render on that host's page,
   organism descriptions read host-neutral everywhere else, and no page
   lectures you about some other crop's problems.
+- Varietal rows show a photo only when the varietal has its own image; the
+  rest carry a quiet leaf placeholder instead of repeating the species photo
+  down the whole list. The detail page keeps its species fallback.
 - The eye and basket buttons on the planting page now open observation and
   harvest capture prefilled with that planting on macOS, instead of doing
   nothing.
