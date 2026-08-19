@@ -32,9 +32,14 @@ struct KnowledgeMapper {
         mapped.pathogens.sort { $0.id.rawValue < $1.id.rawValue }
         mapped.plantRefs.sort { $0.id < $1.id }
         mapped.edges.sort { $0.id < $1.id }
-        mapped.edges = mapped.edges.reduce(into: []) { result, edge in
-            if result.last?.id != edge.id {
+        mapped.edges = try mapped.edges.reduce(into: []) { result, edge in
+            guard let last = result.last, last.id == edge.id else {
                 result.append(edge)
+                return
+            }
+            if last != edge {
+                throw ImportError.conflictingDuplicateEdge(
+                    id: edge.id, fields: Self.conflictingFields(last, edge))
             }
         }
         mapped.attributions.sort {
@@ -47,6 +52,21 @@ struct KnowledgeMapper {
             }
         }
         return mapped
+    }
+
+    static func conflictingFields(_ lhs: PlannedEdge, _ rhs: PlannedEdge) -> [String] {
+        var fields: [String] = []
+        if lhs.source != rhs.source { fields.append("source") }
+        if lhs.target != rhs.target { fields.append("target") }
+        if lhs.provenance.source != rhs.provenance.source { fields.append("provenance.source") }
+        if lhs.provenance.sourceType != rhs.provenance.sourceType {
+            fields.append("provenance.source_type")
+        }
+        if lhs.provenance.confidence != rhs.provenance.confidence {
+            fields.append("provenance.confidence")
+        }
+        if lhs.provenance.notes != rhs.provenance.notes { fields.append("provenance.notes") }
+        return fields
     }
 
     struct Taxonomy {

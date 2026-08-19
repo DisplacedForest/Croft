@@ -269,7 +269,7 @@ struct ImporterMappingTests {
         #expect(edges.map(\.target) == [EntityRef(id: "pest:tomato-hornworm", type: .pest)])
     }
 
-    @Test func vectorEdgesComeFromBothDirectionsWithoutDuplicates() throws {
+    @Test func vectorEdgesCarryThePestSideProvenance() throws {
         let fixture = try KnowledgeFixture()
         try fixture.build()
         let database = try AppDatabase.openReadOnly(at: fixture.output)
@@ -277,6 +277,44 @@ struct ImporterMappingTests {
             try GraphStore.outgoing(from: "pest:green-peach-aphid", via: .vectorOf, in: db)
         }
         #expect(edges.map(\.target.id) == ["disease:mosaic-virus"])
+        #expect(edges.first?.provenance.source == "https://example.org/aphid")
+    }
+
+    @Test func duplicateEdgesWithDifferentProvenanceFailTheImport() throws {
+        let fixture = try KnowledgeFixture(
+            pestDisease: KnowledgeFixture.pestDisease.replacingOccurrences(
+                of: "\"pathogen_type\": \"virus\",",
+                with:
+                    "\"pathogen_type\": \"virus\",\n              \"vectors\": [\"green-peach-aphid\"],"
+            ))
+        #expect(
+            throws: ImportError.conflictingDuplicateEdge(
+                id: "edge:pest:green-peach-aphid|VECTOR_OF|disease:mosaic-virus",
+                fields: ["provenance.source"])
+        ) {
+            try fixture.build()
+        }
+    }
+
+    @Test func identicalDuplicateEdgesCollapseToOneEdge() throws {
+        let aligned = KnowledgeFixture.pestDisease
+            .replacingOccurrences(
+                of: "\"pathogen_type\": \"virus\",",
+                with:
+                    "\"pathogen_type\": \"virus\",\n              \"vectors\": [\"green-peach-aphid\"],"
+            )
+            .replacingOccurrences(
+                of: "\"citations\": [\"https://example.org/mosaic\"]",
+                with: "\"citations\": [\"https://example.org/aphid\"]"
+            )
+        let fixture = try KnowledgeFixture(pestDisease: aligned)
+        try fixture.build()
+        let database = try AppDatabase.openReadOnly(at: fixture.output)
+        let edges = try database.writer.read { db in
+            try GraphStore.outgoing(from: "pest:green-peach-aphid", via: .vectorOf, in: db)
+        }
+        #expect(edges.map(\.target.id) == ["disease:mosaic-virus"])
+        #expect(edges.first?.provenance.source == "https://example.org/aphid")
     }
 
     @Test func diseasesLinkToTheirPathogens() throws {
