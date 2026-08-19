@@ -94,6 +94,11 @@ struct PropertyDetailsView: View {
                     .foregroundStyle(.secondary)
             }
         }
+        if let message = form.derivationMessage {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private func suggestionRow(_ suggestion: AddressSuggestion) -> some View {

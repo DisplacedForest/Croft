@@ -27,23 +27,12 @@ struct PlantingDetailView: View {
                 }
                 .padding(CroftTheme.space(6))
                 .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .task(id: capture.saveCount) {
                 threatNames = ThreatNameIndex.names(from: capture.context?.knowledge)
             }
             .navigationTitle(detail.plantName)
-            .toolbar {
-                Button {
-                    capture.present(.logObservation(.planting(plantingID), stage: nil))
-                } label: {
-                    Label("Log Observation", systemImage: "eye")
-                }
-                Button {
-                    capture.present(.recordHarvest(plantingID))
-                } label: {
-                    Label("Record Harvest", systemImage: "basket")
-                }
-            }
             #if os(iOS)
                 .navigationBarTitleDisplayMode(.inline)
             #endif

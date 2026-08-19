@@ -13,6 +13,7 @@ public struct SeasonEntry: Equatable, Identifiable, Sendable {
 public struct SeasonPlanting: Equatable, Identifiable, Sendable {
     public let planting: Planting
     public let plantName: String
+    public let varietal: String?
     public let locationName: String?
 
     public var id: String { planting.id.rawValue }
@@ -36,17 +37,13 @@ public struct SeasonPlanner: Sendable {
     public static let upcomingHorizonDays = 60
 
     private let species: SpeciesRepository
-    private let cultivars: CultivarRepository
-    private let personalSpecies: SpeciesRepository
-    private let personalCultivars: CultivarRepository
+    private let nameDatabases: [AppDatabase]
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
 
     public init(knowledge: AppDatabase, personal: AppDatabase) {
         species = SpeciesRepository(knowledge)
-        cultivars = CultivarRepository(knowledge)
-        personalSpecies = SpeciesRepository(personal)
-        personalCultivars = CultivarRepository(personal)
+        nameDatabases = [knowledge, personal]
         plantings = PlantingRepository(personal)
         structures = GardenStructureRepository(personal)
     }
@@ -62,7 +59,6 @@ public struct SeasonPlanner: Sendable {
         let property = try structures.properties(includeArchived: true).first
         let anchors = property.map(FrostAnchors.init(property:))
         let allSpecies = try species.fetchAll()
-        let allCultivars = try cultivars.fetchAll()
 
         var sowing = SowingEntries()
         if let anchors, anchors.lastFrost != nil {
@@ -70,7 +66,7 @@ public struct SeasonPlanner: Sendable {
                 species: allSpecies, anchors: anchors, on: reference, calendar: calendar)
         }
 
-        let names = try plantNameIndex(species: allSpecies, cultivars: allCultivars)
+        let names = try PlantDisplayIndex(databases: nameDatabases)
         let groups = try plantingGroups(
             names: names,
             year: calendar.component(.year, from: reference),
@@ -146,15 +142,17 @@ public struct SeasonPlanner: Sendable {
     }
 
     private func plantingGroups(
-        names: [PlantIdentity: String],
+        names: PlantDisplayIndex,
         year: Int,
         calendar: Calendar
     ) throws -> PlantingGroups {
         var groups = PlantingGroups()
         for planting in try plantings.fetchAll() {
+            let display = names.display(for: planting.identity)
             let summary = SeasonPlanting(
                 planting: planting,
-                plantName: names[planting.identity] ?? "Unknown plant",
+                plantName: display.title,
+                varietal: display.varietal,
                 locationName: try locationName(ofBed: planting.bedID)
             )
             switch planting.status {
@@ -191,29 +189,6 @@ public struct SeasonPlanner: Sendable {
             return opportunity.window.lowerBound
         }
         return .distantFuture
-    }
-
-    private func plantNameIndex(
-        species allSpecies: [Species],
-        cultivars allCultivars: [Cultivar]
-    ) throws -> [PlantIdentity: String] {
-        let locale = Locale.current
-        var names: [PlantIdentity: String] = [:]
-        for one in allSpecies {
-            names[.species(one.id)] =
-                titled(one.preferredCommonName(for: locale)) ?? one.scientificName
-        }
-        for cultivar in allCultivars {
-            names[.cultivar(cultivar.id)] = cultivar.name
-        }
-        for one in try personalSpecies.fetchAll() {
-            names[.species(one.id)] =
-                titled(one.preferredCommonName(for: locale)) ?? one.scientificName
-        }
-        for cultivar in try personalCultivars.fetchAll() {
-            names[.cultivar(cultivar.id)] = cultivar.name
-        }
-        return names
     }
 
     private func locationName(ofBed bedID: Bed.ID) throws -> String? {

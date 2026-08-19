@@ -127,6 +127,21 @@ struct TodayView: View {
             .popover(isPresented: $showingForecast, arrowEdge: .bottom) {
                 ForecastPopover(model: model)
             }
+        } else if case .unavailable(let reason) = model.weather {
+            HStack(spacing: CroftTheme.space(2)) {
+                Image(systemName: "cloud.slash")
+                    .foregroundStyle(.tertiary)
+                Text(
+                    reason == .noLocation
+                        ? "Set a property location to see weather."
+                        : "Weather is unavailable right now."
+                )
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, CroftTheme.space(2))
+            .padding(.horizontal, CroftTheme.space(3))
+            .accessibilityLabel("Weather unavailable")
         }
     }
 
