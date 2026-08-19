@@ -47,12 +47,14 @@ public struct PlantPageLoader: Sendable {
             if let parentName = parent?.commonNames.first {
                 otherNames.append(parentName)
             }
+            let bareName = VarietalName.bare(
+                cultivar.name, cropNames: parent?.allCommonNames ?? [])
             return PlantListItem(
                 id: cultivar.id.rawValue,
                 identity: .cultivar(cultivar.id),
                 kind: .cultivar,
                 displayName: cultivar.name,
-                scientificName: cultivarScientificName(cultivar, parent),
+                scientificName: cultivarScientificName(quoting: bareName, parent: parent),
                 otherNames: otherNames,
                 imageFile: (imagesByOwner[cultivar.id.rawValue]
                     ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
@@ -88,16 +90,34 @@ public struct PlantPageLoader: Sendable {
         let cultivarsBySpecies = Dictionary(grouping: allCultivars, by: \.speciesID)
         let groups = allSpecies.map { one in
             let crop = speciesItem(one, imagesByOwner: imagesByOwner)
-            let varietals = (cultivarsBySpecies[one.id] ?? [])
-                .map { cultivar in
-                    PlantListItem(
+            let siblings = cultivarsBySpecies[one.id] ?? []
+            let bareNames = Dictionary(
+                siblings.map { sibling -> (String, Int) in
+                    let candidate = VarietalName.bare(
+                        sibling.name, cropNames: one.allCommonNames)
+                    return (VarietalName.collisionKey(candidate), 1)
+                },
+                uniquingKeysWith: { $0 + $1 }
+            )
+            let varietals =
+                siblings
+                .map { cultivar -> PlantListItem in
+                    let candidate = VarietalName.bare(
+                        cultivar.name, cropNames: one.allCommonNames)
+                    let collides = (bareNames[VarietalName.collisionKey(candidate)] ?? 0) > 1
+                    let bareName = collides ? cultivar.name : candidate
+                    var otherNames = cultivar.commonNames
+                    if bareName != cultivar.name {
+                        otherNames.append(cultivar.name)
+                    }
+                    return PlantListItem(
                         id: cultivar.id.rawValue,
                         identity: .cultivar(cultivar.id),
                         kind: .cultivar,
-                        displayName: cultivar.name,
+                        displayName: bareName,
                         scientificName: cultivarScientificName(
-                            cultivar, speciesByID[cultivar.speciesID]),
-                        otherNames: cultivar.commonNames,
+                            quoting: bareName, parent: speciesByID[cultivar.speciesID]),
+                        otherNames: otherNames,
                         imageFile: (imagesByOwner[cultivar.id.rawValue]
                             ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
                     )
@@ -151,9 +171,20 @@ public struct PlantPageLoader: Sendable {
             locationNames[planting.bedID] = try locationName(ofBed: planting.bedID)
         }
 
+        let bareCultivarName = try cultivar.map { current in
+            let candidate = VarietalName.bare(current.name, cropNames: one.allCommonNames)
+            let candidateKey = VarietalName.collisionKey(candidate)
+            let collides = try cultivars.cultivars(ofSpecies: one.id).contains { sibling in
+                sibling.id != current.id
+                    && VarietalName.collisionKey(
+                        VarietalName.bare(sibling.name, cropNames: one.allCommonNames))
+                        == candidateKey
+            }
+            return collides ? current.name : candidate
+        }
         return PlantPage(
             identity: identity,
-            displayName: cultivar?.name
+            displayName: bareCultivarName
                 ?? titled(one.preferredCommonName(for: locale))
                 ?? one.scientificName,
             commonNames: cultivar?.commonNames ?? one.allCommonNames,
@@ -161,7 +192,7 @@ public struct PlantPageLoader: Sendable {
                 familyName: family?.name,
                 genusName: genus?.name,
                 scientificName: one.scientificName,
-                cultivarName: cultivar?.name
+                cultivarName: bareCultivarName
             ),
             conditions: GrowingConditions.merged(species: one, cultivar: cultivar),
             threats: threats,
@@ -191,6 +222,9 @@ public struct PlantPageLoader: Sendable {
         return found
     }
 
+}
+
+extension PlantPageLoader {
     private func currentPlantings(
         from relevantPlantings: [Planting],
         locationNames: [Bed.ID: String]
@@ -263,9 +297,9 @@ public struct PlantPageLoader: Sendable {
         return "\(bed.name), \(parentName)"
     }
 
-    private func cultivarScientificName(_ cultivar: Cultivar, _ parent: Species?) -> String {
-        guard let parent else { return cultivar.name }
-        return "\(parent.scientificName) '\(cultivar.name)'"
+    private func cultivarScientificName(quoting name: String, parent: Species?) -> String {
+        guard let parent else { return name }
+        return "\(parent.scientificName) '\(name)'"
     }
 
     private func titled(_ name: String?) -> String? {

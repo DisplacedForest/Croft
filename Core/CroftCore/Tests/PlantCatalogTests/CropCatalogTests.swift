@@ -105,4 +105,125 @@ import Testing
         #expect(Set(groupedCultivarIDs).count == groupedCultivarIDs.count)
         #expect(catalog.crops.count == flat.count { $0.kind == .species })
     }
+
+    @Test func varietalRowsDropTheRedundantCropPrefix() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        let organicRoma = Cultivar(speciesID: tomato.id, name: "Tomato (Organic) - Roma")
+        try fixture.cultivars.insert(roma)
+        try fixture.cultivars.insert(organicRoma)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            tomatoGroup.varietals.map(\.displayName)
+                == ["Brandywine", "Roma", "Roma (Organic)"])
+    }
+
+    @Test func varietalBinomialsQuoteTheBareName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        let row = try #require(tomatoGroup.varietals.first { $0.id == roma.id.rawValue })
+        #expect(row.scientificName == "Solanum lycopersicum 'Roma'")
+    }
+
+    @Test func searchStillFindsAVarietalByItsFullVendorName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let catalog = try fixture.loader.cropCatalog()
+        let byVendorName = CropSearch.filter(catalog, matching: "Tomato - Roma")
+        #expect(byVendorName.varietals.map(\.id) == [roma.id.rawValue])
+        let byBareName = CropSearch.filter(catalog, matching: "roma")
+        #expect(byBareName.varietals.map(\.id) == [roma.id.rawValue])
+    }
+
+    @Test func anUnprefixedVarietalKeepsItsNameAndGainsNoAlias() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        let row = try #require(tomatoGroup.varietals.first)
+        #expect(row.displayName == "Brandywine")
+        #expect(row.otherNames.isEmpty)
+    }
+
+    @Test func collidingBareNamesFallBackToTheirStoredNames() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let bare = Cultivar(speciesID: tomato.id, name: "Big Beef Plus")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - Big Beef Plus")
+        try fixture.cultivars.insert(bare)
+        try fixture.cultivars.insert(prefixed)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            tomatoGroup.varietals.map(\.displayName)
+                == ["Big Beef Plus", "Brandywine", "Tomato - Big Beef Plus"])
+        #expect(
+            tomatoGroup.varietals.map(\.scientificName) == [
+                "Solanum lycopersicum 'Big Beef Plus'",
+                "Solanum lycopersicum 'Brandywine'",
+                "Solanum lycopersicum 'Tomato - Big Beef Plus'",
+            ])
+    }
+
+    @Test func collisionDetectionIgnoresCaseInBothListAndDetail() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let lower = Cultivar(speciesID: tomato.id, name: "big beef plus")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - Big Beef Plus")
+        try fixture.cultivars.insert(lower)
+        try fixture.cultivars.insert(prefixed)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            Set(tomatoGroup.varietals.map(\.displayName))
+                == ["big beef plus", "Brandywine", "Tomato - Big Beef Plus"])
+        let page = try #require(try fixture.loader.page(for: .cultivar(prefixed.id)))
+        #expect(page.displayName == "Tomato - Big Beef Plus")
+        #expect(page.taxonomy.cultivarName == "Tomato - Big Beef Plus")
+    }
+
+    @Test func unicodeCaseFoldedNamesCollideTheSameWayEverywhere() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let folded = Cultivar(speciesID: tomato.id, name: "Straße")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - STRASSE")
+        try fixture.cultivars.insert(folded)
+        try fixture.cultivars.insert(prefixed)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            Set(tomatoGroup.varietals.map(\.displayName))
+                == ["Brandywine", "Straße", "Tomato - STRASSE"])
+        let page = try #require(try fixture.loader.page(for: .cultivar(prefixed.id)))
+        #expect(page.displayName == "Tomato - STRASSE")
+    }
+
+    @Test func theDetailPageUsesTheBareNameForTitleAndTaxonomy() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let page = try #require(try fixture.loader.page(for: .cultivar(roma.id)))
+        #expect(page.displayName == "Roma")
+        #expect(page.taxonomy.cultivarName == "Roma")
+    }
+
+    @Test func aCollidingDetailPageKeepsTheStoredName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let bare = Cultivar(speciesID: tomato.id, name: "Crimson Sweet")
+        let prefixed = Cultivar(speciesID: tomato.id, name: "Tomato - Crimson Sweet")
+        try fixture.cultivars.insert(bare)
+        try fixture.cultivars.insert(prefixed)
+        let page = try #require(try fixture.loader.page(for: .cultivar(prefixed.id)))
+        #expect(page.displayName == "Tomato - Crimson Sweet")
+    }
 }
