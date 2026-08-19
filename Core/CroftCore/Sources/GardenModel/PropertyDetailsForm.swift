@@ -104,31 +104,54 @@ public final class PropertyDetailsForm {
     public private(set) var validationMessage: String?
     public private(set) var locationMessage: String?
     public private(set) var isFillingLocation = false
+    public var addressQuery = ""
+    public internal(set) var addressSuggestions: [AddressSuggestion] = []
+    public internal(set) var matchConfirmation: String?
+    public internal(set) var addressMessage: String?
+    public internal(set) var isDerivingClimate = false
+    public internal(set) var derivedClimate: DerivedClimate?
+    public internal(set) var derivedPrefilled: Set<PropertyClimateField> = []
+    public internal(set) var climateSuggestions: [PropertyClimateField] = []
 
     private let store: any PropertyStoring
     private let defaults: PropertySetupDefaults
     private let fillCoordinate: CoordinateFill?
+    let addressSearch: (any AddressSearching)?
+    let minima: HistoricalMinima?
+    let climateCache: ClimateCache
 
     public convenience init(
         database: AppDatabase,
         defaults: PropertySetupDefaults = PropertySetupDefaults(),
-        fillCoordinate: CoordinateFill? = nil
+        fillCoordinate: CoordinateFill? = nil,
+        addressSearch: (any AddressSearching)? = nil,
+        minima: HistoricalMinima? = nil,
+        climateCache: ClimateCache = ClimateCache()
     ) {
         self.init(
             store: DatabasePropertyStore(database: database),
             defaults: defaults,
-            fillCoordinate: fillCoordinate
+            fillCoordinate: fillCoordinate,
+            addressSearch: addressSearch,
+            minima: minima,
+            climateCache: climateCache
         )
     }
 
     init(
         store: any PropertyStoring,
         defaults: PropertySetupDefaults = PropertySetupDefaults(),
-        fillCoordinate: CoordinateFill? = nil
+        fillCoordinate: CoordinateFill? = nil,
+        addressSearch: (any AddressSearching)? = nil,
+        minima: HistoricalMinima? = nil,
+        climateCache: ClimateCache = ClimateCache()
     ) {
         self.store = store
         self.defaults = defaults
         self.fillCoordinate = fillCoordinate
+        self.addressSearch = addressSearch
+        self.minima = minima
+        self.climateCache = climateCache
     }
 
     public var canFillLocation: Bool {
@@ -224,7 +247,7 @@ public final class PropertyDetailsForm {
         }
     }
 
-    private func parsedCoordinate() throws -> GeoCoordinate? {
+    func parsedCoordinate() throws -> GeoCoordinate? {
         let latText = latitudeText.trimmingCharacters(in: .whitespaces)
         let lonText = longitudeText.trimmingCharacters(in: .whitespaces)
         if latText.isEmpty, lonText.isEmpty {
@@ -270,7 +293,7 @@ public final class PropertyDetailsForm {
         }
     }
 
-    private static func format(_ value: Double) -> String {
+    static func format(_ value: Double) -> String {
         String(format: "%.5f", value)
     }
 }
