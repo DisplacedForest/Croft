@@ -72,6 +72,11 @@ All notable changes to Croft are documented here. The format follows
 - The eye and basket buttons on the planting page now open observation and
   harvest capture prefilled with that planting on macOS, instead of doing
   nothing.
+- The summer squash and winter squash pages now list their varietals. The
+  catalog filed all 116 squash cultivars under a generic squash label that
+  mapped to neither crop; they now classify by type into summer squash (40),
+  winter squash (37), and pumpkin (24), with the 15 ornamental gourds and
+  luffas counted out of scope rather than silently dropped.
 - When weather can't load, Today now says so quietly instead of showing
   nothing: one line tells you whether a property location is missing or the
   weather service is unavailable. Property setup is equally honest when zone

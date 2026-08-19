@@ -143,12 +143,19 @@ extension KnowledgeMapper {
         summary: inout ImportSummary
     ) throws {
         for example in inputs.pestDisease.cultivarResistanceExamples {
-            guard let speciesID = taxonomy.cultivarParent(for: example.crop) else {
-                if taxonomy.hostSpecies(for: example.crop) != nil {
+            var crop = example.crop
+            if crop == "squash" {
+                let resolution = SquashClassification.classify(cultivarNamed: example.cultivar)
+                if case .crop(let resolved) = resolution {
+                    crop = resolved
+                }
+            }
+            guard let speciesID = taxonomy.cultivarParent(for: crop) else {
+                if taxonomy.hostSpecies(for: crop) != nil {
                     summary.skip("resistance_ambiguous_squash")
                     continue
                 }
-                throw ImportError.unknownCrop(record: example.cultivar, crop: example.crop)
+                throw ImportError.unknownCrop(record: example.cultivar, crop: crop)
             }
             let id = KnowledgeID.cultivar(speciesID: speciesID, name: example.cultivar)
             if let index = cultivars[id] {

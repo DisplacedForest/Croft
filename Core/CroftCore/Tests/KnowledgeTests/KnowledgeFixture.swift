@@ -55,7 +55,9 @@ struct KnowledgeFixture {
     func build() throws -> ImportSummary {
         try importer.buildSnapshot(at: output)
     }
+}
 
+extension KnowledgeFixture {
     static let cropProfiles = """
         {
           "meta": {"name": "crop-profiles", "version": "0.1.0", "provenance": "fixture crops"},
@@ -151,10 +153,20 @@ struct KnowledgeFixture {
               "growth_habit": ["Leafy", "Pole"]
             },
             {
-              "cultivar": "Black Beauty",
+              "cultivar": "Marrow Mystery",
               "crop": "squash",
               "data_origin": "shopify-tags",
               "days_to_maturity": {"raw": "50 days", "min": 50, "max": 50}
+            },
+            {
+              "cultivar": "Golden Zucchini",
+              "crop": "squash",
+              "data_origin": "shopify-tags"
+            },
+            {
+              "cultivar": "Birdhouse Gourd",
+              "crop": "squash",
+              "data_origin": "shopify-tags"
             },
             {
               "cultivar": "Lovage",
@@ -247,6 +259,11 @@ struct KnowledgeFixture {
             {
               "crop": "squash",
               "cultivar": "Butternut Ultra",
+              "resistances": ["early-blight"]
+            },
+            {
+              "crop": "squash",
+              "cultivar": "Ultra Nova",
               "resistances": ["early-blight"]
             }
           ]

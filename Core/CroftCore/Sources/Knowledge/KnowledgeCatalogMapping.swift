@@ -13,23 +13,36 @@ extension KnowledgeMapper {
         summary: inout ImportSummary
     ) throws -> [String: Int] {
         var groups: [String: [CatalogRow]] = [:]
+        var groupSpecies: [String: String] = [:]
         for row in inputs.catalog.cultivars {
-            guard let speciesID = taxonomy.cultivarParent(for: row.crop) else {
-                if row.crop == "squash" {
+            var crop = row.crop
+            if crop == "squash" {
+                switch SquashClassification.classify(cultivarNamed: row.cultivar) {
+                case .crop(let resolved):
+                    crop = resolved
+                case .gourd:
+                    summary.skip("catalog_gourd_out_of_scope")
+                    continue
+                case .unknown:
                     summary.skip("catalog_ambiguous_squash")
-                } else if Self.skippableCrops.contains(row.crop) {
+                    continue
+                }
+            }
+            guard let speciesID = taxonomy.cultivarParent(for: crop) else {
+                if Self.skippableCrops.contains(crop) {
                     summary.skip("catalog_out_of_scope_crop")
-                } else if taxonomy.hostSpecies(for: row.crop) == nil {
-                    throw ImportError.unknownCrop(record: row.cultivar, crop: row.crop)
+                } else if taxonomy.hostSpecies(for: crop) == nil {
+                    throw ImportError.unknownCrop(record: row.cultivar, crop: crop)
                 }
                 continue
             }
             let id = KnowledgeID.cultivar(speciesID: speciesID, name: row.cultivar)
             groups[id, default: []].append(row)
+            groupSpecies[id] = speciesID
         }
         var index: [String: Int] = [:]
         for (id, rows) in groups.sorted(by: { $0.key < $1.key }) {
-            let speciesID = taxonomy.cultivarParent(for: rows[0].crop) ?? ""
+            let speciesID = groupSpecies[id] ?? ""
             let cultivar = merged(id: id, speciesID: speciesID, rows: rows, summary: &summary)
             index[id] = mapped.cultivars.count
             mapped.cultivars.append(cultivar)

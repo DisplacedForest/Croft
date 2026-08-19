@@ -144,6 +144,61 @@ struct PinnedInputsTests {
         #expect(missing == acceptedGaps)
     }
 
+    @Test func noProfileCropStrandsCatalogCultivars() throws {
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("stranded-\(UUID().uuidString).sqlite")
+        let summary = try importer.buildSnapshot(at: output)
+
+        let profilesData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent("crop-profiles.json"))
+        let profilesJSON = try JSONSerialization.jsonObject(with: profilesData) as? [String: Any]
+        let profiles = try #require(profilesJSON?["crops"] as? [[String: Any]])
+
+        let catalogData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent(KnowledgeImporter.catalogFile))
+        let catalogJSON = try JSONSerialization.jsonObject(with: catalogData) as? [String: Any]
+        let rows = try #require(catalogJSON?["cultivars"] as? [[String: Any]])
+
+        var expected: [String: Int] = [:]
+        for row in rows {
+            guard var crop = row["crop"] as? String, let name = row["cultivar"] as? String
+            else { continue }
+            if crop == "squash" {
+                guard
+                    case .crop(let resolved) = SquashClassification.classify(
+                        cultivarNamed: name)
+                else { continue }
+                crop = resolved
+            }
+            expected[crop, default: 0] += 1
+        }
+
+        let counts = try AppDatabase.openReadOnly(at: output).writer.read { db in
+            try Row.fetchAll(
+                db, sql: "SELECT species_id, COUNT(*) AS n FROM cultivar GROUP BY species_id")
+        }
+        var bySpecies: [String: Int] = [:]
+        for row in counts {
+            bySpecies[row["species_id"] as String] = row["n"] as Int
+        }
+
+        for profile in profiles {
+            guard let crop = profile["crop"] as? String,
+                let latin = profile["latin_name"] as? String
+            else { continue }
+            let speciesID = KnowledgeID.species(latin)
+            let mapped = bySpecies[speciesID] ?? 0
+            if expected[crop, default: 0] > 0 {
+                #expect(mapped > 0, "\(crop) has catalog rows but zero mapped cultivars")
+            }
+        }
+
+        #expect(expected["summer-squash"] == 40)
+        #expect(expected["winter-squash"] == 37)
+        #expect(summary.skips["catalog_gourd_out_of_scope"] == 15)
+        #expect(summary.skips["catalog_ambiguous_squash"] == nil)
+    }
+
     @Test func knownFactsSurviveTheRealImport() throws {
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("facts-\(UUID().uuidString).sqlite")

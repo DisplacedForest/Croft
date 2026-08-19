@@ -112,6 +112,7 @@ struct ImporterMappingTests {
         let fixture = try KnowledgeFixture()
         let summary = try fixture.build()
         #expect(summary.skips["catalog_ambiguous_squash"] == 1)
+        #expect(summary.skips["catalog_gourd_out_of_scope"] == 1)
         #expect(summary.skips["catalog_out_of_scope_crop"] == 1)
         #expect(summary.skips["catalog_unmapped_growth_habit"] == 1)
         #expect(summary.skips["catalog_unparsed_spacing"] == 1)
@@ -120,6 +121,17 @@ struct ImporterMappingTests {
         #expect(summary.counts["species"] == 3)
         #expect(summary.counts["pests"] == 2)
         #expect(summary.counts["diseases"] == 3)
+    }
+
+    @Test func squashCatalogRowsClassifyToTheSplitCrops() throws {
+        let fixture = try KnowledgeFixture()
+        _ = try fixture.build()
+        let dump = try KnowledgeSnapshot.logicalDump(at: fixture.output)
+        #expect(dump.contains("cultivar:cucurbita-pepo/golden-zucchini"))
+        #expect(dump.contains("cultivar:cucurbita-maxima/butternut-ultra"))
+        #expect(!dump.contains("birdhouse-gourd"))
+        #expect(!dump.contains("marrow-mystery"))
+        #expect(!dump.contains("ultra-nova"))
     }
 
     @Test func vendorsMergeIntoOneCultivarWithThePreferredFields() throws {
