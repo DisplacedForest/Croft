@@ -90,7 +90,7 @@ private func makeModel(
         location: StubLocationProvider(result: .success(somewhere))
     )
     await model.loadWeather()
-    #expect(model.weather == .unavailable)
+    #expect(model.weather == .unavailable(.serviceFailed))
 }
 
 @Test @MainActor func locationFailureDegradesWithoutCallingWeather() async {
@@ -99,7 +99,7 @@ private func makeModel(
         location: StubLocationProvider(result: .failure(StubFailure.unavailable))
     )
     await model.loadWeather()
-    #expect(model.weather == .unavailable)
+    #expect(model.weather == .unavailable(.noLocation))
 }
 
 @Test @MainActor func reloadAfterFailureCanRecover() async {
@@ -108,7 +108,7 @@ private func makeModel(
         location: StubLocationProvider(result: .success(somewhere))
     )
     await failing.loadWeather()
-    #expect(failing.weather == .unavailable)
+    #expect(failing.weather == .unavailable(.serviceFailed))
 
     let recovering = makeModel(
         weather: StubWeatherProvider(result: .success(snapshot)),

@@ -57,7 +57,9 @@ private func makeForm(
     search: StubAddressSearch? = StubAddressSearch(),
     series: [DailyMinimum]? = temperateSeries,
     counter: MinimaCounter = MinimaCounter(),
-    suite: String = UUID().uuidString
+    suite: String = UUID().uuidString,
+    fillCoordinate: CoordinateFill? = nil,
+    reverseGeocode: ReverseGeocode? = nil
 ) throws -> PropertyDetailsForm {
     struct MinimaFailure: Error {}
     let database = try AppDatabase.inMemory()
@@ -72,7 +74,9 @@ private func makeForm(
     return PropertyDetailsForm(
         database: database,
         defaults: PropertySetupDefaults(store: defaults),
+        fillCoordinate: fillCoordinate,
         addressSearch: search,
+        reverseGeocode: reverseGeocode,
         minima: minima,
         climateCache: ClimateCache(store: defaults)
     )
@@ -98,7 +102,7 @@ private func makeForm(
 
     #expect(form.latitudeText == "44.26000")
     #expect(form.longitudeText == "-72.58000")
-    #expect(form.matchConfirmation == "Matched Montpelier, Vermont")
+    #expect(form.addressQuery == "Montpelier, Vermont")
     #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
     #expect(form.zoneText == "5")
     #expect(form.lastFrostMonth == 5)
@@ -145,14 +149,13 @@ private func makeForm(
     await form.selectSuggestion(form.addressSuggestions[0])
 
     #expect(form.latitudeText.isEmpty)
-    #expect(form.matchConfirmation == nil)
     #expect(form.addressMessage != nil)
     form.latitudeText = "10"
     form.longitudeText = "10"
     #expect(form.save())
 }
 
-@Test @MainActor func aFailedMinimaFetchIsSilent() async throws {
+@Test @MainActor func aFailedMinimaFetchSaysSoAndLeavesManualEntryWorking() async throws {
     let form = try makeForm(series: nil)
     form.load()
     form.latitudeText = "44.26"
@@ -162,7 +165,48 @@ private func makeForm(
     #expect(form.derivedClimate == nil)
     #expect(form.derivedPrefilled.isEmpty)
     #expect(form.zoneText.isEmpty)
+    #expect(form.derivationMessage != nil)
     #expect(form.save())
+}
+
+@Test @MainActor func anEmptyWeatherHistorySaysSo() async throws {
+    let form = try makeForm(series: [])
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+
+    #expect(form.derivedClimate == nil)
+    #expect(form.derivationMessage != nil)
+}
+
+@Test @MainActor func aSuccessfulDerivationClearsTheFailureMessage() async throws {
+    struct MinimaFailure: Error {}
+    let counter = MinimaCounter()
+    let database = try AppDatabase.inMemory()
+    let defaults = UserDefaults(suiteName: "climate-tests-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { _ in
+        counter.bump()
+        if counter.count == 1 {
+            throw MinimaFailure()
+        }
+        return temperateSeries
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+    #expect(form.derivationMessage != nil)
+
+    await form.deriveClimate()
+    #expect(form.derivationMessage == nil)
+    #expect(form.zoneText == "5")
 }
 
 @Test @MainActor func derivationIsCachedPerCoordinate() async throws {
@@ -182,6 +226,43 @@ private func makeForm(
     await second.deriveClimate()
     #expect(counter.count == 1)
     #expect(second.zoneText == "5")
+}
+
+@Test @MainActor func currentLocationFillsTheAddressAndDerives() async throws {
+    let form = try makeForm(
+        fillCoordinate: { vermont },
+        reverseGeocode: { _ in
+            ResolvedPlace(name: "Montpelier, Vermont", coordinate: vermont)
+        }
+    )
+    form.load()
+    await form.useCurrentLocation()
+
+    #expect(form.latitudeText == "44.26000")
+    #expect(form.longitudeText == "-72.58000")
+    #expect(form.addressQuery == "Montpelier, Vermont")
+    #expect(form.addressMessage == nil)
+    #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
+    #expect(form.zoneText == "5")
+    #expect(form.lastFrostMonth == 5)
+    #expect(form.firstFrostMonth == 10)
+}
+
+@Test @MainActor func currentLocationWithoutAnAddressKeepsCoordinatesAndSaysSo() async throws {
+    struct NoAddress: Error {}
+    let form = try makeForm(
+        fillCoordinate: { vermont },
+        reverseGeocode: { _ in throw NoAddress() }
+    )
+    form.load()
+    await form.useCurrentLocation()
+
+    #expect(form.latitudeText == "44.26000")
+    #expect(form.longitudeText == "-72.58000")
+    #expect(form.addressQuery.isEmpty)
+    #expect(form.addressMessage != nil)
+    #expect(form.zoneText == "5")
+    #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
 }
 
 @Test @MainActor func aNoFrostClimateOffersOnlyTheZone() async throws {

@@ -1,10 +1,15 @@
 import Foundation
 import Observation
 
+public enum WeatherUnavailableReason: Sendable, Equatable {
+    case noLocation
+    case serviceFailed
+}
+
 public enum WeatherState: Sendable, Equatable {
     case loading
     case loaded(WeatherSnapshot)
-    case unavailable
+    case unavailable(WeatherUnavailableReason)
 }
 
 public enum ForecastState: Sendable, Equatable {
@@ -47,12 +52,18 @@ public final class TodayViewModel {
 
     public func loadWeather() async {
         weather = .loading
+        let location: GeoLocation
         do {
-            let location = try await locationProvider.currentLocation()
+            location = try await locationProvider.currentLocation()
+        } catch {
+            weather = .unavailable(.noLocation)
+            return
+        }
+        do {
             let snapshot = try await weatherProvider.currentWeather(at: location)
             weather = .loaded(snapshot)
         } catch {
-            weather = .unavailable
+            weather = .unavailable(.serviceFailed)
         }
     }
 

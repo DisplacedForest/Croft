@@ -18,9 +18,11 @@ public struct PlantingRepository: Sendable {
     ]
 
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ planting: Planting) throws {
@@ -37,6 +39,7 @@ public struct PlantingRepository: Sendable {
                 try GraphStore.register(sourceRef, in: db)
                 try GraphStore.relate(from: record.entityRef, .plantedFrom, to: sourceRef, in: db)
             }
+            try changes.record(.planting, record.id, .create, in: db)
         }
     }
 
@@ -57,6 +60,15 @@ public struct PlantingRepository: Sendable {
             try repoint(.instanceOf, of: record.entityRef, to: record.identityRef, in: db)
             try repoint(.locatedIn, of: record.entityRef, to: record.bedRef, in: db)
             try repoint(.plantedFrom, of: record.entityRef, to: record.sourceRef, in: db)
+            try changes.record(.planting, record.id, .update, in: db)
+        }
+    }
+
+    public func apply(_ planting: Planting) throws {
+        if try fetch(id: planting.id) != nil {
+            try update(planting)
+        } else {
+            try insert(planting)
         }
     }
 
@@ -141,7 +153,11 @@ public struct PlantingRepository: Sendable {
     public func delete(id: Planting.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try PlantingRecord.deleteOne(db, key: id.rawValue)
+            let removed = try PlantingRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.planting, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 

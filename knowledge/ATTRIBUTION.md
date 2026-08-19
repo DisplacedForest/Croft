@@ -9,21 +9,53 @@ Snapshot version: `crop-profiles@0.1.0+cultivar-catalog@0.1.0+garden-pest-diseas
 - **crop-profiles**: Species-level growing profiles authored from university extension tables (UC Davis/Harrington germination table via UC Master Gardener Program, Clemson HGIC, UMD, Utah State, Illinois, NC State, UMaine) and Johnny's grower's library; per-row citations.
 - **cultivar-catalog**: Scraped from vendor catalogs: Eden Brothers (Shopify structured tags, 802 rows incl. 17 bulb/root) and MIgardener (Shopify tags + prose parse, 808 rows). Field meanings follow each vendor's claims; not independently verified.
 - **garden-pest-disease-cultivar-seed**: First-party editorial draft authored from general horticultural knowledge (university extension literature, Johnny's resistance code conventions). Every row needs human verification before publication; treat as seed data, not citable fact.
-- **plant-images**: Wikimedia Commons, individually licensed; see per-image records
+- **plant-images**: Wikimedia Commons, iNaturalist, Flickr, and USDA sources, individually licensed; see per-image records
 
 ## Images
 
+- `garlic--elephant-garlic.jpg` · [source](https://www.flickr.com/photos/11569642@N00/19796279876) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · karenblakeman (Flickr)
+- `beet--chioggia-beet.jpg` · [source](https://www.flickr.com/photos/51035756584@N01/13056531783) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Kaeru (Flickr)
 - `beet--sugar-beet.jpg` · [source](https://commons.wikimedia.org/wiki/File:SugarBeet.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDA
+- `kale--red-russian-kale.jpg` · [source](https://www.flickr.com/photos/40385177@N07/15422738816) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · cristina.sanvito (Flickr)
+- `pepper--cayenne-long-slim-pepper.jpg` · [source](https://www.flickr.com/photos/51771794@N07/13903814833) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Chris Potako (Flickr)
+- `pepper--cubanelle-pepper.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cubanelle_Peppers.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDA / Bill Tarpenning
+- `pepper--habanero-orange-pepper.jpg` · [source](https://www.flickr.com/photos/47121680@N00/29416332137) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · joncutrer (Flickr)
+- `pepper--shishito-pepper.jpg` · [source](https://www.flickr.com/photos/8021028@N06/7553240550) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · twistedstringknits (Flickr)
+- `pepper--sweet-banana-pepper.jpg` · [source](https://www.flickr.com/photos/13194817@N00/52624010507) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · krossbow (Flickr)
+- `pepper--tabasco-pepper.jpg` · [source](https://www.flickr.com/photos/92252798@N07/25960478663) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Dick Culbert (Flickr)
+- `watermelon--moon-and-stars-watermelon.jpg` · [source](https://www.flickr.com/photos/62295966@N07/35199595406) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Scot Nelson (Flickr)
 - `watermelon--sugar-baby-watermelon.jpg` · [source](https://commons.wikimedia.org/wiki/File:1643Sugar_Baby_Watermelon_03.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · JFVelasquez Floro
+- `melon--charentais-melon.jpg` · [source](https://www.flickr.com/photos/87805257@N00/29590816515) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Isaszas (Flickr)
+- `cucumber--armenian-yard-long-cucumber.jpg` · [source](https://www.inaturalist.org/observations/234717604) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · Erin Collins (iNaturalist)
 - `cucumber--lemon-cucumber.jpg` · [source](https://commons.wikimedia.org/wiki/File:Cucumbers_3_Sikkim_Armenian_Lemon.png) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · WhatamIdoing
+- `cucumber--marketmore-76-cucumber.jpg` · [source](https://www.flickr.com/photos/97499887@N06/52457115616) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Starr Environmental (Flickr)
+- `carrot--atomic-red-carrot.jpg` · [source](https://www.flickr.com/photos/13194817@N00/52674441721) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · krossbow (Flickr)
 - `lettuce--iceberg-lettuce.jpg` · [source](https://commons.wikimedia.org/wiki/File:Iceberg_lettuce_in_SB.jpg) · [CC BY 1.0](https://creativecommons.org/licenses/by/1.0) · en:User:Geographer
+- `lettuce--little-gem-butterhead-lettuce.jpg` · [source](https://www.flickr.com/photos/11304144@N00/4936086275) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Bob Doran (Flickr)
+- `lettuce--red-romaine-lettuce.jpg` · [source](https://www.flickr.com/photos/60944636@N00/51949336860) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · el cajon yacht club (Flickr)
+- `basil--genovese-basil.jpg` · [source](https://www.inaturalist.org/observations/301264389) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · dinomariobob (iNaturalist)
+- `basil--thai-basil.jpg` · [source](https://www.flickr.com/photos/102748040@N03/19827874239) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Jnzl's Photos (Flickr)
+- `bean--dragon-s-tongue-bean-bush.jpg` · [source](https://www.flickr.com/photos/13194817@N00/52718401184) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · krossbow (Flickr)
+- `bean--kentucky-wonder-bean-pole.jpg` · [source](https://www.flickr.com/photos/47301944@N00/6078056647) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · ancapron (Flickr)
+- `pea--golden-sweet-pea.jpg` · [source](https://www.flickr.com/photos/197108946@N02/52551259232) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · edwtpgwk76 (Flickr)
 - `pea--sugar-snap-pea.jpg` · [source](https://commons.wikimedia.org/wiki/File:Starr-081031-0366-Pisum_sativum_var_macrocarpum-fruit-Makawao-Maui_(24833276251).jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Forest and Kim Starr
+- `radish--black-spanish-radish.jpg` · [source](https://www.flickr.com/photos/69685029@N06/6887043302) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · QueenaSookKim (Flickr)
+- `radish--french-breakfast-radish.jpg` · [source](https://www.flickr.com/photos/85549619@N00/4039215993) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · srqpix (Flickr)
 - `tomato--amish-paste-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Amish_paste_tomato_(20277230435).jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · terri_bateman
+- `tomato--black-cherry-tomato.jpg` · [source](https://www.flickr.com/photos/198850942@N03/53166567004) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · rajucreddy (Flickr)
+- `tomato--brandywine.jpg` · [source](https://www.flickr.com/photos/36251685@N00/49678272713) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Br3nda (Flickr)
 - `tomato--cherokee-purple-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Spectrum_of_Flavor-_Cherokee_Purple_Tomato%27s_Palette_by_Raju_C_Reddy.jpg) · [CC0](http://creativecommons.org/publicdomain/zero/1.0/deed.en) · rajucreddy
+- `tomato--costoluto-genovese-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Pomodoro_Costoluto_Genovese.JPG) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Brücke-Osteuropa
 - `tomato--green-zebra-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Green_Zebra_Tomato_65.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · Cliff Hutson
+- `tomato--mr-stripey-tomato.jpg` · [source](https://www.flickr.com/photos/18203311@N08/5184071232) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · nickton (Flickr)
+- `tomato--roma-tomato.jpg` · [source](https://www.flickr.com/photos/23936769@N00/2884308576) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Beau B (Flickr)
+- `tomato--san-marzano-tomato.jpg` · [source](https://www.flickr.com/photos/33150334@N02/6174972795) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · houstonfoodie (Flickr)
 - `tomato--tigerella-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Balkoncontent_Tomatensorte_Tigerella.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · Waithamai
 - `tomato--yellow-pear-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Yellow_Pear_Tomatoes_012.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · cygnus921
 - `eggplant--black-beauty-eggplant.jpg` · [source](https://commons.wikimedia.org/wiki/File:Black-Beauty-Eggplant---Japan---2024-06-08_01.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · RuinDig/Yuki Uchida
+- `eggplant--listada-de-gandia-eggplant.jpg` · [source](https://www.flickr.com/photos/7326810@N08/3886436326) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Just chaos (Flickr)
+- `eggplant--long-purple-eggplant.jpg` · [source](https://www.flickr.com/photos/97499887@N06/24797109001) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Starr Environmental (Flickr)
+- `corn--ornamental-glass-gem-corn.jpg` · [source](https://www.flickr.com/photos/80094278@N02/15945764653) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · mikeinportc (Flickr)
 - `disease--angular-leaf-spot.jpg` · [source](https://commons.wikimedia.org/wiki/File:Angular_leaf_spot_of_cucumber_5359665.jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Howard F. Schwartz, Colorado State University, Bugwood.org
 - `disease--anthracnose.jpg` · [source](https://commons.wikimedia.org/wiki/File:Colletotrichum_lindemuthianum.jpg) · [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) · David B. Langston, University of Georgia, Bugwood.org
 - `disease--aster-yellows.jpg` · [source](https://commons.wikimedia.org/wiki/File:Aster_yellows_symptoms_carrot_2.jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Whitney Cranshaw
@@ -44,6 +76,7 @@ Snapshot version: `crop-profiles@0.1.0+cultivar-catalog@0.1.0+garden-pest-diseas
 - `disease--cucurbit-yellow-vine-disease.jpg` · [source](https://commons.wikimedia.org/wiki/File:Agricultural_Disease_Detection_Dog_Training_(20050422-ARS-SA-0001).jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · USDAgov
 - `disease--damping-off.jpg` · [source](https://www.flickr.com/photos/62295966@N07/12176319814) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Scot Nelson (Flickr)
 - `disease--early-blight.jpg` · [source](https://commons.wikimedia.org/wiki/File:Alternaria_solani_-_leaf_lesions.jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Clemson University - USDA Cooperative Extension Slide Series
+- `disease--early-blight--symptom-tomato.jpg` · [source](https://commons.wikimedia.org/wiki/File:Early_blight_on_tomato_leaves_(7871930010).jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/) · Dwight Sipler
 - `disease--fusarium-wilt-tomato.jpg` · [source](https://www.flickr.com/photos/62295966@N07/16858532106) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Scot Nelson (Flickr)
 - `disease--gummy-stem-blight.jpg` · [source](https://commons.wikimedia.org/wiki/File:Didymella_bryoniae_Stem_Lesion.jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Clemson University - USDA
 - `disease--late-blight.jpg` · [source](https://commons.wikimedia.org/wiki/File:Unidentified_disease_on_potato_leaf.jpg) · [CC BY 2.5](https://creativecommons.org/licenses/by/2.5) · No machine-readable author provided. Fk assumed (based on copyright claims).
@@ -72,6 +105,9 @@ Snapshot version: `crop-profiles@0.1.0+cultivar-catalog@0.1.0+garden-pest-diseas
 - `pest--flea-beetles.jpg` · [source](https://commons.wikimedia.org/wiki/File:Phyllotreta_cruciferae_(10).jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Whitney Cranshaw, Colorado State University, Bugwood.org
 - `pest--green-peach-aphid.jpg` · [source](https://commons.wikimedia.org/wiki/File:Myzus_persicae.jpg) · [Public domain](https://creativecommons.org/publicdomain/mark/1.0/) · Scott Bauer
 - `pest--harlequin-bug.jpg` · [source](https://commons.wikimedia.org/wiki/File:Harlequin_Bug_adult_and_nymph.jpg) · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) · Linda Tanner
+- `pest--imported-cabbageworm--damage-kale.jpg` · [source](https://www.inaturalist.org/observations/315540833) · [CC0](https://creativecommons.org/publicdomain/zero/1.0/) · Erin Webb (iNaturalist)
+- `pest--imported-cabbageworm--frass-kale.jpg` · [source](https://www.inaturalist.org/observations/268200436) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · Samuel Brown (iNaturalist)
+- `pest--imported-cabbageworm--lifecycle-stage-kale.jpg` · [source](https://www.inaturalist.org/observations/268200457) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · Samuel Brown (iNaturalist)
 - `pest--imported-cabbageworm.jpg` · [source](https://www.inaturalist.org/observations/174801633) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · Corey Farwell (iNaturalist)
 - `pest--leafminers.jpg` · [source](https://commons.wikimedia.org/wiki/File:Liriomyza_commelinae_leaf_mines.jpg) · [CC BY 4.0](https://creativecommons.org/licenses/by/4.0) · Even Dankowicz
 - `pest--melon-aphid.jpg` · [source](https://commons.wikimedia.org/wiki/File:Aphis_gossypii01.jpg) · [CC BY 3.0 us](https://creativecommons.org/licenses/by/3.0/us/deed.en) · Ronald Smith, Auburn University, Bugwood.org

@@ -8,13 +8,15 @@ public struct DatabaseIdentityError: Error, Equatable {
 
 public struct AppDatabase: Sendable {
     public let writer: any DatabaseWriter
+    public let recordsChanges: Bool
 
-    public init(_ writer: any DatabaseWriter) throws {
+    public init(_ writer: any DatabaseWriter, recordingChanges: Bool = true) throws {
         let migrator = SchemaMigrations.migrator()
         let applied = try writer.read { try migrator.appliedIdentifiers($0) }
         try MigrationHistory.validate(applied: applied, registered: SchemaMigrations.identifiers)
         try migrator.migrate(writer)
         self.writer = writer
+        recordsChanges = recordingChanges
     }
 
     public static func open(at url: URL) throws -> AppDatabase {
@@ -77,6 +79,87 @@ public struct AppDatabase: Sendable {
         }
     }
 
+    static func verifyOpenedIdentity(of writer: some DatabaseWriter, path: String) throws {
+        let (applicationID, userTableCount) = try writer.writeWithoutTransaction { db in
+            (
+                try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
+                try Int.fetchOne(
+                    db,
+                    sql: """
+                        SELECT COUNT(*) FROM sqlite_master
+                        WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
+                        """
+                ) ?? 0
+            )
+        }
+        if applicationID == SchemaMigrations.databaseApplicationID {
+            return
+        }
+        if applicationID == 0 && userTableCount == 0 {
+            return
+        }
+        throw DatabaseIdentityError(path: path, applicationID: applicationID)
+    }
+
+    private static let sqliteHeaderMagic = Array("SQLite format 3".utf8) + [0]
+
+    private static func headerField(_ header: Data, at offset: Int) -> UInt32 {
+        header.dropFirst(offset).prefix(4).reduce(0) { ($0 << 8) | UInt32($1) }
+    }
+
+    public static func inMemory(recordingChanges: Bool = true) throws -> AppDatabase {
+        try AppDatabase(
+            DatabaseQueue(configuration: makeConfiguration()),
+            recordingChanges: recordingChanges
+        )
+    }
+
+    public static func openReadOnly(at url: URL) throws -> AppDatabase {
+        var configuration = makeConfiguration()
+        configuration.readonly = true
+        let queue = try DatabaseQueue(path: url.path, configuration: configuration)
+        let (applicationID, applied) = try queue.read { db in
+            (
+                try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
+                try SchemaMigrations.migrator().appliedIdentifiers(db)
+            )
+        }
+        guard applicationID == SchemaMigrations.databaseApplicationID else {
+            throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
+        }
+        try MigrationHistory.validate(applied: applied, registered: SchemaMigrations.identifiers)
+        guard Set(SchemaMigrations.identifiers).isSubset(of: applied) else {
+            throw DatabaseIdentityError(
+                path: url.path, applicationID: SchemaMigrations.databaseApplicationID)
+        }
+        return AppDatabase(readOnly: queue)
+    }
+
+    private init(readOnly writer: any DatabaseWriter) {
+        self.writer = writer
+        recordsChanges = false
+    }
+
+    public static func defaultURL() throws -> URL {
+        try FileManager.default
+            .url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            )
+            .appendingPathComponent("Croft", isDirectory: true)
+            .appendingPathComponent("croft.sqlite", isDirectory: false)
+    }
+
+    private static func makeConfiguration() -> Configuration {
+        var configuration = Configuration()
+        configuration.foreignKeysEnabled = true
+        return configuration
+    }
+}
+
+extension AppDatabase {
     private struct WALHeader {
         let pageSize: Int
         let bigEndianWords: Bool
@@ -198,80 +281,5 @@ public struct AppDatabase: Sendable {
             : (bytes[offset + 3], bytes[offset + 2], bytes[offset + 1], bytes[offset])
         return UInt32(ordered.0) << 24 | UInt32(ordered.1) << 16
             | UInt32(ordered.2) << 8 | UInt32(ordered.3)
-    }
-
-    static func verifyOpenedIdentity(of writer: some DatabaseWriter, path: String) throws {
-        let (applicationID, userTableCount) = try writer.writeWithoutTransaction { db in
-            (
-                try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
-                try Int.fetchOne(
-                    db,
-                    sql: """
-                        SELECT COUNT(*) FROM sqlite_master
-                        WHERE type = 'table' AND name NOT LIKE 'sqlite_%'
-                        """
-                ) ?? 0
-            )
-        }
-        if applicationID == SchemaMigrations.databaseApplicationID {
-            return
-        }
-        if applicationID == 0 && userTableCount == 0 {
-            return
-        }
-        throw DatabaseIdentityError(path: path, applicationID: applicationID)
-    }
-
-    private static let sqliteHeaderMagic = Array("SQLite format 3".utf8) + [0]
-
-    private static func headerField(_ header: Data, at offset: Int) -> UInt32 {
-        header.dropFirst(offset).prefix(4).reduce(0) { ($0 << 8) | UInt32($1) }
-    }
-
-    public static func inMemory() throws -> AppDatabase {
-        try AppDatabase(DatabaseQueue(configuration: makeConfiguration()))
-    }
-
-    public static func openReadOnly(at url: URL) throws -> AppDatabase {
-        var configuration = makeConfiguration()
-        configuration.readonly = true
-        let queue = try DatabaseQueue(path: url.path, configuration: configuration)
-        let (applicationID, applied) = try queue.read { db in
-            (
-                try Int.fetchOne(db, sql: "PRAGMA application_id") ?? 0,
-                try SchemaMigrations.migrator().appliedIdentifiers(db)
-            )
-        }
-        guard applicationID == SchemaMigrations.databaseApplicationID else {
-            throw DatabaseIdentityError(path: url.path, applicationID: applicationID)
-        }
-        try MigrationHistory.validate(applied: applied, registered: SchemaMigrations.identifiers)
-        guard Set(SchemaMigrations.identifiers).isSubset(of: applied) else {
-            throw DatabaseIdentityError(
-                path: url.path, applicationID: SchemaMigrations.databaseApplicationID)
-        }
-        return AppDatabase(readOnly: queue)
-    }
-
-    private init(readOnly writer: any DatabaseWriter) {
-        self.writer = writer
-    }
-
-    public static func defaultURL() throws -> URL {
-        try FileManager.default
-            .url(
-                for: .applicationSupportDirectory,
-                in: .userDomainMask,
-                appropriateFor: nil,
-                create: true
-            )
-            .appendingPathComponent("Croft", isDirectory: true)
-            .appendingPathComponent("croft.sqlite", isDirectory: false)
-    }
-
-    private static func makeConfiguration() -> Configuration {
-        var configuration = Configuration()
-        configuration.foreignKeysEnabled = true
-        return configuration
     }
 }

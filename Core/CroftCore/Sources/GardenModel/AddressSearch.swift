@@ -31,6 +31,8 @@ public protocol AddressSearching: Sendable {
     func resolve(_ suggestion: AddressSuggestion) async throws -> ResolvedPlace
 }
 
+public typealias ReverseGeocode = @Sendable (GeoCoordinate) async throws -> ResolvedPlace
+
 public typealias HistoricalMinima = @Sendable (GeoCoordinate) async throws -> [DailyMinimum]
 
 public struct DerivedClimate: Codable, Equatable, Sendable {

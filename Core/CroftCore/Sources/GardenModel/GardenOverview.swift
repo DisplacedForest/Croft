@@ -5,6 +5,13 @@ import Persistence
 public struct PlantingSummary: Equatable, Sendable, Identifiable {
     public let planting: Planting
     public let plantName: String
+    public let varietal: String?
+
+    public init(planting: Planting, plantName: String, varietal: String? = nil) {
+        self.planting = planting
+        self.plantName = plantName
+        self.varietal = varietal
+    }
 
     public var id: Planting.ID { planting.id }
 }
@@ -93,7 +100,7 @@ public struct GardenOverview: Equatable, Sendable {
         return BedSummary(
             bed: bed,
             plantings: current.map {
-                PlantingSummary(planting: $0, plantName: names.name(for: $0.identity))
+                PlantingSummary($0, names: names)
             },
             latestActivity: activity
         )
@@ -115,29 +122,28 @@ public struct GardenOverview: Equatable, Sendable {
 }
 
 struct PlantNameIndex {
-    private let cultivarNames: [Cultivar.ID: String]
-    private let speciesNames: [Species.ID: String]
+    private let index: PlantDisplayIndex
 
     init(_ database: AppDatabase, locale: Locale = .current) throws {
-        let species = try SpeciesRepository(database).fetchAll()
-        speciesNames = Dictionary(
-            uniqueKeysWithValues: species.map {
-                ($0.id, $0.preferredCommonName(for: locale) ?? $0.scientificName)
-            }
-        )
-        cultivarNames = Dictionary(
-            uniqueKeysWithValues: try CultivarRepository(database).fetchAll().map {
-                ($0.id, $0.name)
-            }
-        )
+        index = try PlantDisplayIndex(databases: [database], locale: locale)
+    }
+
+    func display(for identity: PlantIdentity) -> PlantDisplayName {
+        index.display(for: identity)
     }
 
     func name(for identity: PlantIdentity) -> String {
-        switch identity {
-        case .cultivar(let id):
-            cultivarNames[id] ?? "Unknown plant"
-        case .species(let id):
-            speciesNames[id] ?? "Unknown plant"
-        }
+        index.display(for: identity).title
+    }
+
+    func detailName(for identity: PlantIdentity) -> String {
+        index.display(for: identity).detailName
+    }
+}
+
+extension PlantingSummary {
+    init(_ planting: Planting, names: PlantNameIndex) {
+        let display = names.display(for: planting.identity)
+        self.init(planting: planting, plantName: display.title, varietal: display.varietal)
     }
 }

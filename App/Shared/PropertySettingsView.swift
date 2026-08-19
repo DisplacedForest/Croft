@@ -68,6 +68,7 @@ struct PropertySettingsView: View {
                     database: database,
                     fillCoordinate: PropertyLocationFill.system,
                     addressSearch: SystemAddressSearch(),
+                    reverseGeocode: SystemAddressSearch.reverseGeocode,
                     minima: PropertyClimateHistory.system
                 )
                 details.load()
@@ -106,6 +107,7 @@ struct PropertySettingsView: View {
             .padding(.horizontal, CroftTheme.space(5))
             .padding(.bottom, CroftTheme.space(5))
         }
+        .croftScreenSurface()
     }
 }
 
@@ -143,6 +145,7 @@ struct PropertySetupSheet: View {
             .padding(.horizontal, CroftTheme.space(5))
             .padding(.bottom, CroftTheme.space(5))
         }
+        .croftScreenSurface()
         #if os(macOS)
             .frame(width: 480, height: 600)
         #endif

@@ -4,9 +4,11 @@ import Graph
 
 public struct StarterBatchRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ batch: StarterBatch) throws {
@@ -15,6 +17,15 @@ public struct StarterBatchRepository: Sendable {
             try record.insert(db)
             try GraphStore.register(record.entityRef, in: db)
             try GraphStore.relate(from: record.entityRef, .sownFrom, to: record.seedLotRef, in: db)
+            try changes.record(.starterBatch, record.id, .create, in: db)
+        }
+    }
+
+    public func apply(_ batch: StarterBatch) throws {
+        if try fetch(id: batch.id) != nil {
+            try update(batch)
+        } else {
+            try insert(batch)
         }
     }
 
@@ -22,6 +33,7 @@ public struct StarterBatchRepository: Sendable {
         let record = StarterBatchRecord(batch)
         try writer.write { db in
             try record.update(db)
+            try changes.record(.starterBatch, record.id, .update, in: db)
             let edges = try GraphStore.outgoing(from: record.id, via: .sownFrom, in: db)
             guard edges.map(\.target.id) != [record.seedLotID] else {
                 return
@@ -62,7 +74,11 @@ public struct StarterBatchRepository: Sendable {
     public func delete(id: StarterBatch.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try StarterBatchRecord.deleteOne(db, key: id.rawValue)
+            let removed = try StarterBatchRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.starterBatch, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 }

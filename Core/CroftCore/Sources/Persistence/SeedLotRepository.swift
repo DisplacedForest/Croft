@@ -4,9 +4,11 @@ import Graph
 
 public struct SeedLotRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ lot: SeedLot) throws {
@@ -16,6 +18,15 @@ public struct SeedLotRepository: Sendable {
             try GraphStore.register(record.entityRef, in: db)
             try GraphStore.register(record.cultivarRef, in: db)
             try GraphStore.relate(from: record.entityRef, .lotOf, to: record.cultivarRef, in: db)
+            try changes.record(.seedLot, record.id, .create, in: db)
+        }
+    }
+
+    public func apply(_ lot: SeedLot) throws {
+        if try fetch(id: lot.id) != nil {
+            try update(lot)
+        } else {
+            try insert(lot)
         }
     }
 
@@ -23,6 +34,7 @@ public struct SeedLotRepository: Sendable {
         let record = SeedLotRecord(lot)
         try writer.write { db in
             try record.update(db)
+            try changes.record(.seedLot, record.id, .update, in: db)
             let edges = try GraphStore.outgoing(from: record.id, via: .lotOf, in: db)
             guard edges.map(\.target.id) != [record.cultivarID] else {
                 return
@@ -64,7 +76,11 @@ public struct SeedLotRepository: Sendable {
     public func delete(id: SeedLot.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try SeedLotRecord.deleteOne(db, key: id.rawValue)
+            let removed = try SeedLotRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.seedLot, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 }

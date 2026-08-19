@@ -105,7 +105,7 @@ struct PinnedInputsTests {
         }
         #expect(actual == expected)
         #expect(expected["species"] == 32)
-        #expect(expected["cultivar"] == 11)
+        #expect(expected["cultivar"] == 43)
         for row in rows {
             for column in ["license", "license_url", "artist", "source_page_url"] {
                 let value: String? = row[column]

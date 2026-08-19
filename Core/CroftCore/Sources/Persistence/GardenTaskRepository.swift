@@ -12,9 +12,11 @@ public enum GardenTaskError: Error, Hashable {
 
 public struct GardenTaskRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ task: GardenTask) throws {
@@ -23,6 +25,7 @@ public struct GardenTaskRepository: Sendable {
         try writer.write { db in
             try record.insert(db)
             try GraphStore.register(record.entityRef, in: db)
+            try changes.record(.task, record.id, .create, in: db)
             guard let target else {
                 return
             }
@@ -40,6 +43,15 @@ public struct GardenTaskRepository: Sendable {
             }
             try record.update(db)
             try repoint(.taskFor, of: record.entityRef, to: target, in: db)
+            try changes.record(.task, record.id, .update, in: db)
+        }
+    }
+
+    public func apply(_ task: GardenTask) throws {
+        if try fetch(id: task.id) != nil {
+            try update(task)
+        } else {
+            try insert(task)
         }
     }
 
@@ -98,7 +110,11 @@ public struct GardenTaskRepository: Sendable {
     public func delete(id: GardenTask.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try GardenTaskRecord.deleteOne(db, key: id.rawValue)
+            let removed = try GardenTaskRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.task, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 
@@ -110,6 +126,7 @@ public struct GardenTaskRepository: Sendable {
             record.completed = completed
             record.completedOn = date
             try record.update(db)
+            try changes.record(.task, record.id, .update, in: db)
         }
     }
 
