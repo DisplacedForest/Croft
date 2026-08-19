@@ -69,6 +69,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Moving between Today, Garden, bed detail, and plant pages no longer shifts
+  the app background. Every level now paints the same warm surface edge to
+  edge in light and dark mode, content sits in the same centered column at
+  every level, and the garden structure and property sheets use the app
+  surface instead of the system one.
 - The property location form no longer repeats the matched address in a
   caption under the search field, and Use Current Location now fills in a
   readable address for the spot and derives your zone and frost dates just
