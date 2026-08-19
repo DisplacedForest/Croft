@@ -50,14 +50,27 @@ struct DailyWeatherRecord: Codable, FetchableRecord, PersistableRecord {
 
 public struct DailyWeatherRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func upsert(_ record: DailyWeather) throws {
         let row = DailyWeatherRecord(record)
+        let entityID = "\(record.propertyID.rawValue)/\(record.day.storageValue)"
         try writer.write { db in
+            let existed =
+                try Bool.fetchOne(
+                    db,
+                    sql: """
+                        SELECT EXISTS(
+                            SELECT 1 FROM daily_weather WHERE property_id = ? AND date = ?
+                        )
+                        """,
+                    arguments: [row.propertyID, row.date]
+                ) ?? false
             try db.execute(
                 sql: """
                     INSERT INTO daily_weather
@@ -75,6 +88,8 @@ public struct DailyWeatherRepository: Sendable {
                     row.precipitationMillimeters, row.provenance,
                 ]
             )
+            try changes.record(
+                .dailyWeather, entityID, existed ? .update : .create, in: db)
         }
     }
 

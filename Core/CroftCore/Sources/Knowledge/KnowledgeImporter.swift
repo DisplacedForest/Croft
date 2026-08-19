@@ -174,7 +174,7 @@ public struct KnowledgeImporter {
         var configuration = Configuration()
         configuration.foreignKeysEnabled = true
         let queue = try DatabaseQueue(path: output.path, configuration: configuration)
-        let database = try AppDatabase(queue)
+        let database = try AppDatabase(queue, recordingChanges: false)
 
         try insertRecords(mapped, into: database)
         try queue.write { db in

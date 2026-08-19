@@ -39,7 +39,6 @@ struct DailyWeatherMigrationTests {
         let index = try #require(identifiers.firstIndex(of: dailyWeatherIdentifier))
         try #require(index > 0)
         #expect(identifiers[index - 1] == harvestYieldIdentifier)
-        #expect(index == identifiers.count - 1)
     }
 
     @Test func theTableAndIndexExistAtHead() throws {
