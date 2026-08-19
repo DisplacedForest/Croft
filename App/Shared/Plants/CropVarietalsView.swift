@@ -8,18 +8,11 @@ struct CropVarietalsView: View {
     let navigate: (SectionRoute) -> Void
     @State private var group: CropGroup?
     @State private var didLoad = false
-    @State private var query = ""
 
     var body: some View {
         Group {
             if let group {
-                CropVarietalsList(
-                    content: CropPageContent.build(group: group, query: query),
-                    group: group,
-                    navigate: navigate
-                )
-                .searchable(text: $query, prompt: "Search varietals")
-                .navigationTitle(group.crop.displayName)
+                LoadedCropPage(group: group, navigate: navigate)
             } else if didLoad {
                 ContentUnavailableView(
                     "This crop is gone",
@@ -61,6 +54,28 @@ struct CropPageContent: Equatable {
                 .rows(matched)
             }
         return CropPageContent(cropRow: group.crop, varietals: varietals)
+    }
+}
+
+struct LoadedCropPage: View {
+    let group: CropGroup
+    let navigate: (SectionRoute) -> Void
+    @State private var query: String
+
+    init(group: CropGroup, query: String = "", navigate: @escaping (SectionRoute) -> Void) {
+        self.group = group
+        self.navigate = navigate
+        _query = State(initialValue: query)
+    }
+
+    var body: some View {
+        CropVarietalsList(
+            content: CropPageContent.build(group: group, query: query),
+            group: group,
+            navigate: navigate
+        )
+        .searchable(text: $query, prompt: "Search varietals")
+        .navigationTitle(group.crop.displayName)
     }
 }
 

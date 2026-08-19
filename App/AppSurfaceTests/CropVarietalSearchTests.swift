@@ -51,36 +51,77 @@ final class CropVarietalSearchTests: XCTestCase {
 
     func testTheNoMatchListStillRendersTheCropRow() throws {
         let group = sampleGroup()
-        let noMatch = try renderedRowCount(
-            of: CropPageContent.build(group: group, query: "zucchini"), group: group)
-        let matching = try renderedRowCount(
-            of: CropPageContent.build(group: group, query: "roma"), group: group)
-        let blank = try renderedRowCount(
-            of: CropPageContent.build(group: group, query: ""), group: group)
-        XCTAssertEqual(matching, blank)
+        let noMatch = try renderedPage(group: group, query: "zucchini")
+        let matching = try renderedPage(group: group, query: "roma")
+        let blank = try renderedPage(group: group, query: "")
+        XCTAssertEqual(matching.rowCount, blank.rowCount)
         XCTAssertEqual(
-            noMatch, matching,
-            "the no-match list lost a row against the matching list; the crop row must survive")
-        XCTAssertGreaterThanOrEqual(noMatch, 2)
+            noMatch.rowCount, matching.rowCount,
+            "the no-match page lost a row; the crop row must survive")
+        XCTAssertGreaterThanOrEqual(noMatch.rowCount, 2)
+        XCTAssertEqual(
+            noMatch.cropBandPixels, blank.cropBandPixels,
+            "the crop row band renders differently under a no-match query; something is covering it"
+        )
+        XCTAssertTrue(
+            blank.cropRowHitReachesTheTable,
+            "clicking the crop row area must reach the list")
+        XCTAssertTrue(
+            noMatch.cropRowHitReachesTheTable,
+            "the no-match state blocks clicks on the crop row area")
     }
 
-    private func renderedRowCount(of content: CropPageContent, group: CropGroup) throws -> Int {
-        let list = CropVarietalsList(content: content, group: group) { _ in }
+    private struct RenderedPage {
+        let rowCount: Int
+        let cropBandPixels: Data
+        let cropRowHitReachesTheTable: Bool
+    }
+
+    private func renderedPage(group: CropGroup, query: String) throws -> RenderedPage {
+        let page = NavigationStack {
+            LoadedCropPage(group: group, query: query) { _ in }
+        }
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
             styleMask: [.titled],
             backing: .buffered,
             defer: false
         )
-        let hosting = NSHostingView(rootView: AnyView(list))
+        window.appearance = NSAppearance(named: .aqua)
+        let hosting = NSHostingView(rootView: AnyView(page))
         window.contentView = hosting
         hosting.layoutSubtreeIfNeeded()
         window.displayIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(1))
         let table = try XCTUnwrap(
             firstTableView(in: hosting),
-            "the crop page list did not render a table")
-        return table.numberOfRows
+            "the crop page did not render a table")
+        let cropRect = try cropRowRect(of: table, in: hosting)
+        let rep = try XCTUnwrap(hosting.bitmapImageRepForCachingDisplay(in: cropRect))
+        hosting.cacheDisplay(in: cropRect, to: rep)
+        let pixels = try XCTUnwrap(rep.tiffRepresentation)
+        let hitPoint = NSPoint(x: cropRect.midX, y: cropRect.midY)
+        let hit = hosting.hitTest(hosting.convert(hitPoint, to: hosting.superview))
+        var reaches = false
+        var current: NSView? = hit
+        while let view = current {
+            if view === table || view.isDescendant(of: table) {
+                reaches = true
+                break
+            }
+            current = view.superview
+        }
+        return RenderedPage(
+            rowCount: table.numberOfRows,
+            cropBandPixels: pixels,
+            cropRowHitReachesTheTable: reaches
+        )
+    }
+
+    private func cropRowRect(of table: NSTableView, in hosting: NSView) throws -> NSRect {
+        XCTAssertGreaterThanOrEqual(table.numberOfRows, 2)
+        let band = table.rect(ofRow: 0).union(table.rect(ofRow: 1))
+        return hosting.convert(band, from: table)
     }
 
     private func firstTableView(in view: NSView) -> NSTableView? {
