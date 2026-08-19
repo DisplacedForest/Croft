@@ -68,6 +68,8 @@ struct GardenHomeView: View {
                 }
             }
             .padding(CroftTheme.space(6))
+            .frame(maxWidth: 640, alignment: .leading)
+            .frame(maxWidth: .infinity)
         }
     }
 

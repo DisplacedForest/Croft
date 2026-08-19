@@ -35,7 +35,12 @@ struct PropertyDetailsView: View {
             if form.canFillLocation {
                 HStack(spacing: CroftTheme.space(2)) {
                     Button("Use Current Location") {
-                        Task { await form.useCurrentLocation() }
+                        searchTask?.cancel()
+                        ignoresQueryChange = true
+                        Task {
+                            await form.useCurrentLocation()
+                            ignoresQueryChange = false
+                        }
                     }
                     .disabled(form.isFillingLocation)
                     if form.isFillingLocation {
@@ -75,11 +80,6 @@ struct PropertyDetailsView: View {
                 }
             }
         }
-        if let confirmation = form.matchConfirmation {
-            Text(confirmation)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
         if let message = form.addressMessage {
             Text(message)
                 .font(.caption)
@@ -93,6 +93,11 @@ struct PropertyDetailsView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+        }
+        if let message = form.derivationMessage {
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 

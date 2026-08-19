@@ -22,6 +22,7 @@ struct BedDetailView: View {
                 }
                 .padding(CroftTheme.space(6))
                 .frame(maxWidth: 640, alignment: .leading)
+                .frame(maxWidth: .infinity)
             }
             .navigationTitle(detail.bed.name)
             .toolbar {
@@ -110,7 +111,7 @@ struct BedDetailView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(summary.plantName)
                         .font(.body.weight(.medium))
-                    Text(subtitle(summary.planting))
+                    Text(subtitle(summary))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -127,8 +128,13 @@ struct BedDetailView: View {
         .buttonStyle(.plain)
     }
 
-    private func subtitle(_ planting: Planting) -> String {
-        var parts = [planting.status.displayName]
+    private func subtitle(_ summary: PlantingSummary) -> String {
+        let planting = summary.planting
+        var parts: [String] = []
+        if let varietal = summary.varietal {
+            parts.append(varietal)
+        }
+        parts.append(planting.status.displayName)
         if let quantity = planting.quantity {
             parts.append("\(quantity) plants")
         }

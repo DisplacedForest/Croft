@@ -28,11 +28,9 @@ extension PropertyDetailsForm {
             let place = try await addressSearch.resolve(suggestion)
             latitudeText = PropertyDetailsForm.format(place.coordinate.latitude)
             longitudeText = PropertyDetailsForm.format(place.coordinate.longitude)
-            matchConfirmation = "Matched \(place.name)"
             addressQuery = place.name
             await deriveClimate()
         } catch {
-            matchConfirmation = nil
             addressMessage = "That address didn't resolve. Enter coordinates manually."
         }
     }
@@ -44,6 +42,7 @@ extension PropertyDetailsForm {
         guard let coordinate = try? parsedCoordinate() else {
             return
         }
+        derivationMessage = nil
         isDerivingClimate = true
         defer { isDerivingClimate = false }
         let derived: DerivedClimate
@@ -51,6 +50,9 @@ extension PropertyDetailsForm {
             derived = cached
         } else {
             guard let series = try? await minima(coordinate), !series.isEmpty else {
+                derivationMessage =
+                    "Weather history is unavailable for this location, so zone and frost "
+                    + "dates were not derived. Enter them manually or try again later."
                 return
             }
             let southern = coordinate.latitude < 0
@@ -64,6 +66,9 @@ extension PropertyDetailsForm {
         }
         derivedClimate = derived.isEmpty ? nil : derived
         guard derivedClimate != nil else {
+            derivationMessage =
+                "Weather history had nothing usable for this location, so zone and frost "
+                + "dates were not derived. Enter them manually."
             return
         }
         offerDerivedValues(derived)

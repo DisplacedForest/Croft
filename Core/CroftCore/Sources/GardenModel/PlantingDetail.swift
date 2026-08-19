@@ -21,7 +21,7 @@ public struct PlantingDetail: Equatable, Sendable {
         let place = try BedDetail.locate(planting.bedID, GardenStructureRepository(database))
         return PlantingDetail(
             planting: planting,
-            plantName: names.name(for: planting.identity),
+            plantName: names.detailName(for: planting.identity),
             botanicalName: try botanicalName(of: planting.identity, database),
             bedName: place?.bed.name ?? "Unknown bed",
             locationName: place?.locationName,

@@ -1,6 +1,71 @@
 {
  "images": [
   {
+   "artist": "dinomariobob (iNaturalist)",
+   "file": "basil--genovese-basil.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "14858a5a35fd837b0d13477312b1f71b58702b5f42f26892436256662e1c5c80",
+   "slug": "basil/genovese-basil",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/542860259/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/301264389",
+   "source_title": "iNaturalist observation 301264389 photo 542860259"
+  },
+  {
+   "artist": "Jnzl's Photos (Flickr)",
+   "file": "basil--thai-basil.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "66283d6199eb7ad6e976124023deb7cf89e21a0cb9cd4a955cce9f712f9fc889",
+   "slug": "basil/thai-basil",
+   "source_file_url": "https://live.staticflickr.com/283/19827874239_c1ae0f9392_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/102748040@N03/19827874239",
+   "source_title": "Thai basil flowers (Flickr 19827874239)"
+  },
+  {
+   "artist": "krossbow (Flickr)",
+   "file": "bean--dragon-s-tongue-bean-bush.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "e20842855d9a51e00a4095a47a6c9346a6d495f4d7565b2ea42204f5edc19d39",
+   "slug": "bean/dragon-s-tongue-bean-bush",
+   "source_file_url": "https://live.staticflickr.com/65535/52718401184_ce46c71c63_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/13194817@N00/52718401184",
+   "source_title": "Dragon Tongue Bean (Flickr 52718401184)"
+  },
+  {
+   "artist": "ancapron (Flickr)",
+   "file": "bean--kentucky-wonder-bean-pole.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "6acb8e44fd365b3c9292753b5544930ff5fc5f9048ded9530b1d4f7e9b63f2e9",
+   "slug": "bean/kentucky-wonder-bean-pole",
+   "source_file_url": "https://live.staticflickr.com/6204/6078056647_13ebea84c5_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/47301944@N00/6078056647",
+   "source_title": "Kentucky Wonder Beans (Flickr 6078056647)"
+  },
+  {
+   "artist": "Kaeru (Flickr)",
+   "file": "beet--chioggia-beet.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "f0782ac4d26bed9fd70e516c1fe20189f9e77748323b0d1fd32a086923b98e92",
+   "slug": "beet/chioggia-beet",
+   "source_file_url": "https://live.staticflickr.com/2620/13056531783_29c167d7f4_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/51035756584@N01/13056531783",
+   "source_title": "Chioggia beet (Flickr 13056531783)"
+  },
+  {
    "artist": "USDA",
    "file": "beet--sugar-beet.jpg",
    "kind": "catalog",
@@ -12,6 +77,45 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/8/83/SugarBeet.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:SugarBeet.jpg",
    "source_title": "File:SugarBeet.jpg"
+  },
+  {
+   "artist": "krossbow (Flickr)",
+   "file": "carrot--atomic-red-carrot.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "008a74d8cd5848e58b75b957e96f74817657eee85269d50021fae479d803528b",
+   "slug": "carrot/atomic-red-carrot",
+   "source_file_url": "https://live.staticflickr.com/65535/52674441721_813e7c2c82_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/13194817@N00/52674441721",
+   "source_title": "Atomic Red Carrots (Flickr 52674441721)"
+  },
+  {
+   "artist": "mikeinportc (Flickr)",
+   "file": "corn--ornamental-glass-gem-corn.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "8021009339236760faf0944afdeb7eb07e04cbbe38621407ad957e55c4904cbd",
+   "slug": "corn/ornamental-glass-gem-corn",
+   "source_file_url": "https://live.staticflickr.com/7436/15945764653_e7ca36088b_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/80094278@N02/15945764653",
+   "source_title": "'Glass Gem ' Corn #5 DSC_0118 (Flickr 15945764653)"
+  },
+  {
+   "artist": "Erin Collins (iNaturalist)",
+   "file": "cucumber--armenian-yard-long-cucumber.jpg",
+   "kind": "catalog",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "owner_kind": "cultivar",
+   "sha256": "41fbf71a28a9635e44c2e4bb8a1774febbd45bc603adc312e9d9f8fb63ba28c4",
+   "slug": "cucumber/armenian-yard-long-cucumber",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/417315526/original.jpeg",
+   "source_page_url": "https://www.inaturalist.org/observations/234717604",
+   "source_title": "iNaturalist observation 234717604 photo 417315526"
   },
   {
    "artist": "WhatamIdoing",
@@ -27,6 +131,19 @@
    "source_title": "File:Cucumbers 3 Sikkim Armenian Lemon.png"
   },
   {
+   "artist": "Starr Environmental (Flickr)",
+   "file": "cucumber--marketmore-76-cucumber.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "7aca908efdbf39d7c3e7729e9e9664c4eb6352ff71dde38eb3bbadfb99423e74",
+   "slug": "cucumber/marketmore-76-cucumber",
+   "source_file_url": "https://live.staticflickr.com/65535/52457115616_361ca7b0b9_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/97499887@N06/52457115616",
+   "source_title": "starr-220604-0503-Cucumis_sativus-Marketmore_flowers_fruit_leaves-Hawea_Pl_Olinda-Maui (Flickr 52457115616)"
+  },
+  {
    "artist": "RuinDig/Yuki Uchida",
    "file": "eggplant--black-beauty-eggplant.jpg",
    "kind": "catalog",
@@ -38,6 +155,58 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/7/72/Black-Beauty-Eggplant---Japan---2024-06-08_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Black-Beauty-Eggplant---Japan---2024-06-08_01.jpg",
    "source_title": "File:Black-Beauty-Eggplant---Japan---2024-06-08 01.jpg"
+  },
+  {
+   "artist": "Just chaos (Flickr)",
+   "file": "eggplant--listada-de-gandia-eggplant.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "2f1c11e1c65b47d5f86a3dfacb5757d8dbeb856f861e8907ad746b8e7a8ba920",
+   "slug": "eggplant/listada-de-gandia-eggplant",
+   "source_file_url": "https://live.staticflickr.com/2585/3886436326_31383f33f0_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/7326810@N08/3886436326",
+   "source_title": "Listada de Gandia Eggplant (Flickr 3886436326)"
+  },
+  {
+   "artist": "Starr Environmental (Flickr)",
+   "file": "eggplant--long-purple-eggplant.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "3651da96249e9393534b4b99c25e61bbb31444836cf32f0a0b1de997abc2ffa0",
+   "slug": "eggplant/long-purple-eggplant",
+   "source_file_url": "https://live.staticflickr.com/1695/24797109001_c816a08ab9_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/97499887@N06/24797109001",
+   "source_title": "starr-070730-7865-Solanum_melongena-long_skinny_purple_variety-Foodland_Pukalani-Maui (Flickr 24797109001)"
+  },
+  {
+   "artist": "karenblakeman (Flickr)",
+   "file": "garlic--elephant-garlic.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "031a8a02585e9c14b14fc8a8ea0562c81cc146dd5614f6630bc7b35896569f7f",
+   "slug": "garlic/elephant-garlic",
+   "source_file_url": "https://live.staticflickr.com/483/19796279876_3cc5741523_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/11569642@N00/19796279876",
+   "source_title": "Elephant garlic, Lower Lovetts Farm (2) (Flickr 19796279876)"
+  },
+  {
+   "artist": "cristina.sanvito (Flickr)",
+   "file": "kale--red-russian-kale.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "abd52b721b654ef0b33068dd98cc315c2843086bb2258a4ba5c67c1497d64da3",
+   "slug": "kale/red-russian-kale",
+   "source_file_url": "https://live.staticflickr.com/2947/15422738816_67192a729f_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/40385177@N07/15422738816",
+   "source_title": "red russian kale (Flickr 15422738816)"
   },
   {
    "artist": "en:User:Geographer",
@@ -53,6 +222,58 @@
    "source_title": "File:Iceberg lettuce in SB.jpg"
   },
   {
+   "artist": "Bob Doran (Flickr)",
+   "file": "lettuce--little-gem-butterhead-lettuce.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "ad13553d9533330d8d538910b24b5bf46596d56a2f0224ebcb5dfc48999f61b2",
+   "slug": "lettuce/little-gem-butterhead-lettuce",
+   "source_file_url": "https://live.staticflickr.com/4135/4936086275_2d18fc472a_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/11304144@N00/4936086275",
+   "source_title": "'Little Gem' Lettuce (Flickr 4936086275)"
+  },
+  {
+   "artist": "el cajon yacht club (Flickr)",
+   "file": "lettuce--red-romaine-lettuce.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "a09f7aa8c9750478cf91378c18bca2761d658883a7db7f13ff2bcb51702d2965",
+   "slug": "lettuce/red-romaine-lettuce",
+   "source_file_url": "https://live.staticflickr.com/65535/51949336860_8a8be7fa18_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/60944636@N00/51949336860",
+   "source_title": "red romaine lettuce IMG_8076 (Flickr 51949336860)"
+  },
+  {
+   "artist": "Isaszas (Flickr)",
+   "file": "melon--charentais-melon.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "9d55c3efbb6c93b502a7bc05f15d4b1d77145c7ca12e994de5c2d71fed3c511b",
+   "slug": "melon/charentais-melon",
+   "source_file_url": "https://live.staticflickr.com/8545/29590816515_5a150884f9_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/87805257@N00/29590816515",
+   "source_title": "Melons 'charentais' (Flickr 29590816515)"
+  },
+  {
+   "artist": "edwtpgwk76 (Flickr)",
+   "file": "pea--golden-sweet-pea.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "e573170856e2fba58bd5c2632a64196df8449fa6b0e41d85f7c169d1d7e21d19",
+   "slug": "pea/golden-sweet-pea",
+   "source_file_url": "https://live.staticflickr.com/65535/52551259232_cbc5a72292_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/197108946@N02/52551259232",
+   "source_title": "Golden Sweet snow pea (Flickr 52551259232)"
+  },
+  {
    "artist": "Forest and Kim Starr",
    "file": "pea--sugar-snap-pea.jpg",
    "kind": "catalog",
@@ -64,6 +285,110 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/e/e4/Starr-081031-0366-Pisum_sativum_var_macrocarpum-fruit-Makawao-Maui_%2824833276251%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Starr-081031-0366-Pisum_sativum_var_macrocarpum-fruit-Makawao-Maui_(24833276251).jpg",
    "source_title": "File:Starr-081031-0366-Pisum sativum var macrocarpum-fruit-Makawao-Maui (24833276251).jpg"
+  },
+  {
+   "artist": "Chris Potako (Flickr)",
+   "file": "pepper--cayenne-long-slim-pepper.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "7fc4428b171f07e4c22cd9bf607a1f3fb2e26cb8bcdcb092865e36bdf12da5b6",
+   "slug": "pepper/cayenne-long-slim-pepper",
+   "source_file_url": "https://live.staticflickr.com/65535/13903814833_6bfee2713f_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/51771794@N07/13903814833",
+   "source_title": "Daily Cayenne Pepper Harvest (Flickr 13903814833)"
+  },
+  {
+   "artist": "USDA / Bill Tarpenning",
+   "file": "pepper--cubanelle-pepper.jpg",
+   "kind": "catalog",
+   "license": "Public domain",
+   "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "903ba32ae4224165191362c3ef5b413321a4755beb953e4fdd0864f488435afe",
+   "slug": "pepper/cubanelle-pepper",
+   "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/2/26/Cubanelle_Peppers.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "source_page_url": "https://commons.wikimedia.org/wiki/File:Cubanelle_Peppers.jpg",
+   "source_title": "File:Cubanelle Peppers.jpg"
+  },
+  {
+   "artist": "joncutrer (Flickr)",
+   "file": "pepper--habanero-orange-pepper.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "e722b03c0aac6e0432360b2aa5ec60d2f59ae0cbb6560f590ebdbdb77159de4d",
+   "slug": "pepper/habanero-orange-pepper",
+   "source_file_url": "https://live.staticflickr.com/1862/29416332137_3ceb18a804_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/47121680@N00/29416332137",
+   "source_title": "Orange Habanero Peppers (Flickr 29416332137)"
+  },
+  {
+   "artist": "twistedstringknits (Flickr)",
+   "file": "pepper--shishito-pepper.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "b2107f5df353e632f2b866e731a6bb2702bad6e900c9b0dd7ebe8d8abec988c0",
+   "slug": "pepper/shishito-pepper",
+   "source_file_url": "https://live.staticflickr.com/8147/7553240550_643f83eabe_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/8021028@N06/7553240550",
+   "source_title": "Shishito Peppers (Flickr 7553240550)"
+  },
+  {
+   "artist": "krossbow (Flickr)",
+   "file": "pepper--sweet-banana-pepper.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "a72052723b3db16a01177a594351ada7fb7ef45b05de693bbd673955e28cd856",
+   "slug": "pepper/sweet-banana-pepper",
+   "source_file_url": "https://live.staticflickr.com/65535/52624010507_c3d0275542_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/13194817@N00/52624010507",
+   "source_title": "Sweet Banana Peppers (Flickr 52624010507)"
+  },
+  {
+   "artist": "Dick Culbert (Flickr)",
+   "file": "pepper--tabasco-pepper.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "df7f6ed0d4d409e7569baf26b9cc9ee48798a20ef5b931a4e7aca9eb1ffd82e2",
+   "slug": "pepper/tabasco-pepper",
+   "source_file_url": "https://live.staticflickr.com/1549/25960478663_eb6ce934fd.jpg",
+   "source_page_url": "https://www.flickr.com/photos/92252798@N07/25960478663",
+   "source_title": "Capsicum frutescens-- Tabasco Pepper (Flickr 25960478663)"
+  },
+  {
+   "artist": "QueenaSookKim (Flickr)",
+   "file": "radish--black-spanish-radish.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "3da65016fc83bf13287244d36022a76253361ff7a9dfdd51d6f93d1c60bc9eb2",
+   "slug": "radish/black-spanish-radish",
+   "source_file_url": "https://live.staticflickr.com/7187/6887043302_f50d3e5418_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/69685029@N06/6887043302",
+   "source_title": "Black Spanish Radish (Flickr 6887043302)"
+  },
+  {
+   "artist": "srqpix (Flickr)",
+   "file": "radish--french-breakfast-radish.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "f59e7217108b355d7020d3e1bdec46a486cd005e7bb583d0d416a76f2ea1641b",
+   "slug": "radish/french-breakfast-radish",
+   "source_file_url": "https://live.staticflickr.com/2701/4039215993_19f080b36a.jpg",
+   "source_page_url": "https://www.flickr.com/photos/85549619@N00/4039215993",
+   "source_title": "French Breakfast Radishes (Flickr 4039215993)"
   },
   {
    "artist": "terri_bateman",
@@ -79,6 +404,32 @@
    "source_title": "File:Amish paste tomato (20277230435).jpg"
   },
   {
+   "artist": "rajucreddy (Flickr)",
+   "file": "tomato--black-cherry-tomato.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "678577bdc507a5cdd333296aa65d49b8436cc7ec15d1316753a1a402c90ac6ce",
+   "slug": "tomato/black-cherry-tomato",
+   "source_file_url": "https://live.staticflickr.com/65535/53166567004_1b9b92dce7_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/198850942@N03/53166567004",
+   "source_title": "Chiaroscuro Charms Black Cherry Tomatoes Unveiled by Raju C Reddy (Flickr 53166567004)"
+  },
+  {
+   "artist": "Br3nda (Flickr)",
+   "file": "tomato--brandywine.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "bbc2035053054cf0e7ab54a2b2d597c5396ba4660b98e7147e383dbf1065eda7",
+   "slug": "tomato/brandywine",
+   "source_file_url": "https://live.staticflickr.com/65535/49678272713_54e6167b45_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/36251685@N00/49678272713",
+   "source_title": "Pink brandywine tomatoes (Flickr 49678272713)"
+  },
+  {
    "artist": "rajucreddy",
    "file": "tomato--cherokee-purple-tomato.jpg",
    "kind": "catalog",
@@ -92,6 +443,19 @@
    "source_title": "File:Spectrum of Flavor- Cherokee Purple Tomato's Palette by Raju C Reddy.jpg"
   },
   {
+   "artist": "Brücke-Osteuropa",
+   "file": "tomato--costoluto-genovese-tomato.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "daffac5568a179912c154a399a1ca38b3eab112c91a61eeffbabb33641155a6c",
+   "slug": "tomato/costoluto-genovese-tomato",
+   "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Pomodoro_Costoluto_Genovese.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "source_page_url": "https://commons.wikimedia.org/wiki/File:Pomodoro_Costoluto_Genovese.JPG",
+   "source_title": "File:Pomodoro Costoluto Genovese.JPG"
+  },
+  {
    "artist": "Cliff Hutson",
    "file": "tomato--green-zebra-tomato.jpg",
    "kind": "catalog",
@@ -103,6 +467,45 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/5/56/Green_Zebra_Tomato_65.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Green_Zebra_Tomato_65.jpg",
    "source_title": "File:Green Zebra Tomato 65.jpg"
+  },
+  {
+   "artist": "nickton (Flickr)",
+   "file": "tomato--mr-stripey-tomato.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "7243f23f7f615fadf09f72786c99bf3a9b4414416bd1c0acac0f94702f2658c0",
+   "slug": "tomato/mr-stripey-tomato",
+   "source_file_url": "https://live.staticflickr.com/4124/5184071232_999db4e329_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/18203311@N08/5184071232",
+   "source_title": "Mr. Stripey (Flickr 5184071232)"
+  },
+  {
+   "artist": "Beau B (Flickr)",
+   "file": "tomato--roma-tomato.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "a342ae5252ff08ecb2528036874b6b27dd060d3653794f342c317954316dab42",
+   "slug": "tomato/roma-tomato",
+   "source_file_url": "https://live.staticflickr.com/3049/2884308576_69ff87587c_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/23936769@N00/2884308576",
+   "source_title": "Roma Tomatoes (Flickr 2884308576)"
+  },
+  {
+   "artist": "houstonfoodie (Flickr)",
+   "file": "tomato--san-marzano-tomato.jpg",
+   "kind": "catalog",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "cultivar",
+   "sha256": "29dfe90908aabaad5c4b0c0f58dedc29ed46f0f8c31ad6a04cc1ae6d64ed2cb5",
+   "slug": "tomato/san-marzano-tomato",
+   "source_file_url": "https://live.staticflickr.com/6175/6174972795_b88219ae3c_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/33150334@N02/6174972795",
+   "source_title": "San Marzano tomatoes on the vine (Flickr 6174972795)"
   },
   {
    "artist": "Waithamai",
@@ -129,6 +532,19 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Yellow_Pear_Tomatoes_012.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Yellow_Pear_Tomatoes_012.jpg",
    "source_title": "File:Yellow Pear Tomatoes 012.jpg"
+  },
+  {
+   "artist": "Scot Nelson (Flickr)",
+   "file": "watermelon--moon-and-stars-watermelon.jpg",
+   "kind": "catalog",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "cultivar",
+   "sha256": "bebae45a3e8ec81ae1a86a31bbcfa80516235d5f666f5382b19f2036a56a28d9",
+   "slug": "watermelon/moon-and-stars-watermelon",
+   "source_file_url": "https://live.staticflickr.com/4213/35199595406_6739f8d4b6_b.jpg",
+   "source_page_url": "https://www.flickr.com/photos/62295966@N07/35199595406",
+   "source_title": "Watermelon, Citrullus lanatus var. lanatus ('Moon and stars' cultivar): Powdery mildew (Flickr 35199595406)"
   },
   {
    "artist": "JFVelasquez Floro",
@@ -336,7 +752,7 @@
    "slug": "disease/cucumber-mosaic-virus",
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/c/cf/K%C3%BCrbis_Cucumber_mosaic_virus_-_Dr._Parthasarathy_Seethapathy%2C_Amrita_School_of_Agricultural_Sciences.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:K%C3%BCrbis_Cucumber_mosaic_virus_-_Dr._Parthasarathy_Seethapathy,_Amrita_School_of_Agricultural_Sciences.jpg",
-   "source_title": "File:K\u00fcrbis Cucumber mosaic virus - Dr. Parthasarathy Seethapathy, Amrita School of Agricultural Sciences.jpg"
+   "source_title": "File:Kürbis Cucumber mosaic virus - Dr. Parthasarathy Seethapathy, Amrita School of Agricultural Sciences.jpg"
   },
   {
    "artist": "blastcat",
@@ -404,6 +820,20 @@
    "source_title": "File:Alternaria solani - leaf lesions.jpg"
   },
   {
+   "artist": "Dwight Sipler",
+   "file": "disease--early-blight--symptom-tomato.jpg",
+   "kind": "symptom",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "disease",
+   "related_slug": "tomato",
+   "sha256": "5cc43100b5fc70f6e79b69d0945fdb846807cfe878e021187b966c22f263bbcf",
+   "slug": "disease/early-blight",
+   "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Early_blight_on_tomato_leaves_%287871930010%29.jpg",
+   "source_page_url": "https://commons.wikimedia.org/wiki/File:Early_blight_on_tomato_leaves_(7871930010).jpg",
+   "source_title": "File:Early blight on tomato leaves (7871930010).jpg"
+  },
+  {
    "artist": "Scot Nelson (Flickr)",
    "file": "disease--fusarium-wilt-tomato.jpg",
    "kind": "organism",
@@ -443,7 +873,7 @@
    "source_title": "File:Unidentified disease on potato leaf.jpg"
   },
   {
-   "artist": "Jochen Kreiselmaier, Pflanzenschutzberater beim Dienstleistungszentrum L\u00e4ndlicher Raum (DLR-Rheinpfalz) in Neustadt/Wstr.",
+   "artist": "Jochen Kreiselmaier, Pflanzenschutzberater beim Dienstleistungszentrum Ländlicher Raum (DLR-Rheinpfalz) in Neustadt/Wstr.",
    "file": "disease--onion-downy-mildew.jpg",
    "kind": "organism",
    "license": "CC BY 4.0",
@@ -703,7 +1133,7 @@
    "source_title": "File:Agrotis ipsilon larva.jpg"
   },
   {
-   "artist": "\u0415\u0432\u0433\u0435\u043d\u0438\u0439 \u0421\u0430\u043c\u0430\u0440\u0438\u043d",
+   "artist": "Евгений Самарин",
    "file": "pest--diamondback-moth.jpg",
    "kind": "organism",
    "license": "CC BY 4.0",
@@ -766,6 +1196,48 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Harlequin_Bug_adult_and_nymph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Harlequin_Bug_adult_and_nymph.jpg",
    "source_title": "File:Harlequin Bug adult and nymph.jpg"
+  },
+  {
+   "artist": "Erin Webb (iNaturalist)",
+   "file": "pest--imported-cabbageworm--damage-kale.jpg",
+   "kind": "damage",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "f0e7a2ead11664f7f0b6fced1a2973bf43c03e34aa8527d0ebdbff9f9638138c",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/570025446/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/315540833",
+   "source_title": "iNaturalist observation 315540833 photo 570025446"
+  },
+  {
+   "artist": "Samuel Brown (iNaturalist)",
+   "file": "pest--imported-cabbageworm--frass-kale.jpg",
+   "kind": "frass",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "0bb4f0af2a6e8ce65206bf7ae3ea360189ad8b47926cc1eab00b37fa9f985777",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/482064469/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/268200436",
+   "source_title": "iNaturalist observation 268200436 photo 482064469"
+  },
+  {
+   "artist": "Samuel Brown (iNaturalist)",
+   "file": "pest--imported-cabbageworm--lifecycle-stage-kale.jpg",
+   "kind": "lifecycle_stage",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "06a5c876ce6c773a847c9275c5c373a780a40e84334fbbae3bb0f39cd715cf19",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/482064528/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/268200457",
+   "source_title": "iNaturalist observation 268200457 photo 482064528"
   },
   {
    "artist": "Corey Farwell (iNaturalist)",
@@ -924,7 +1396,7 @@
    "source_title": "File:Georgia Tomato Hornworm 8 19 2025.jpg"
   },
   {
-   "artist": "\u4f59\u4e16\u6587 (iNaturalist)",
+   "artist": "余世文 (iNaturalist)",
    "file": "pest--tomato-russet-mite.jpg",
    "kind": "organism",
    "license": "CC0",
@@ -1366,7 +1838,7 @@
    "source_title": "File:Turnip 2622027.jpg"
   },
   {
-   "artist": "\u041b\u04381006",
+   "artist": "Ли1006",
    "file": "watermelon.jpg",
    "kind": "catalog",
    "license": "CC0",
@@ -1376,7 +1848,7 @@
    "slug": "watermelon",
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/8/83/%D0%90%D1%80%D0%B1%D1%83%D0%B7.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:%D0%90%D1%80%D0%B1%D1%83%D0%B7.jpg",
-   "source_title": "File:\u0410\u0440\u0431\u0443\u0437.jpg"
+   "source_title": "File:Арбуз.jpg"
   },
   {
    "artist": "George Chernilevsky",
@@ -1394,7 +1866,7 @@
  ],
  "meta": {
   "name": "plant-images",
-  "provenance": "Wikimedia Commons, individually licensed; see per-image records",
+  "provenance": "Wikimedia Commons, iNaturalist, Flickr, and USDA sources, individually licensed; see per-image records",
   "version": "1"
  }
 }

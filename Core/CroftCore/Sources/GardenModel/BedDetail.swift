@@ -27,10 +27,10 @@ public struct BedDetail: Equatable, Sendable {
             bed: place.bed,
             locationName: place.locationName,
             current: current.map {
-                PlantingSummary(planting: $0, plantName: names.name(for: $0.identity))
+                PlantingSummary($0, names: names)
             },
             past: past.map {
-                PlantingSummary(planting: $0, plantName: names.name(for: $0.identity))
+                PlantingSummary($0, names: names)
             }
         )
     }

@@ -127,7 +127,8 @@ struct SeasonPlannerGroupingTests {
         #expect(overview.finished.map(\.id) == [finishedThisYear.id.rawValue])
         #expect(overview.planned[0].plantName == "Radish")
         #expect(overview.planned[0].locationName == "Long Bed, Kitchen Garden")
-        #expect(overview.inGround[0].plantName == "Brandywine")
+        #expect(overview.inGround[0].plantName == "Tomato")
+        #expect(overview.inGround[0].varietal == "Brandywine")
         #expect(overview.inGround[0].locationName == "Tunnel Bed, Polytunnel")
     }
 
@@ -137,5 +138,38 @@ struct SeasonPlannerGroupingTests {
         #expect(overview.planned.isEmpty)
         #expect(overview.inGround.isEmpty)
         #expect(overview.finished.isEmpty)
+    }
+}
+
+struct SeasonPlannerSplitStoreNameTests {
+    @Test func namesResolveAcrossKnowledgeAndPersonalStores() throws {
+        let knowledge = try CatalogFixture()
+        let personal = try CatalogFixture()
+        let carrot = Species(
+            genusID: solanum.id,
+            scientificName: "Daucus carota",
+            commonNames: ["Carrot"]
+        )
+        let nantes = Cultivar(speciesID: carrot.id, name: "Nantes")
+        try personal.species.insert(carrot)
+        try personal.cultivars.insert(nantes)
+
+        let planned = Planting(identity: .cultivar(nantes.id), bedID: longBed.id, status: .planned)
+        let active = Planting(
+            identity: .species(carrot.id), bedID: tunnelBed.id,
+            plantedOn: day(2026, 5, 12), status: .active)
+        let finished = Planting(
+            identity: .species(tomato.id), bedID: longBed.id,
+            plantedOn: day(2026, 4, 1), status: .finished, endedOn: day(2026, 6, 1))
+        try personal.plantings.insert(planned)
+        try personal.plantings.insert(active)
+        try personal.plantings.insert(finished)
+
+        let planner = SeasonPlanner(knowledge: knowledge.database, personal: personal.database)
+        let overview = try planner.overview(on: day(2026, 7, 1), calendar: calendar)
+        #expect(overview.planned.map(\.plantName) == ["Carrot"])
+        #expect(overview.planned.map(\.varietal) == ["Nantes"])
+        #expect(overview.inGround.map(\.plantName) == ["Carrot"])
+        #expect(overview.finished.map(\.plantName) == ["Tomato"])
     }
 }

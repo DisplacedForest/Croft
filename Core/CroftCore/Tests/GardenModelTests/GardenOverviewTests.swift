@@ -26,7 +26,8 @@ struct GardenOverviewTests {
         let overview = try GardenOverview.load(from: fixture.database)
         let summary = try #require(overview.gardens.first?.beds.first)
         #expect(summary.plantings.map(\.planting.id) == [active.id, planned.id])
-        #expect(summary.plantings.map(\.plantName) == ["Brandywine", "Tomato"])
+        #expect(summary.plantings.map(\.plantName) == ["Tomato", "Tomato"])
+        #expect(summary.plantings.map(\.varietal) == ["Brandywine", nil])
     }
 
     @Test func latestActivityIsTheMostRecentLifecycleEvent() throws {
@@ -38,7 +39,7 @@ struct GardenOverviewTests {
         let activity = try #require(overview.gardens.first?.beds.first?.latestActivity)
         #expect(activity.kind == .finished)
         #expect(activity.date == june)
-        #expect(activity.plantName == "Brandywine")
+        #expect(activity.plantName == "Tomato")
     }
 
     @Test func archivedStructuresAreExcluded() throws {

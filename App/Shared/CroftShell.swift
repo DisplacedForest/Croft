@@ -14,11 +14,14 @@ struct CroftShell: View {
 
     init(
         gardenStore: GardenStore? = nil,
+        captureStore: CaptureStore? = nil,
         initialSection: AppSection = .today,
         initialRoute: SectionRoute? = nil
     ) {
         _selection = State(initialValue: initialSection)
         _gardenStore = State(initialValue: gardenStore ?? .live())
+        _captureStore = State(initialValue: captureStore ?? CaptureStore(stores: nil))
+        _captureReady = State(initialValue: captureStore != nil)
         self.initialRoute = initialRoute
     }
 
@@ -39,6 +42,7 @@ struct CroftShell: View {
                     database: database,
                     fillCoordinate: PropertyLocationFill.system,
                     addressSearch: SystemAddressSearch(),
+                    reverseGeocode: SystemAddressSearch.reverseGeocode,
                     minima: PropertyClimateHistory.system
                 )
                 form.load()
@@ -91,9 +95,8 @@ struct CroftShell: View {
                 return
             }
             captureReady = true
-            let store = CaptureStore(stores: appStores)
-            store.onSaved = { gardenStore.refresh() }
-            captureStore = store
+            captureStore.adopt(stores: appStores)
+            captureStore.onSaved = { gardenStore.refresh() }
         }
     }
 }
@@ -126,6 +129,9 @@ struct SectionStack: View {
                     }
                     .croftScreenSurface()
                     .toolbar {
+                        if case .planting(let plantingID) = route {
+                            PlantingQuickActions(capture: captureStore, plantingID: plantingID)
+                        }
                         CaptureMenu(capture: captureStore)
                     }
                     .environment(gardenStore)
