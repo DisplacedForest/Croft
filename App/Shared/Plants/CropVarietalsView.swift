@@ -33,22 +33,21 @@ struct CropVarietalsView: View {
                         Text("Crop")
                     }
                     Section("Varietals") {
-                        ForEach(filteredVarietals) { item in
-                            Button {
-                                navigate(.plant(item.identity))
-                            } label: {
-                                VarietalRowView(item: item)
+                        if searching && filteredVarietals.isEmpty {
+                            ContentUnavailableView.search(text: query)
+                        } else {
+                            ForEach(filteredVarietals) { item in
+                                Button {
+                                    navigate(.plant(item.identity))
+                                } label: {
+                                    VarietalRowView(item: item)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
                 .searchable(text: $query, prompt: "Search varietals")
-                .overlay {
-                    if searching && filteredVarietals.isEmpty {
-                        ContentUnavailableView.search(text: query)
-                    }
-                }
                 .navigationTitle(group.crop.displayName)
             } else if didLoad {
                 ContentUnavailableView(
