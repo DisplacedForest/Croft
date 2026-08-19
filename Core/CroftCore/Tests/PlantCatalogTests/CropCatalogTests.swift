@@ -105,4 +105,51 @@ import Testing
         #expect(Set(groupedCultivarIDs).count == groupedCultivarIDs.count)
         #expect(catalog.crops.count == flat.count { $0.kind == .species })
     }
+
+    @Test func varietalRowsDropTheRedundantCropPrefix() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        let organicRoma = Cultivar(speciesID: tomato.id, name: "Tomato (Organic) - Roma")
+        try fixture.cultivars.insert(roma)
+        try fixture.cultivars.insert(organicRoma)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        #expect(
+            tomatoGroup.varietals.map(\.displayName)
+                == ["Brandywine", "Roma", "Roma (Organic)"])
+    }
+
+    @Test func varietalBinomialsQuoteTheBareName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        let row = try #require(tomatoGroup.varietals.first { $0.id == roma.id.rawValue })
+        #expect(row.scientificName == "Solanum lycopersicum 'Roma'")
+    }
+
+    @Test func searchStillFindsAVarietalByItsFullVendorName() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let roma = Cultivar(speciesID: tomato.id, name: "Tomato - Roma")
+        try fixture.cultivars.insert(roma)
+        let catalog = try fixture.loader.cropCatalog()
+        let byVendorName = CropSearch.filter(catalog, matching: "Tomato - Roma")
+        #expect(byVendorName.varietals.map(\.id) == [roma.id.rawValue])
+        let byBareName = CropSearch.filter(catalog, matching: "roma")
+        #expect(byBareName.varietals.map(\.id) == [roma.id.rawValue])
+    }
+
+    @Test func anUnprefixedVarietalKeepsItsNameAndGainsNoAlias() throws {
+        let fixture = try CatalogFixture()
+        try fixture.createImageTable()
+        let catalog = try fixture.loader.cropCatalog()
+        let tomatoGroup = try #require(catalog.group(for: tomato.id))
+        let row = try #require(tomatoGroup.varietals.first)
+        #expect(row.displayName == "Brandywine")
+        #expect(row.otherNames.isEmpty)
+    }
 }

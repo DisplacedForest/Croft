@@ -69,6 +69,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Varietal rows on a crop page now read as the varietal alone ("Blue Spice",
+  "Roma (Organic)") instead of repeating the crop in every row and binomial
+  line; searching by the full vendor name still works.
 - The Record menu now stays in the toolbar on bed, planting, and plant detail
   screens instead of disappearing when you navigate into them.
 - A property record Croft can't read now shows an explicit message in

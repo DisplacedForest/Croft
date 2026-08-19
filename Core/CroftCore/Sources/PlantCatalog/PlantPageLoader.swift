@@ -89,15 +89,21 @@ public struct PlantPageLoader: Sendable {
         let groups = allSpecies.map { one in
             let crop = speciesItem(one, imagesByOwner: imagesByOwner)
             let varietals = (cultivarsBySpecies[one.id] ?? [])
-                .map { cultivar in
-                    PlantListItem(
+                .map { cultivar -> PlantListItem in
+                    let bareName = VarietalName.bare(
+                        cultivar.name, cropNames: one.allCommonNames)
+                    var otherNames = cultivar.commonNames
+                    if bareName != cultivar.name {
+                        otherNames.append(cultivar.name)
+                    }
+                    return PlantListItem(
                         id: cultivar.id.rawValue,
                         identity: .cultivar(cultivar.id),
                         kind: .cultivar,
-                        displayName: cultivar.name,
+                        displayName: bareName,
                         scientificName: cultivarScientificName(
                             cultivar, speciesByID[cultivar.speciesID]),
-                        otherNames: cultivar.commonNames,
+                        otherNames: otherNames,
                         imageFile: (imagesByOwner[cultivar.id.rawValue]
                             ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
                     )
@@ -151,9 +157,12 @@ public struct PlantPageLoader: Sendable {
             locationNames[planting.bedID] = try locationName(ofBed: planting.bedID)
         }
 
+        let bareCultivarName = cultivar.map {
+            VarietalName.bare($0.name, cropNames: one.allCommonNames)
+        }
         return PlantPage(
             identity: identity,
-            displayName: cultivar?.name
+            displayName: bareCultivarName
                 ?? titled(one.preferredCommonName(for: locale))
                 ?? one.scientificName,
             commonNames: cultivar?.commonNames ?? one.allCommonNames,
@@ -161,7 +170,7 @@ public struct PlantPageLoader: Sendable {
                 familyName: family?.name,
                 genusName: genus?.name,
                 scientificName: one.scientificName,
-                cultivarName: cultivar?.name
+                cultivarName: bareCultivarName
             ),
             conditions: GrowingConditions.merged(species: one, cultivar: cultivar),
             threats: threats,
@@ -191,6 +200,9 @@ public struct PlantPageLoader: Sendable {
         return found
     }
 
+}
+
+extension PlantPageLoader {
     private func currentPlantings(
         from relevantPlantings: [Planting],
         locationNames: [Bed.ID: String]
@@ -265,7 +277,8 @@ public struct PlantPageLoader: Sendable {
 
     private func cultivarScientificName(_ cultivar: Cultivar, _ parent: Species?) -> String {
         guard let parent else { return cultivar.name }
-        return "\(parent.scientificName) '\(cultivar.name)'"
+        let bareName = VarietalName.bare(cultivar.name, cropNames: parent.allCommonNames)
+        return "\(parent.scientificName) '\(bareName)'"
     }
 
     private func titled(_ name: String?) -> String? {
