@@ -72,6 +72,8 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- A fresh install shows the property setup sheet again on first launch; a
+  capture plumbing change had stopped it from ever appearing.
 - Switching sections no longer washes the window in that section's color.
   The background and chrome stay one constant surface everywhere, and the
   domain palette shows up only as accents: sidebar icons, dots, badges, and
