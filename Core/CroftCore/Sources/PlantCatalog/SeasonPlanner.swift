@@ -37,14 +37,12 @@ public struct SeasonPlanner: Sendable {
     public static let upcomingHorizonDays = 60
 
     private let species: SpeciesRepository
-    private let cultivars: CultivarRepository
     private let nameDatabases: [AppDatabase]
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
 
     public init(knowledge: AppDatabase, personal: AppDatabase) {
         species = SpeciesRepository(knowledge)
-        cultivars = CultivarRepository(knowledge)
         nameDatabases = [knowledge, personal]
         plantings = PlantingRepository(personal)
         structures = GardenStructureRepository(personal)
@@ -61,7 +59,6 @@ public struct SeasonPlanner: Sendable {
         let property = try structures.properties(includeArchived: true).first
         let anchors = property.map(FrostAnchors.init(property:))
         let allSpecies = try species.fetchAll()
-        let allCultivars = try cultivars.fetchAll()
 
         var sowing = SowingEntries()
         if let anchors, anchors.lastFrost != nil {
