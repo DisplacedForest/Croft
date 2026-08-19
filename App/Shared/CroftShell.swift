@@ -89,7 +89,6 @@ struct CroftShell: View {
         .modifier(CaptureSheetHost())
         .environment(captureStore)
         .environment(gardenStore)
-        .tint(section.domainColor)
         .task {
             guard !captureReady else {
                 return

@@ -72,6 +72,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Switching sections no longer washes the window in that section's color.
+  The background and chrome stay one constant surface everywhere, and the
+  domain palette shows up only as accents: sidebar icons, dots, badges, and
+  small highlights.
 - Pest and disease text on a plant page now speaks about that plant. Damage
   and symptom notes written for a specific host render on that host's page,
   organism descriptions read host-neutral everywhere else, and no page
