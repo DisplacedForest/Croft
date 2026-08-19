@@ -69,6 +69,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The eye and basket buttons on the planting page now open observation and
+  harvest capture prefilled with that planting on macOS, instead of doing
+  nothing.
 - When weather can't load, Today now says so quietly instead of showing
   nothing: one line tells you whether a property location is missing or the
   weather service is unavailable. Property setup is equally honest when zone

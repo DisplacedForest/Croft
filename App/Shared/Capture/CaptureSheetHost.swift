@@ -2,6 +2,7 @@ import Capture
 import SwiftUI
 
 import enum Domain.LifecycleStage
+import struct Domain.Planting
 
 struct CaptureSheetHost: ViewModifier {
     @Environment(CaptureStore.self) private var capture
@@ -124,5 +125,27 @@ struct CaptureSheetScaffold<Content: View>: View {
         .padding(CroftTheme.space(6))
         .frame(minWidth: 420, maxWidth: 520, minHeight: minHeight)
         .croftScreenSurface()
+    }
+}
+
+struct PlantingQuickActions: View {
+    let capture: CaptureStore
+    let plantingID: Planting.ID
+
+    func logObservation() {
+        capture.present(.logObservation(.planting(plantingID), stage: nil))
+    }
+
+    func recordHarvest() {
+        capture.present(.recordHarvest(plantingID))
+    }
+
+    var body: some View {
+        Button(action: logObservation) {
+            Label("Log Observation", systemImage: "eye")
+        }
+        Button(action: recordHarvest) {
+            Label("Record Harvest", systemImage: "basket")
+        }
     }
 }
