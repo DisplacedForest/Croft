@@ -43,6 +43,33 @@ struct SystemAddressSearch: AddressSearching {
         return parts.joined(separator: ", ")
     }
 
+    static let reverseGeocode: ReverseGeocode = { coordinate in
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        let placemarks = try await CLGeocoder().reverseGeocodeLocation(location)
+        guard let placemark = placemarks.first else {
+            throw AddressSearchFailure.noMatch
+        }
+        var parts: [String] = []
+        let street = [placemark.subThoroughfare, placemark.thoroughfare]
+            .compactMap { $0 }
+            .joined(separator: " ")
+        if !street.isEmpty {
+            parts.append(street)
+        } else if let name = placemark.name, !name.isEmpty {
+            parts.append(name)
+        }
+        if let locality = placemark.locality, !parts.contains(locality) {
+            parts.append(locality)
+        }
+        if let area = placemark.administrativeArea, !parts.contains(area) {
+            parts.append(area)
+        }
+        guard !parts.isEmpty else {
+            throw AddressSearchFailure.noMatch
+        }
+        return ResolvedPlace(name: parts.joined(separator: ", "), coordinate: coordinate)
+    }
+
     private static func name(for item: MKMapItem, fallback: AddressSuggestion) -> String {
         let placemark = item.placemark
         var parts: [String] = []

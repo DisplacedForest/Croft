@@ -71,6 +71,11 @@ All notable changes to Croft are documented here. The format follows
 
 - Season view cards now show the crop or varietal name for every planting,
   including ones recorded before 0.2.0, instead of "Unknown plant".
+- The property location form no longer repeats the matched address in a
+  caption under the search field, and Use Current Location now fills in a
+  readable address for the spot and derives your zone and frost dates just
+  like address search does. When no address exists for the coordinate, the
+  form says so instead of staying silent.
 - The Record menu now stays in the toolbar on bed, planting, and plant detail
   screens instead of disappearing when you navigate into them.
 - A property record Croft can't read now shows an explicit message in

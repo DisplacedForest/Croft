@@ -39,6 +39,7 @@ struct CroftShell: View {
                     database: database,
                     fillCoordinate: PropertyLocationFill.system,
                     addressSearch: SystemAddressSearch(),
+                    reverseGeocode: SystemAddressSearch.reverseGeocode,
                     minima: PropertyClimateHistory.system
                 )
                 form.load()
