@@ -69,6 +69,8 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Season view cards now show the crop or varietal name for every planting,
+  including ones recorded before 0.2.0, instead of "Unknown plant".
 - The property location form no longer repeats the matched address in a
   caption under the search field, and Use Current Location now fills in a
   readable address for the spot and derives your zone and frost dates just

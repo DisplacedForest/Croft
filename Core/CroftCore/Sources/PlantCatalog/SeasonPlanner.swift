@@ -37,12 +37,16 @@ public struct SeasonPlanner: Sendable {
 
     private let species: SpeciesRepository
     private let cultivars: CultivarRepository
+    private let personalSpecies: SpeciesRepository
+    private let personalCultivars: CultivarRepository
     private let plantings: PlantingRepository
     private let structures: GardenStructureRepository
 
     public init(knowledge: AppDatabase, personal: AppDatabase) {
         species = SpeciesRepository(knowledge)
         cultivars = CultivarRepository(knowledge)
+        personalSpecies = SpeciesRepository(personal)
+        personalCultivars = CultivarRepository(personal)
         plantings = PlantingRepository(personal)
         structures = GardenStructureRepository(personal)
     }
@@ -66,7 +70,7 @@ public struct SeasonPlanner: Sendable {
                 species: allSpecies, anchors: anchors, on: reference, calendar: calendar)
         }
 
-        let names = plantNameIndex(species: allSpecies, cultivars: allCultivars)
+        let names = try plantNameIndex(species: allSpecies, cultivars: allCultivars)
         let groups = try plantingGroups(
             names: names,
             year: calendar.component(.year, from: reference),
@@ -192,12 +196,21 @@ public struct SeasonPlanner: Sendable {
     private func plantNameIndex(
         species allSpecies: [Species],
         cultivars allCultivars: [Cultivar]
-    ) -> [PlantIdentity: String] {
+    ) throws -> [PlantIdentity: String] {
+        let locale = Locale.current
         var names: [PlantIdentity: String] = [:]
         for one in allSpecies {
-            names[.species(one.id)] = titled(one.commonNames.first) ?? one.scientificName
+            names[.species(one.id)] =
+                titled(one.preferredCommonName(for: locale)) ?? one.scientificName
         }
         for cultivar in allCultivars {
+            names[.cultivar(cultivar.id)] = cultivar.name
+        }
+        for one in try personalSpecies.fetchAll() {
+            names[.species(one.id)] =
+                titled(one.preferredCommonName(for: locale)) ?? one.scientificName
+        }
+        for cultivar in try personalCultivars.fetchAll() {
             names[.cultivar(cultivar.id)] = cultivar.name
         }
         return names
