@@ -94,8 +94,9 @@ struct CroftShell: View {
                 return
             }
             captureReady = true
-            captureStore.adopt(stores: appStores)
-            captureStore.onSaved = { gardenStore.refresh() }
+            let store = CaptureStore(stores: appStores)
+            store.onSaved = { gardenStore.refresh() }
+            captureStore = store
         }
     }
 }
