@@ -233,7 +233,6 @@ extension KnowledgeFixture {
               "pathogen": "Cucumber mosaic virus",
               "pathogen_type": "virus",
               "hosts": ["tomato", "squash"],
-              "vectors": ["green-peach-aphid"],
               "citations": ["https://example.org/mosaic"]
             },
             {
