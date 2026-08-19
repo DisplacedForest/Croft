@@ -1,5 +1,7 @@
 import AppKit
 import Capture
+import Design
+import GardenModel
 import Persistence
 import PlantCatalog
 import SwiftUI
@@ -27,6 +29,7 @@ final class AppearanceAuditTests: XCTestCase {
     }
 
     private nonisolated(unsafe) var cleanupDirectories: [URL] = []
+    private var referenceSwatches: [String: NSColor] = [:]
 
     override func tearDown() {
         for directory in cleanupDirectories {
@@ -51,23 +54,22 @@ final class AppearanceAuditTests: XCTestCase {
                 let bitmap = try render(
                     screen.view, size: screen.size, appearance: appearance,
                     named: screen.name)
-                let luminances = try detailSurfaceLuminances(of: bitmap)
-                if appearance == .darkAqua {
-                    XCTAssertLessThan(
-                        try XCTUnwrap(luminances.max()), 0.4,
-                        "\(screen.name) surface is not dark in darkAqua")
-                } else {
-                    XCTAssertGreaterThan(
-                        try XCTUnwrap(luminances.min()), 0.6,
-                        "\(screen.name) surface is not light in aqua")
-                }
+                let inset = 6
+                let points = [
+                    (bitmap.pixelsWide / 2, bitmap.pixelsHigh - inset),
+                    (bitmap.pixelsWide * 13 / 20, bitmap.pixelsHigh - inset),
+                ]
+                try assertTokenSurface(
+                    bitmap, at: points, appearance: appearance, screen: screen.name)
             }
         }
     }
 
     private let shellSize = NSSize(width: 1040, height: 700)
     private let sheetSize = NSSize(width: 480, height: 380)
+}
 
+extension AppearanceAuditTests {
     private func shellScreens(_ scenery: Scenery, empty: Scenery) -> [Screen] {
         var screens = [
             Screen(name: "today", size: shellSize, view: shell(scenery, section: .today)),
@@ -132,6 +134,21 @@ final class AppearanceAuditTests: XCTestCase {
                     view: AnyView(
                         RecordHarvestSheet(context: scenery.context, plantingID: plantingID) {})))
         }
+        screens.append(
+            Screen(
+                name: "sheet-new-garden", size: sheetSize,
+                view: AnyView(NameEntrySheet(title: "New Garden", confirm: "Create") { _ in })))
+        screens.append(
+            Screen(
+                name: "sheet-new-bed", size: sheetSize,
+                view: AnyView(NewBedSheet { _, _ in })))
+        screens.append(
+            Screen(
+                name: "sheet-property-setup",
+                size: NSSize(width: 480, height: 600),
+                view: AnyView(
+                    PropertySetupSheet(form: PropertyDetailsForm(database: scenery.stores.database))
+                )))
         return screens
     }
 
@@ -256,22 +273,48 @@ final class AppearanceAuditTests: XCTestCase {
         try? data.write(to: directory.appendingPathComponent("\(named).png"))
     }
 
-    private func detailSurfaceLuminances(of bitmap: NSBitmapImageRep) throws -> [CGFloat] {
-        let inset = 6
-        let points = [
-            (bitmap.pixelsWide / 2, bitmap.pixelsHigh - inset),
-            (bitmap.pixelsWide * 13 / 20, bitmap.pixelsHigh - inset),
+    private func assertTokenSurface(
+        _ bitmap: NSBitmapImageRep,
+        at points: [(Int, Int)],
+        appearance name: NSAppearance.Name,
+        screen: String
+    ) throws {
+        let expected = [
+            try renderedToken(.surfacePrimary, in: name),
+            try renderedToken(.surfaceSecondary, in: name),
         ]
-        var luminances: [CGFloat] = []
         for point in points {
-            let color = try XCTUnwrap(bitmap.colorAt(x: point.0, y: point.1))
-            let srgb = try XCTUnwrap(color.usingColorSpace(.sRGB))
-            luminances.append(
-                0.2126 * srgb.redComponent
-                    + 0.7152 * srgb.greenComponent
-                    + 0.0722 * srgb.blueComponent
-            )
+            let srgb = try sample(bitmap, at: point)
+            let matches = expected.contains { token in
+                abs(srgb.redComponent - token.redComponent) <= 0.01
+                    && abs(srgb.greenComponent - token.greenComponent) <= 0.01
+                    && abs(srgb.blueComponent - token.blueComponent) <= 0.01
+            }
+            XCTAssertTrue(
+                matches,
+                "\(screen) at \(point) in \(name.rawValue) is not on a token surface: "
+                    + "(\(srgb.redComponent), \(srgb.greenComponent), \(srgb.blueComponent))")
         }
-        return luminances
+    }
+
+    private func sample(_ bitmap: NSBitmapImageRep, at point: (Int, Int)) throws -> NSColor {
+        let color = try XCTUnwrap(bitmap.colorAt(x: point.0, y: point.1))
+        return try XCTUnwrap(color.usingColorSpace(.sRGB))
+    }
+
+    private func renderedToken(
+        _ token: ColorToken, in name: NSAppearance.Name
+    ) throws -> NSColor {
+        let key = "\(token.rawValue)-\(name.rawValue)"
+        if let cached = referenceSwatches[key] {
+            return cached
+        }
+        let bitmap = try render(
+            AnyView(Color(token.rawValue, bundle: DesignResources.bundle)),
+            size: NSSize(width: 64, height: 64),
+            appearance: name, named: "surface-reference")
+        let srgb = try sample(bitmap, at: (bitmap.pixelsWide / 2, bitmap.pixelsHigh / 2))
+        referenceSwatches[key] = srgb
+        return srgb
     }
 }
