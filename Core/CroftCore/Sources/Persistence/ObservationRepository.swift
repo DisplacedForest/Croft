@@ -23,10 +23,12 @@ public struct StageEvent: Equatable, Sendable {
 public struct ObservationRepository: Sendable {
     private let writer: any DatabaseWriter
     private let photoStore: PhotoStore
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase, photos: PhotoStore) {
         writer = database.writer
         photoStore = photos
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ observation: Observation) throws {
@@ -37,6 +39,7 @@ public struct ObservationRepository: Sendable {
             try GraphStore.register(record.entityRef, in: db)
             try GraphStore.register(target, in: db)
             try GraphStore.relate(from: record.entityRef, .observedOn, to: target, in: db)
+            try changes.record(.observation, record.id, .create, in: db)
         }
     }
 
@@ -49,6 +52,7 @@ public struct ObservationRepository: Sendable {
             }
             try record.update(db)
             try repoint(.observedOn, of: record.entityRef, to: target, in: db)
+            try changes.record(.observation, record.id, .update, in: db)
         }
     }
 
@@ -108,7 +112,10 @@ public struct ObservationRepository: Sendable {
             createdAt: Date()
         )
         do {
-            try writer.write { try record.insert($0) }
+            try writer.write { db in
+                try record.insert(db)
+                try changes.record(.observationPhoto, record.id, .create, in: db)
+            }
         } catch {
             if let url = try? photoStore.url(forRelativePath: relativePath) {
                 try? FileManager.default.removeItem(at: url)
@@ -128,7 +135,11 @@ public struct ObservationRepository: Sendable {
     public func delete(id: Observation.ID) throws -> Bool {
         let deleted = try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try ObservationRecord.deleteOne(db, key: id.rawValue)
+            let removed = try ObservationRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.observation, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
         if deleted {
             try photoStore.removePhotos(forObservation: id)
@@ -302,5 +313,60 @@ extension ObservationRepository {
             from: calendar.startOfDay(for: start),
             to: calendar.startOfDay(for: end)
         ).day
+    }
+}
+
+public struct ObservationPhoto: Equatable, Sendable {
+    public let id: String
+    public let observationID: Observation.ID
+    public let relativePath: String
+    public let createdAt: Date
+
+    public init(id: String, observationID: Observation.ID, relativePath: String, createdAt: Date) {
+        self.id = id
+        self.observationID = observationID
+        self.relativePath = relativePath
+        self.createdAt = createdAt
+    }
+}
+
+extension ObservationRepository {
+    public func apply(_ observation: Observation) throws {
+        if try fetch(id: observation.id) != nil {
+            try update(observation)
+        } else {
+            try insert(observation)
+        }
+    }
+
+    public func photoRecord(id: String) throws -> ObservationPhoto? {
+        try writer.read { db in
+            try ObservationPhotoRecord.fetchOne(db, key: id).map(Self.photo)
+        }
+    }
+
+    public func applyPhoto(_ photo: ObservationPhoto) throws {
+        let record = ObservationPhotoRecord(
+            id: photo.id,
+            observationID: photo.observationID.rawValue,
+            relativePath: photo.relativePath,
+            createdAt: photo.createdAt
+        )
+        try writer.write { db in
+            let operation: ChangeOperation =
+                try ObservationPhotoRecord.fetchOne(db, key: record.id) == nil
+                ? .create : .update
+            try record.save(db)
+            try changes.record(.observationPhoto, record.id, operation, in: db)
+        }
+    }
+
+    private static func photo(_ record: ObservationPhotoRecord) -> ObservationPhoto {
+        ObservationPhoto(
+            id: record.id,
+            observationID: Observation.ID(rawValue: record.observationID),
+            relativePath: record.relativePath,
+            createdAt: record.createdAt
+        )
     }
 }

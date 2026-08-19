@@ -10,6 +10,15 @@ protocol StructureRecord: Codable, FetchableRecord, PersistableRecord, GraphEnti
 
 extension StructureRecord {
     var entityID: String { id }
+
+    static var changeKind: ChangeKind {
+        switch entityType {
+        case .garden: .garden
+        case .growingArea: .growingArea
+        case .bed: .bed
+        default: .property
+        }
+    }
 }
 
 struct PropertyRecord: StructureRecord {

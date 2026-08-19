@@ -27,6 +27,7 @@ public struct HarvestTotal: Equatable, Sendable {
 
 public struct HarvestRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     private static let totalsSelection = """
         SELECT h.yield_family AS family, h.custom_unit AS custom_unit,
@@ -42,6 +43,7 @@ public struct HarvestRepository: Sendable {
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func insert(_ harvest: Harvest) throws {
@@ -52,6 +54,15 @@ public struct HarvestRepository: Sendable {
             try GraphStore.register(record.plantingRef, in: db)
             try GraphStore.relate(
                 from: record.entityRef, .harvestedFrom, to: record.plantingRef, in: db)
+            try changes.record(.harvest, record.id, .create, in: db)
+        }
+    }
+
+    public func apply(_ harvest: Harvest) throws {
+        if try fetch(id: harvest.id) != nil {
+            try update(harvest)
+        } else {
+            try insert(harvest)
         }
     }
 
@@ -63,6 +74,7 @@ public struct HarvestRepository: Sendable {
             }
             try record.update(db)
             try repoint(.harvestedFrom, of: record.entityRef, to: record.plantingRef, in: db)
+            try changes.record(.harvest, record.id, .update, in: db)
         }
     }
 
@@ -159,7 +171,11 @@ public struct HarvestRepository: Sendable {
     public func delete(id: Harvest.ID) throws -> Bool {
         try writer.write { db in
             try GraphStore.deleteEntity(id.rawValue, in: db)
-            return try HarvestRecord.deleteOne(db, key: id.rawValue)
+            let removed = try HarvestRecord.deleteOne(db, key: id.rawValue)
+            if removed {
+                try changes.record(.harvest, id.rawValue, .delete, in: db)
+            }
+            return removed
         }
     }
 

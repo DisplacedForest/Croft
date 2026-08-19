@@ -16,9 +16,11 @@ public enum BedParent: Hashable, Sendable {
 
 public struct GardenStructureRepository: Sendable {
     private let writer: any DatabaseWriter
+    private let changes: ChangeLogger
 
     public init(_ database: AppDatabase) {
         writer = database.writer
+        changes = ChangeLogger(database)
     }
 
     public func create(_ property: Property) throws {
@@ -26,6 +28,7 @@ public struct GardenStructureRepository: Sendable {
             let record = PropertyRecord(property)
             try record.insert(db)
             try GraphStore.register(record.entityRef, in: db)
+            try changes.record(.property, record.id, .create, in: db)
         }
     }
 
@@ -198,6 +201,7 @@ public struct GardenStructureRepository: Sendable {
         try record.insert(db)
         try GraphStore.register(record.entityRef, in: db)
         try GraphStore.relate(from: record.entityRef, .locatedIn, to: parent, in: db)
+        try changes.record(Record.changeKind, record.id, .create, in: db)
     }
 
     private func rename<Record: StructureRecord>(
@@ -211,6 +215,7 @@ public struct GardenStructureRepository: Sendable {
             }
             found.name = name
             try found.update(db)
+            try changes.record(Record.changeKind, found.id, .update, in: db)
         }
     }
 
@@ -227,6 +232,7 @@ public struct GardenStructureRepository: Sendable {
             try GraphStore.unrelate(edgeID: edge.id, in: db)
         }
         try GraphStore.relate(from: found.entityRef, .locatedIn, to: parent, in: db)
+        try changes.record(Record.changeKind, found.id, .update, in: db)
     }
 
     private func setArchived<Record: StructureRecord>(
@@ -240,6 +246,7 @@ public struct GardenStructureRepository: Sendable {
             }
             found.archived = archived
             try found.update(db)
+            try changes.record(Record.changeKind, found.id, .update, in: db)
         }
     }
 
@@ -249,7 +256,9 @@ public struct GardenStructureRepository: Sendable {
     ) throws {
         try writer.write { db in
             try GraphStore.deleteEntity(id, in: db)
-            _ = try Record.deleteOne(db, key: id)
+            if try Record.deleteOne(db, key: id) {
+                try changes.record(Record.changeKind, id, .delete, in: db)
+            }
         }
     }
 
@@ -293,6 +302,7 @@ extension GardenStructureRepository {
             found.firstFrostMonth = firstFrost?.month
             found.firstFrostDay = firstFrost?.day
             try found.update(db)
+            try changes.record(.property, found.id, .update, in: db)
         }
     }
 
@@ -327,5 +337,59 @@ extension GardenStructureRepository {
             default: nil
             }
         }
+    }
+}
+
+extension GardenStructureRepository {
+    public func apply(_ property: Property) throws {
+        try writer.write { db in
+            let record = PropertyRecord(property)
+            if try PropertyRecord.fetchOne(db, key: record.id) != nil {
+                try record.update(db)
+                try changes.record(.property, record.id, .update, in: db)
+            } else {
+                try record.insert(db)
+                try GraphStore.register(record.entityRef, in: db)
+                try changes.record(.property, record.id, .create, in: db)
+            }
+        }
+    }
+
+    public func apply(_ garden: Garden, in propertyID: Property.ID) throws {
+        try writer.write { db in
+            let parent = try parentRef(PropertyRecord.self, propertyID.rawValue, in: db)
+            try applyChild(GardenRecord(garden), under: parent, in: db)
+        }
+    }
+
+    public func apply(_ area: GrowingArea, in gardenID: Garden.ID) throws {
+        try writer.write { db in
+            let parent = try parentRef(GardenRecord.self, gardenID.rawValue, in: db)
+            try applyChild(GrowingAreaRecord(area), under: parent, in: db)
+        }
+    }
+
+    public func apply(_ bed: Bed, in parent: BedParent) throws {
+        try writer.write { db in
+            let parent = try ref(of: parent, in: db)
+            try applyChild(BedRecord(bed), under: parent, in: db)
+        }
+    }
+
+    private func applyChild<Record: StructureRecord>(
+        _ record: Record,
+        under parent: EntityRef,
+        in db: Database
+    ) throws {
+        guard try Record.fetchOne(db, key: record.id) != nil else {
+            try createChild(record, under: parent, in: db)
+            return
+        }
+        try record.update(db)
+        for edge in try GraphStore.outgoing(from: record.id, via: .locatedIn, in: db) {
+            try GraphStore.unrelate(edgeID: edge.id, in: db)
+        }
+        try GraphStore.relate(from: record.entityRef, .locatedIn, to: parent, in: db)
+        try changes.record(Record.changeKind, record.id, .update, in: db)
     }
 }

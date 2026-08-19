@@ -21,6 +21,7 @@ public enum SchemaMigrations {
         ("v017-property-location", applyPropertyLocation),
         ("v018-harvest-yield", applyHarvestYield),
         ("v019-daily-weather", applyDailyWeather),
+        ("v020-change-log", applyChangeLog),
     ]
 
     public static let identifiers: [String] = migrations.map(\.identifier)
