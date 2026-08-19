@@ -49,9 +49,22 @@ final class CropVarietalSearchTests: XCTestCase {
         XCTAssertEqual(content.varietals, .rows(sampleGroup().varietals))
     }
 
-    func testTheNoMatchListStillHostsTheCropRow() {
+    func testTheNoMatchListStillRendersTheCropRow() throws {
         let group = sampleGroup()
-        let content = CropPageContent.build(group: group, query: "zucchini")
+        let noMatch = try renderedRowCount(
+            of: CropPageContent.build(group: group, query: "zucchini"), group: group)
+        let matching = try renderedRowCount(
+            of: CropPageContent.build(group: group, query: "roma"), group: group)
+        let blank = try renderedRowCount(
+            of: CropPageContent.build(group: group, query: ""), group: group)
+        XCTAssertEqual(matching, blank)
+        XCTAssertEqual(
+            noMatch, matching,
+            "the no-match list lost a row against the matching list; the crop row must survive")
+        XCTAssertGreaterThanOrEqual(noMatch, 2)
+    }
+
+    private func renderedRowCount(of content: CropPageContent, group: CropGroup) throws -> Int {
         let list = CropVarietalsList(content: content, group: group) { _ in }
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 700, height: 500),
@@ -64,7 +77,21 @@ final class CropVarietalSearchTests: XCTestCase {
         hosting.layoutSubtreeIfNeeded()
         window.displayIfNeeded()
         RunLoop.main.run(until: Date().addingTimeInterval(1))
-        XCTAssertNotNil(hosting.window)
-        XCTAssertEqual(content.cropRow.identity, group.crop.identity)
+        let table = try XCTUnwrap(
+            firstTableView(in: hosting),
+            "the crop page list did not render a table")
+        return table.numberOfRows
+    }
+
+    private func firstTableView(in view: NSView) -> NSTableView? {
+        if let table = view as? NSTableView {
+            return table
+        }
+        for subview in view.subviews {
+            if let table = firstTableView(in: subview) {
+                return table
+            }
+        }
+        return nil
     }
 }
