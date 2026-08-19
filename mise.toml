@@ -74,8 +74,18 @@ depends = ["fmt", "lint", "test"]
 [tasks.check]
 depends = ["check-fast", "build"]
 
+[tasks."check-resolved"]
+wait_for = ["build", "test-runtime-tokens", "test", "knowledge"]
+run = '''
+set -euo pipefail
+if ! git diff --exit-code HEAD -- Core/CroftCore/Package.resolved; then
+  echo "Core/CroftCore/Package.resolved drifted from HEAD. A resolver rewrote it; discard the churn, do not commit it." >&2
+  exit 1
+fi
+'''
+
 [tasks.ci]
-depends = ["check", "test-runtime-tokens"]
+depends = ["check", "test-runtime-tokens", "check-resolved"]
 
 [tasks."changelog-draft"]
 run = '''
