@@ -6,7 +6,7 @@ public struct Property: Equatable, Sendable, Codable {
     public var notes: String?
     public var isArchived: Bool
     public var location: GeoCoordinate?
-    public var hardinessZone: Int?
+    public var hardinessZone: HardinessZone?
     public var lastFrost: MonthDay?
     public var firstFrost: MonthDay?
 
@@ -16,7 +16,7 @@ public struct Property: Equatable, Sendable, Codable {
         notes: String? = nil,
         isArchived: Bool = false,
         location: GeoCoordinate? = nil,
-        hardinessZone: Int? = nil,
+        hardinessZone: HardinessZone? = nil,
         lastFrost: MonthDay? = nil,
         firstFrost: MonthDay? = nil
     ) {

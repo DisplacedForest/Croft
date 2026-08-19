@@ -74,7 +74,7 @@ struct PropertyAnchorTests {
         let property = Property(
             name: "Home",
             location: GeoCoordinate(latitude: 44.5, longitude: -72.8),
-            hardinessZone: 4,
+            hardinessZone: HardinessZone(number: 4),
             lastFrost: MonthDay(month: 5, day: 15),
             firstFrost: MonthDay(month: 9, day: 28)
         )

@@ -130,14 +130,14 @@ struct PropertyDetailsRoundTripTests {
         try structures.updatePropertyDetails(
             property.id,
             location: location,
-            hardinessZone: 4,
+            hardinessZone: HardinessZone(number: 4),
             lastFrost: lastFrost,
             firstFrost: firstFrost
         )
 
         let loaded = try #require(try structures.property(id: property.id))
         #expect(loaded.location == location)
-        #expect(loaded.hardinessZone == 4)
+        #expect(loaded.hardinessZone == HardinessZone(number: 4))
         #expect(loaded.lastFrost == lastFrost)
         #expect(loaded.firstFrost == firstFrost)
         #expect(loaded.name == "Home")
@@ -151,7 +151,7 @@ struct PropertyDetailsRoundTripTests {
         try structures.updatePropertyDetails(
             property.id,
             location: GeoCoordinate(latitude: 1, longitude: 2),
-            hardinessZone: 7,
+            hardinessZone: HardinessZone(number: 7),
             lastFrost: MonthDay(month: 4, day: 1),
             firstFrost: MonthDay(month: 10, day: 20)
         )

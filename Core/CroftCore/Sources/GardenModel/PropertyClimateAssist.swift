@@ -106,7 +106,7 @@ extension PropertyDetailsForm {
             if current.isEmpty {
                 zoneText = String(zone)
                 derivedPrefilled.insert(.zone)
-            } else if current != String(zone) {
+            } else if HardinessZone(parsing: current)?.number != zone {
                 climateSuggestions.append(.zone)
             }
         }

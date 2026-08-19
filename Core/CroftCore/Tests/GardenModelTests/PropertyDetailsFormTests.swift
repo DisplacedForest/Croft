@@ -40,7 +40,7 @@ private func makeForm(
     let structures = GardenStructureRepository(database)
     let property = try #require(try structures.properties(includeArchived: true).first)
     #expect(property.location == GeoCoordinate(latitude: 44.5, longitude: -72.8))
-    #expect(property.hardinessZone == 4)
+    #expect(property.hardinessZone == HardinessZone(number: 4))
     #expect(property.lastFrost == MonthDay(month: 5, day: 15))
     #expect(property.firstFrost == MonthDay(month: 9, day: 28))
 }
@@ -117,13 +117,29 @@ private func makeForm(
         form.validationMessage == PropertyDetailsError.invalidFrostDate("first frost").message)
 }
 
-@Test @MainActor func malformedZoneIsRejected() throws {
+@Test(arguments: ["8c", "0b", "14a", "text", "b"])
+@MainActor func malformedZoneIsRejected(_ text: String) throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
-    form.zoneText = "4b"
+    form.zoneText = text
     #expect(!form.save())
     #expect(form.validationMessage == PropertyDetailsError.invalidZone.message)
+}
+
+@Test(arguments: ["8", "8a", "8b"])
+@MainActor func letteredZonesSaveAndRoundTrip(_ text: String) throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let saving = makeForm(database: database, defaults: defaults)
+    saving.load()
+    saving.zoneText = text
+    #expect(saving.save())
+    #expect(saving.validationMessage == nil)
+
+    let reloaded = makeForm(database: database, defaults: defaults)
+    reloaded.load()
+    #expect(reloaded.zoneText == text)
 }
 
 @Test @MainActor func loadRoundTripsSavedValuesIntoTheFields() throws {

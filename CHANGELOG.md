@@ -72,6 +72,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
+  the letter, and shows it back unchanged. A derived zone whose number matches
+  your lettered entry no longer nags with a suggestion.
 - A fresh install shows the property setup sheet again on first launch; a
   capture plumbing change had stopped it from ever appearing.
 - Switching sections no longer washes the window in that section's color.
