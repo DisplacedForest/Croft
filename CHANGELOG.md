@@ -69,6 +69,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- When weather can't load, Today now says so quietly instead of showing
+  nothing: one line tells you whether a property location is missing or the
+  weather service is unavailable. Property setup is equally honest when zone
+  and frost dates can't be derived from weather history.
 - Planting rows everywhere now lead with the crop (Carrot, Pepper) and show
   the varietal small in the subtitle, so beds read at a glance; the planting
   detail page still heroes the varietal.
