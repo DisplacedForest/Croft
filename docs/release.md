@@ -2,6 +2,8 @@
 
 A release is a notarized drag-to-install disk image: a signed, notarized, stapled `Croft.app` inside a signed, notarized, stapled `Croft-<version>.dmg` attached to the GitHub release. The `Release` workflow does all of it. It runs only on version tags and manual dispatch, never on pull requests, so signing material is never exposed to fork-triggered runs.
 
+Development builds skip starting the Sparkle updater by design: the updater only starts when the app carries a Developer ID signature, so unsigned, ad-hoc, and Xcode-signed builds get no scheduled check, no failure dialog, and a disabled Check for Updates menu item explaining that updates need a signed build.
+
 ## Cutting a release
 
 1. Make sure `main` is green and the changelog is curated.
