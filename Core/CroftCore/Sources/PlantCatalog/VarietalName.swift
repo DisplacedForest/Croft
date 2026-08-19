@@ -1,6 +1,10 @@
 import Foundation
 
 public enum VarietalName {
+    public static func collisionKey(_ name: String) -> String {
+        name.folding(options: .caseInsensitive, locale: nil)
+    }
+
     public static func bare(_ name: String, cropNames: [String]) -> String {
         guard let separator = firstSeparatorOutsideParentheses(in: name) else { return name }
         let head = String(name[name.startIndex..<separator.lowerBound])

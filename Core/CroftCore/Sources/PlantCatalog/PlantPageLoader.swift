@@ -47,12 +47,14 @@ public struct PlantPageLoader: Sendable {
             if let parentName = parent?.commonNames.first {
                 otherNames.append(parentName)
             }
+            let bareName = VarietalName.bare(
+                cultivar.name, cropNames: parent?.allCommonNames ?? [])
             return PlantListItem(
                 id: cultivar.id.rawValue,
                 identity: .cultivar(cultivar.id),
                 kind: .cultivar,
                 displayName: cultivar.name,
-                scientificName: cultivarScientificName(cultivar, parent),
+                scientificName: cultivarScientificName(quoting: bareName, parent: parent),
                 otherNames: otherNames,
                 imageFile: (imagesByOwner[cultivar.id.rawValue]
                     ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
@@ -90,17 +92,19 @@ public struct PlantPageLoader: Sendable {
             let crop = speciesItem(one, imagesByOwner: imagesByOwner)
             let siblings = cultivarsBySpecies[one.id] ?? []
             let bareNames = Dictionary(
-                siblings.map {
-                    (VarietalName.bare($0.name, cropNames: one.allCommonNames).lowercased(), 1)
+                siblings.map { sibling -> (String, Int) in
+                    let candidate = VarietalName.bare(
+                        sibling.name, cropNames: one.allCommonNames)
+                    return (VarietalName.collisionKey(candidate), 1)
                 },
-                uniquingKeysWith: +
+                uniquingKeysWith: { $0 + $1 }
             )
             let varietals =
                 siblings
                 .map { cultivar -> PlantListItem in
                     let candidate = VarietalName.bare(
                         cultivar.name, cropNames: one.allCommonNames)
-                    let collides = (bareNames[candidate.lowercased()] ?? 0) > 1
+                    let collides = (bareNames[VarietalName.collisionKey(candidate)] ?? 0) > 1
                     let bareName = collides ? cultivar.name : candidate
                     var otherNames = cultivar.commonNames
                     if bareName != cultivar.name {
@@ -112,7 +116,7 @@ public struct PlantPageLoader: Sendable {
                         kind: .cultivar,
                         displayName: bareName,
                         scientificName: cultivarScientificName(
-                            cultivar, speciesByID[cultivar.speciesID]),
+                            quoting: bareName, parent: speciesByID[cultivar.speciesID]),
                         otherNames: otherNames,
                         imageFile: (imagesByOwner[cultivar.id.rawValue]
                             ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
@@ -169,10 +173,12 @@ public struct PlantPageLoader: Sendable {
 
         let bareCultivarName = try cultivar.map { current in
             let candidate = VarietalName.bare(current.name, cropNames: one.allCommonNames)
+            let candidateKey = VarietalName.collisionKey(candidate)
             let collides = try cultivars.cultivars(ofSpecies: one.id).contains { sibling in
                 sibling.id != current.id
-                    && VarietalName.bare(sibling.name, cropNames: one.allCommonNames)
-                        .caseInsensitiveCompare(candidate) == .orderedSame
+                    && VarietalName.collisionKey(
+                        VarietalName.bare(sibling.name, cropNames: one.allCommonNames))
+                        == candidateKey
             }
             return collides ? current.name : candidate
         }
@@ -291,10 +297,9 @@ extension PlantPageLoader {
         return "\(bed.name), \(parentName)"
     }
 
-    private func cultivarScientificName(_ cultivar: Cultivar, _ parent: Species?) -> String {
-        guard let parent else { return cultivar.name }
-        let bareName = VarietalName.bare(cultivar.name, cropNames: parent.allCommonNames)
-        return "\(parent.scientificName) '\(bareName)'"
+    private func cultivarScientificName(quoting name: String, parent: Species?) -> String {
+        guard let parent else { return name }
+        return "\(parent.scientificName) '\(name)'"
     }
 
     private func titled(_ name: String?) -> String? {
