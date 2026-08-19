@@ -8,6 +8,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Cultivar imagery grown from 11 to 43 varietals across sixteen crops, each
+  image individually licensed (public domain, CC0, or CC BY) and attributed,
+  so more cultivar pages show their own look instead of the species fallback.
 - Companion advisories at bed assignment: picking a bed tells you when the
   plant is a companion or antagonist of something already growing there,
   naming the plant and the source, never blocking the save.
