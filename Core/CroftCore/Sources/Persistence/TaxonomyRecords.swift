@@ -148,7 +148,8 @@ struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
         id = species.id.rawValue
         genusID = species.genusID.rawValue
         scientificName = species.scientificName
-        commonNames = try TaxonomyCoding.encodeList(species.commonNames)
+        commonNames = try TaxonomyCoding.encodeCommonNames(
+            plain: species.commonNames, localized: species.localizedCommonNames)
         lifeCycle = species.lifeCycle?.rawValue
         growthHabit = species.growthHabit?.rawValue
         sunExposure = species.sunExposure?.rawValue
@@ -182,11 +183,13 @@ struct SpeciesRecord: Codable, FetchableRecord, PersistableRecord, GraphEntity {
 
     func model() throws -> Species {
         let decoder = TaxonomyRowDecoder(table: Self.databaseTableName)
+        let names = try decoder.commonNames(from: commonNames, column: "common_names")
         var species = Species(
             id: Species.ID(rawValue: id),
             genusID: Genus.ID(rawValue: genusID),
             scientificName: scientificName,
-            commonNames: try decoder.stringList(from: commonNames, column: "common_names"),
+            commonNames: names.plain,
+            localizedCommonNames: names.localized,
             lifeCycle: try decoder.enumValue(LifeCycle.self, from: lifeCycle, column: "life_cycle"),
             growthHabit: try decoder.enumValue(
                 GrowthHabit.self,

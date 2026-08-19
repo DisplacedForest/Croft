@@ -137,6 +137,16 @@ struct KnowledgeMapper {
         return genusID
     }
 
+    private func localizedNames(for cropSlug: String) -> [LocalizedPlantName] {
+        guard let file = inputs.localizedNames else {
+            return []
+        }
+        return file.names
+            .filter { $0.crop == cropSlug }
+            .sorted { $0.locale < $1.locale }
+            .map { LocalizedPlantName(locale: $0.locale, name: $0.name) }
+    }
+
     private func species(
         from profile: CropProfile,
         id: String,
@@ -164,6 +174,7 @@ struct KnowledgeMapper {
             genusID: Genus.ID(rawValue: genusID),
             scientificName: profile.latinName,
             commonNames: [KnowledgeVocabulary.humanized(cropSlug: profile.crop)],
+            localizedCommonNames: localizedNames(for: profile.crop),
             lifeCycle: KnowledgeVocabulary.lifeCycle(profile.lifeCycle),
             sunExposure: KnowledgeVocabulary.sunExposure(profile.sun),
             soilPH: Units.doubleRange(profile.phRange),
