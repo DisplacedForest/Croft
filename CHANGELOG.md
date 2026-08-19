@@ -59,6 +59,11 @@ All notable changes to Croft are documented here. The format follows
   names; open a crop to browse its varietals, and search finds crops and
   varietals from anywhere by common name, varietal name, or binomial.
 
+- Threat pages now show what an attack looks like on your crop: early blight
+  lesions on tomato leaves, and the imported cabbageworm on kale as
+  caterpillar, frass, and feeding damage, each preferred over the generic
+  organism photo on the matching plant page.
+
 ### Fixed
 
 - The Record menu now stays in the toolbar on bed, planting, and plant detail

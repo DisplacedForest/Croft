@@ -404,6 +404,20 @@
    "source_title": "File:Alternaria solani - leaf lesions.jpg"
   },
   {
+   "artist": "Dwight Sipler",
+   "file": "disease--early-blight--symptom-tomato.jpg",
+   "kind": "symptom",
+   "license": "CC BY 2.0",
+   "license_url": "https://creativecommons.org/licenses/by/2.0/",
+   "owner_kind": "disease",
+   "related_slug": "tomato",
+   "sha256": "5cc43100b5fc70f6e79b69d0945fdb846807cfe878e021187b966c22f263bbcf",
+   "slug": "disease/early-blight",
+   "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Early_blight_on_tomato_leaves_%287871930010%29.jpg",
+   "source_page_url": "https://commons.wikimedia.org/wiki/File:Early_blight_on_tomato_leaves_(7871930010).jpg",
+   "source_title": "File:Early blight on tomato leaves (7871930010).jpg"
+  },
+  {
    "artist": "Scot Nelson (Flickr)",
    "file": "disease--fusarium-wilt-tomato.jpg",
    "kind": "organism",
@@ -766,6 +780,48 @@
    "source_file_url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Harlequin_Bug_adult_and_nymph.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
    "source_page_url": "https://commons.wikimedia.org/wiki/File:Harlequin_Bug_adult_and_nymph.jpg",
    "source_title": "File:Harlequin Bug adult and nymph.jpg"
+  },
+  {
+   "artist": "Erin Webb (iNaturalist)",
+   "file": "pest--imported-cabbageworm--damage-kale.jpg",
+   "kind": "damage",
+   "license": "CC0",
+   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "f0e7a2ead11664f7f0b6fced1a2973bf43c03e34aa8527d0ebdbff9f9638138c",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/570025446/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/315540833",
+   "source_title": "iNaturalist observation 315540833 photo 570025446"
+  },
+  {
+   "artist": "Samuel Brown (iNaturalist)",
+   "file": "pest--imported-cabbageworm--frass-kale.jpg",
+   "kind": "frass",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "0bb4f0af2a6e8ce65206bf7ae3ea360189ad8b47926cc1eab00b37fa9f985777",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/482064469/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/268200436",
+   "source_title": "iNaturalist observation 268200436 photo 482064469"
+  },
+  {
+   "artist": "Samuel Brown (iNaturalist)",
+   "file": "pest--imported-cabbageworm--lifecycle-stage-kale.jpg",
+   "kind": "lifecycle_stage",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0/",
+   "owner_kind": "pest",
+   "related_slug": "kale",
+   "sha256": "06a5c876ce6c773a847c9275c5c373a780a40e84334fbbae3bb0f39cd715cf19",
+   "slug": "pest/imported-cabbageworm",
+   "source_file_url": "https://inaturalist-open-data.s3.amazonaws.com/photos/482064528/original.jpg",
+   "source_page_url": "https://www.inaturalist.org/observations/268200457",
+   "source_title": "iNaturalist observation 268200457 photo 482064528"
   },
   {
    "artist": "Corey Farwell (iNaturalist)",
