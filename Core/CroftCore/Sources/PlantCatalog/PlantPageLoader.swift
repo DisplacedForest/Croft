@@ -118,8 +118,7 @@ public struct PlantPageLoader: Sendable {
                         scientificName: cultivarScientificName(
                             quoting: bareName, parent: speciesByID[cultivar.speciesID]),
                         otherNames: otherNames,
-                        imageFile: (imagesByOwner[cultivar.id.rawValue]
-                            ?? imagesByOwner[cultivar.speciesID.rawValue])?.file
+                        imageFile: imagesByOwner[cultivar.id.rawValue]?.file
                     )
                 }
                 .sorted {

@@ -144,6 +144,112 @@ struct PinnedInputsTests {
         #expect(missing == acceptedGaps)
     }
 
+    @Test func noProfileCropStrandsCatalogCultivars() throws {
+        let output = FileManager.default.temporaryDirectory
+            .appendingPathComponent("stranded-\(UUID().uuidString).sqlite")
+        let summary = try importer.buildSnapshot(at: output)
+
+        let profilesData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent("crop-profiles.json"))
+        let profilesJSON = try JSONSerialization.jsonObject(with: profilesData) as? [String: Any]
+        let profiles = try #require(profilesJSON?["crops"] as? [[String: Any]])
+
+        let catalogData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent(KnowledgeImporter.catalogFile))
+        let catalogJSON = try JSONSerialization.jsonObject(with: catalogData) as? [String: Any]
+        let rows = try #require(catalogJSON?["cultivars"] as? [[String: Any]])
+
+        var expected: [String: Int] = [:]
+        for row in rows {
+            guard var crop = row["crop"] as? String, let name = row["cultivar"] as? String
+            else { continue }
+            if crop == "squash" {
+                guard
+                    case .crop(let resolved) = SquashClassification.classify(
+                        cultivarNamed: name)
+                else { continue }
+                crop = resolved
+            }
+            expected[crop, default: 0] += 1
+        }
+
+        let counts = try AppDatabase.openReadOnly(at: output).writer.read { db in
+            try Row.fetchAll(
+                db, sql: "SELECT species_id, COUNT(*) AS n FROM cultivar GROUP BY species_id")
+        }
+        var bySpecies: [String: Int] = [:]
+        for row in counts {
+            bySpecies[row["species_id"] as String] = row["n"] as Int
+        }
+
+        for profile in profiles {
+            guard let crop = profile["crop"] as? String,
+                let latin = profile["latin_name"] as? String
+            else { continue }
+            let speciesID = KnowledgeID.species(latin)
+            let mapped = bySpecies[speciesID] ?? 0
+            if expected[crop, default: 0] > 0 {
+                #expect(mapped > 0, "\(crop) has catalog rows but zero mapped cultivars")
+            }
+        }
+
+        #expect(expected["summer-squash"] == 40)
+        #expect(expected["winter-squash"] == 37)
+        #expect(summary.skips["catalog_gourd_out_of_scope"] == 15)
+        #expect(summary.skips["catalog_ambiguous_squash"] == nil)
+    }
+
+    @Test func threatDisplayTextNamesNoOtherCrop() throws {
+        let profilesData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent("crop-profiles.json"))
+        let profilesJSON = try JSONSerialization.jsonObject(with: profilesData) as? [String: Any]
+        let profiles = try #require(profilesJSON?["crops"] as? [[String: Any]])
+        let cropSlugs = profiles.compactMap { $0["crop"] as? String }
+
+        let seedData = try Data(
+            contentsOf: inputsDirectory.appendingPathComponent(
+                KnowledgeImporter.pestDiseaseFile))
+        let seedJSON = try JSONSerialization.jsonObject(with: seedData) as? [String: Any]
+        let pests = try #require(seedJSON?["pests"] as? [[String: Any]])
+        let diseases = try #require(seedJSON?["diseases"] as? [[String: Any]])
+
+        var patterns: [String: NSRegularExpression] = [:]
+        for slug in cropSlugs {
+            let name = NSRegularExpression.escapedPattern(
+                for: slug.replacingOccurrences(of: "-", with: " "))
+            patterns[slug] = try NSRegularExpression(
+                pattern: "\\b\(name)(es|s)?\\b", options: [.caseInsensitive])
+        }
+
+        func mentions(_ text: String, _ slug: String) -> Bool {
+            guard let pattern = patterns[slug] else { return false }
+            let range = NSRange(text.startIndex..., in: text)
+            return pattern.firstMatch(in: text, range: range) != nil
+        }
+
+        func audit(_ records: [[String: Any]], idKey: String, proseKey: String) {
+            for record in records {
+                let id = record[idKey] as? String ?? "?"
+                let hosts = record["hosts"] as? [String] ?? []
+                let notes = record["host_notes"] as? [String: String] ?? [:]
+                let prose = record[proseKey] as? String ?? ""
+                for host in hosts {
+                    let display = notes[host] ?? prose
+                    let selfCrops =
+                        host == "squash" ? ["summer-squash", "winter-squash"] : [host]
+                    for slug in cropSlugs where !selfCrops.contains(slug) {
+                        #expect(
+                            !mentions(display, slug),
+                            "\(id) on \(host) names \(slug): \(display)")
+                    }
+                }
+            }
+        }
+
+        audit(pests, idKey: "id", proseKey: "damage")
+        audit(diseases, idKey: "id", proseKey: "symptoms")
+    }
+
     @Test func knownFactsSurviveTheRealImport() throws {
         let output = FileManager.default.temporaryDirectory
             .appendingPathComponent("facts-\(UUID().uuidString).sqlite")

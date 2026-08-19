@@ -12,6 +12,7 @@ public enum ImportError: Error, Equatable {
     case unknownCrop(record: String, crop: String)
     case invalidLocalizedName(detail: String)
     case unknownReference(record: String, reference: String)
+    case hostNoteWithoutHost(record: String, host: String)
     case duplicateRecord(String)
     case unmappableValue(record: String, field: String, value: String)
     case missingImageDirectory(String)

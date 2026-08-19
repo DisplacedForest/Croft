@@ -48,8 +48,12 @@ extension KnowledgeMapper {
                 ))
             let provenance = provenance(citations: input.citations)
             let pestRef = EntityRef(id: pestID, type: .pest)
+            let hostNotes = try validatedHostNotes(
+                input.hostNotes, hosts: input.hosts, record: input.id)
             for host in try hostRefs(input.hosts, record: input.id, taxonomy: taxonomy) {
-                mapped.edges.append(edge(from: host, .hostOf, to: pestRef, provenance))
+                var noted = provenance
+                noted.notes = hostNotes[host.host]
+                mapped.edges.append(edge(from: host.ref, .hostOf, to: pestRef, noted))
             }
             for target in input.vectorOf ?? [] {
                 let diseaseID = KnowledgeID.disease(target)
@@ -96,8 +100,13 @@ extension KnowledgeMapper {
                 ))
             let provenance = provenance(citations: input.citations)
             let diseaseRef = EntityRef(id: diseaseID, type: .disease)
+            let hostNotes = try validatedHostNotes(
+                input.hostNotes, hosts: input.hosts, record: input.id)
             for host in try hostRefs(input.hosts, record: input.id, taxonomy: taxonomy) {
-                mapped.edges.append(edge(from: host, .susceptibleTo, to: diseaseRef, provenance))
+                var noted = provenance
+                noted.notes = hostNotes[host.host]
+                mapped.edges.append(
+                    edge(from: host.ref, .susceptibleTo, to: diseaseRef, noted))
             }
             try mapPathogen(input, diseaseRef: diseaseRef, ids: &pathogenIDs, into: &mapped)
             for vector in input.vectors ?? [] {
@@ -143,12 +152,19 @@ extension KnowledgeMapper {
         summary: inout ImportSummary
     ) throws {
         for example in inputs.pestDisease.cultivarResistanceExamples {
-            guard let speciesID = taxonomy.cultivarParent(for: example.crop) else {
-                if taxonomy.hostSpecies(for: example.crop) != nil {
+            var crop = example.crop
+            if crop == "squash" {
+                let resolution = SquashClassification.classify(cultivarNamed: example.cultivar)
+                if case .crop(let resolved) = resolution {
+                    crop = resolved
+                }
+            }
+            guard let speciesID = taxonomy.cultivarParent(for: crop) else {
+                if taxonomy.hostSpecies(for: crop) != nil {
                     summary.skip("resistance_ambiguous_squash")
                     continue
                 }
-                throw ImportError.unknownCrop(record: example.cultivar, crop: example.crop)
+                throw ImportError.unknownCrop(record: example.cultivar, crop: crop)
             }
             let id = KnowledgeID.cultivar(speciesID: speciesID, name: example.cultivar)
             if let index = cultivars[id] {
@@ -200,15 +216,28 @@ extension KnowledgeMapper {
         _ hosts: [String],
         record: String,
         taxonomy: Taxonomy
-    ) throws -> [EntityRef] {
-        var refs: [EntityRef] = []
+    ) throws -> [(host: String, ref: EntityRef)] {
+        var refs: [(host: String, ref: EntityRef)] = []
         for host in Set(hosts).sorted() {
             guard let speciesIDs = taxonomy.hostSpecies(for: host) else {
                 throw ImportError.unknownCrop(record: record, crop: host)
             }
-            refs.append(contentsOf: speciesIDs.map { EntityRef(id: $0, type: .plant) })
+            refs.append(
+                contentsOf: speciesIDs.map { (host, EntityRef(id: $0, type: .plant)) })
         }
-        return refs.sorted { $0.id < $1.id }
+        return refs.sorted { $0.ref.id < $1.ref.id }
+    }
+
+    private func validatedHostNotes(
+        _ notes: [String: String]?,
+        hosts: [String],
+        record: String
+    ) throws -> [String: String] {
+        guard let notes else { return [:] }
+        for host in notes.keys.sorted() where !hosts.contains(host) {
+            throw ImportError.hostNoteWithoutHost(record: record, host: host)
+        }
+        return notes
     }
 
     private func provenance(citations: [String]) -> Provenance {

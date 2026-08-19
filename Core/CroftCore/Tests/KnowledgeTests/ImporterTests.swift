@@ -112,6 +112,7 @@ struct ImporterMappingTests {
         let fixture = try KnowledgeFixture()
         let summary = try fixture.build()
         #expect(summary.skips["catalog_ambiguous_squash"] == 1)
+        #expect(summary.skips["catalog_gourd_out_of_scope"] == 1)
         #expect(summary.skips["catalog_out_of_scope_crop"] == 1)
         #expect(summary.skips["catalog_unmapped_growth_habit"] == 1)
         #expect(summary.skips["catalog_unparsed_spacing"] == 1)
@@ -120,6 +121,41 @@ struct ImporterMappingTests {
         #expect(summary.counts["species"] == 3)
         #expect(summary.counts["pests"] == 2)
         #expect(summary.counts["diseases"] == 3)
+    }
+
+    @Test func hostNotesLandOnTheMatchingEdges() throws {
+        let fixture = try KnowledgeFixture()
+        try fixture.build()
+        let dump = try KnowledgeSnapshot.logicalDump(at: fixture.output)
+        #expect(dump.contains("Clusters on the newest growth."))
+        let squashNotes = dump.components(
+            separatedBy: "Colonies spread along the vine tips.")
+        #expect(squashNotes.count == 3)
+    }
+
+    @Test func aHostNoteForANonHostFailsTheImport() throws {
+        let broken = KnowledgeFixture.pestDisease.replacingOccurrences(
+            of: #""tomato": "Clusters on the newest growth.","#,
+            with: #""lettuce": "Clusters on the newest growth.","#
+        )
+        let fixture = try KnowledgeFixture(pestDisease: broken)
+        #expect(
+            throws: ImportError.hostNoteWithoutHost(
+                record: "green-peach-aphid", host: "lettuce")
+        ) {
+            try fixture.build()
+        }
+    }
+
+    @Test func squashCatalogRowsClassifyToTheSplitCrops() throws {
+        let fixture = try KnowledgeFixture()
+        _ = try fixture.build()
+        let dump = try KnowledgeSnapshot.logicalDump(at: fixture.output)
+        #expect(dump.contains("cultivar:cucurbita-pepo/golden-zucchini"))
+        #expect(dump.contains("cultivar:cucurbita-maxima/butternut-ultra"))
+        #expect(!dump.contains("birdhouse-gourd"))
+        #expect(!dump.contains("marrow-mystery"))
+        #expect(!dump.contains("ultra-nova"))
     }
 
     @Test func vendorsMergeIntoOneCultivarWithThePreferredFields() throws {
