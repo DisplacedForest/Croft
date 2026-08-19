@@ -117,7 +117,15 @@ xcodegen generate
 rm -f Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
 keep=$(mktemp)
 cp Core/CroftCore/Package.resolved "$keep"
-trap 'if [ -f "$keep" ]; then cp "$keep" Core/CroftCore/Package.resolved; rm -f "$keep"; fi' EXIT INT TERM
+restore_lockfile() {
+  if [ -f "$keep" ]; then
+    cp "$keep" Core/CroftCore/Package.resolved
+    rm -f "$keep"
+  fi
+}
+trap restore_lockfile EXIT
+trap 'restore_lockfile; trap - EXIT; exit 130' INT
+trap 'restore_lockfile; trap - EXIT; exit 143' TERM
 xcodebuild -resolvePackageDependencies -project Croft.xcodeproj -scheme Croft-macOS -quiet
 cp Core/CroftCore/Package.resolved project.resolved
 mkdir -p Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
