@@ -28,6 +28,13 @@ extension PropertyDetailsForm {
         await deriveClimate()
     }
 
+    func retireDerivationFlight() {
+        derivationTask?.cancel()
+        derivationTask = nil
+        derivationCoordinate = nil
+        isDerivingClimate = false
+    }
+
     func needsDerivationBeforeSave(_ location: GeoCoordinate?) -> Bool {
         location != climateCoordinate
             && (zoneSource == .derived || frostDatesSource == .derived)

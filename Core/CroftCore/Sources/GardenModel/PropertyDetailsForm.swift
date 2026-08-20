@@ -205,7 +205,7 @@ public final class PropertyDetailsForm {
         }
         isSaving = true
         defer { isSaving = false }
-        derivationTask?.cancel()
+        retireDerivationFlight()
         validationMessage = nil
         guard sourceState != .unreadable else {
             validationMessage = "The property record can't be read, so saving is disabled."
