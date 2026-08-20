@@ -76,12 +76,7 @@ extension AttentionProviders {
 
     static func frostReason(day: DayForecast, now: Date, calendar: Calendar) -> String {
         let low = day.low.formatted(
-            .measurement(
-                width: .narrow,
-                usage: .weather,
-                numberFormatStyle: .number.precision(.fractionLength(0))
-            )
-            .locale(reasonLocale))
+            WeatherDisplay.temperatureStyle(width: .narrow).locale(reasonLocale))
         if calendar.isDate(day.date, inSameDayAs: now) {
             return "Low of \(low) tonight"
         }

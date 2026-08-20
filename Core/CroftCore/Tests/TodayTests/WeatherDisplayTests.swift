@@ -45,7 +45,8 @@ struct WeatherDisplayTests {
 
     @Test func negativeHalfDegreesRoundAwayFromZero() {
         let rendered = formatted(-0.5, unit: .celsius, locale: germany)
-        #expect(rendered.contains("1"))
+        #expect(rendered.contains("-1"))
+        #expect(rendered.contains("°C"))
         #expect(!rendered.contains("0,5"))
     }
 
