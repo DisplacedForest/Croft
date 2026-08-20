@@ -25,11 +25,37 @@ public struct AppDatabase: Sendable {
             withIntermediateDirectories: true
         )
         try verifyHeader(at: url)
+        let fileExisted = FileManager.default.fileExists(atPath: url.path)
         let pool = try DatabasePool(path: url.path, configuration: makeConfiguration())
         try verifyOpenedIdentity(of: pool, path: url.path)
+        if fileExisted {
+            try backUpBeforePendingMigrations(pool, at: url)
+        }
         let database = try AppDatabase(pool)
         try? pool.writeWithoutTransaction { try $0.checkpoint(.truncate) }
         return database
+    }
+
+    static func backUpBeforePendingMigrations(
+        _ pool: some DatabaseWriter,
+        at url: URL
+    ) throws {
+        let applied = try pool.read { try SchemaMigrations.migrator().appliedIdentifiers($0) }
+        guard !Set(SchemaMigrations.identifiers).isSubset(of: applied) else {
+            return
+        }
+        let backup = url.deletingLastPathComponent()
+            .appendingPathComponent(url.lastPathComponent + ".pre-migration", isDirectory: false)
+        let staging = url.deletingLastPathComponent()
+            .appendingPathComponent(
+                url.lastPathComponent + ".pre-migration-staging", isDirectory: false)
+        try? FileManager.default.removeItem(at: staging)
+        let destination = try DatabaseQueue(path: staging.path, configuration: makeConfiguration())
+        try pool.backup(to: destination)
+        try destination.close()
+        guard rename(staging.path, backup.path) == 0 else {
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: backup.path])
+        }
     }
 
     static func verifyHeader(at url: URL) throws {

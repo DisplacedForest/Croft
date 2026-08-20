@@ -2,6 +2,10 @@
 
 A release is a notarized drag-to-install disk image: a signed, notarized, stapled `Croft.app` inside a signed, notarized, stapled `Croft-<version>.dmg` attached to the GitHub release. The `Release` workflow does all of it. It runs only on version tags and manual dispatch, never on pull requests, so signing material is never exposed to fork-triggered runs.
 
+Development builds skip starting the Sparkle updater by design: the updater only starts when the app carries a Developer ID signature, so unsigned, ad-hoc, and Xcode-signed builds get no scheduled check, no failure dialog, and a disabled Check for Updates menu item explaining that updates need a signed build.
+
+The same Developer ID verdict picks the database: signed builds open the live `croft.sqlite`, every other build opens `croft-dev.sqlite` beside it (or the file named by `CROFT_DATABASE_PATH`, honored only in non-Developer-ID builds), so a dev launch can never migrate the installed app's data. Before applying pending migrations to an existing database, the app writes a rolling `<name>.pre-migration` backup beside it.
+
 ## Cutting a release
 
 1. Make sure `main` is green and the changelog is curated.

@@ -92,7 +92,7 @@ final class TodayFeedStore {
         }
         tasks = GardenTaskStore(repository: GardenTaskRepository(stores.database))
         let base =
-            (try? AppDatabase.defaultURL().deletingLastPathComponent())
+            (try? DatabaseLocation.url().deletingLastPathComponent())
             .map { $0.appendingPathComponent("Photos", isDirectory: true) }
         photos = PhotoStore(
             baseURL: base

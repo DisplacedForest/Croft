@@ -1564,10 +1564,7 @@
       "survival" : "No meaningful survival in soil or on surfaces outside a living host or viruliferous thrips; carries over in weed and ornamental reservoirs",
       "symptoms" : "Bronzed curled young leaves, dark ringspots on leaves and stems, stunting, dramatic concentric ring patterns on ripening fruit.",
       "transmission" : "Only by thrips (acquired as larvae, transmitted by adults); not mechanical in practice, not seed-borne.",
-      "us_regions" : "Field-endemic in the Southeast, worst in south Georgia, north Florida, Alabama and the Carolinas where tobacco thrips and western flower thrips overwinter on weeds and the virus is a multimillion-dollar annual loss in tomato and pepper; also chronic in California and the Pacific Northwest. In the North and Midwest it arrives mainly on infected greenhouse-grown transplants and bedding plants rather than from field thrips, so buying clean transplants matters more than thrips sprays.",
-      "vectors" : [
-        "western-flower-thrips"
-      ]
+      "us_regions" : "Field-endemic in the Southeast, worst in south Georgia, north Florida, Alabama and the Carolinas where tobacco thrips and western flower thrips overwinter on weeds and the virus is a multimillion-dollar annual loss in tomato and pepper; also chronic in California and the Pacific Northwest. In the North and Midwest it arrives mainly on infected greenhouse-grown transplants and bedding plants rather than from field thrips, so buying clean transplants matters more than thrips sprays."
     },
     {
       "citations" : [
@@ -1598,10 +1595,7 @@
       "survival" : "Not soil-persistent; persists in the whitefly vector and in weed and solanaceous crop reservoirs",
       "symptoms" : "Strong upward leaf curling, small yellowed leaflets, severe stunting, flower drop; plants infected young set almost no fruit.",
       "transmission" : "Silverleaf whitefly (persistent); not seed-borne, not mechanical.",
-      "us_regions" : "Endemic where its whitefly vector overwinters: Florida, Georgia, the Carolinas, Alabama, Louisiana, Texas, and coastal southern California, with the worst pressure on fall tomato crops in Florida and south Georgia. It is a non-issue in the northern tier and the Midwest except as an occasional dead-end introduction on infected transplants shipped north, so TYLCV resistance is a must-buy trait for Gulf and Deep South gardeners and irrelevant for most gardeners above roughly the 37th parallel.",
-      "vectors" : [
-        "silverleaf-whitefly"
-      ]
+      "us_regions" : "Endemic where its whitefly vector overwinters: Florida, Georgia, the Carolinas, Alabama, Louisiana, Texas, and coastal southern California, with the worst pressure on fall tomato crops in Florida and south Georgia. It is a non-issue in the northern tier and the Midwest except as an occasional dead-end introduction on infected transplants shipped north, so TYLCV resistance is a must-buy trait for Gulf and Deep South gardeners and irrelevant for most gardeners above roughly the 37th parallel."
     },
     {
       "citations" : [
@@ -1638,11 +1632,7 @@
       "seed_borne" : true,
       "survival" : "Not soil-persistent; carried over in perennial weed reservoirs and picked up fresh by aphids each season",
       "symptoms" : "Mosaic mottling, distorted shoestring leaves, stunting, warty mottled fruit; one of the widest host ranges of any plant virus (1,200+ species).",
-      "transmission" : "Many aphid species, non-persistently (acquired and transmitted in seconds, so insecticides fail to prevent it); some seed transmission in certain hosts.",
-      "vectors" : [
-        "green-peach-aphid",
-        "melon-aphid"
-      ]
+      "transmission" : "Many aphid species, non-persistently (acquired and transmitted in seconds, so insecticides fail to prevent it); some seed transmission in certain hosts."
     },
     {
       "citations" : [
@@ -1776,10 +1766,7 @@
       "seed_borne" : false,
       "survival" : "Overwinters only inside the gut of striped and spotted cucumber beetles; does not survive free in soil or residue",
       "symptoms" : "Individual runners wilt then the whole plant, without recovery overnight; cut stems may show sticky bacterial strands that string between the cut faces.",
-      "transmission" : "Only via cucumber beetles (feces into feeding wounds); overwinters in beetle guts, not soil.",
-      "vectors" : [
-        "striped-cucumber-beetle"
-      ]
+      "transmission" : "Only via cucumber beetles (feces into feeding wounds); overwinters in beetle guts, not soil."
     },
     {
       "citations" : [
@@ -2119,10 +2106,7 @@
       "survival" : "Not soil-persistent; carries over in infected seed tubers and volunteers, which is why certified seed is the control point",
       "symptoms" : "Leaf mosaic, crinkling, and vein necrosis.",
       "transmission" : "Many aphid species non-persistently (seconds to acquire, insecticides ineffective at prevention); infected seed potatoes are the main reservoir.",
-      "vector_note" : "Green peach aphid is the most efficient vector; most current US field spread is by transient non-colonizing aphids (soybean aphid, corn leaf aphid, bird cherry-oat aphid, English grain aphid), which insecticides fail to stop",
-      "vectors" : [
-        "green-peach-aphid"
-      ]
+      "vector_note" : "Green peach aphid is the most efficient vector; most current US field spread is by transient non-colonizing aphids (soybean aphid, corn leaf aphid, bird cherry-oat aphid, English grain aphid), which insecticides fail to stop"
     },
     {
       "citations" : [
@@ -2193,10 +2177,7 @@
       "seed_borne" : false,
       "survival" : "In overwintering squash bug adults, not in soil",
       "symptoms" : "Foliage yellows and vines decline about two weeks before harvest; honey-brown phloem discoloration visible in a cut crown; plants wilt and collapse.",
-      "transmission" : "Transmitted only by squash bugs carrying the bacterium; overwinters in squash bug adults.",
-      "vectors" : [
-        "squash-bug"
-      ]
+      "transmission" : "Transmitted only by squash bugs carrying the bacterium; overwinters in squash bug adults."
     },
     {
       "citations" : [
@@ -2227,10 +2208,7 @@
       "seed_borne" : false,
       "survival" : "In living hosts (volunteers, culls, overwintered onions) and viruliferous thrips; not soil-persistent",
       "symptoms" : "Straw-colored diamond or spindle-shaped lesions on leaves and seed stalks, sometimes with green islands inside; lodging of seed stalks; reduced bulb size.",
-      "transmission" : "Only by onion thrips (Thrips tabaci); not seed-borne, not mechanical in practice.",
-      "vectors" : [
-        "western-flower-thrips"
-      ]
+      "transmission" : "Only by onion thrips (Thrips tabaci); not seed-borne, not mechanical in practice."
     },
     {
       "citations" : [
@@ -2381,10 +2359,7 @@
       "seed_borne" : false,
       "survival" : "Persists in the crowns and roots of infected perennial and biennial weeds for years, and for life in infected leafhoppers; does not survive in soil or residue.",
       "symptoms" : "Virescence and phyllody (flowers turning green and leafy) and stunting.",
-      "transmission" : "Only by leafhoppers, chiefly the aster leafhopper, in a persistent propagative way: the insect feeds on an infected plant, then needs roughly 2-3 weeks of latent period before it can infect, after which it stays infective for life. Not seed-borne, not mechanically transmitted, not spread by touch or tools.",
-      "vectors" : [
-        "aster-leafhopper"
-      ]
+      "transmission" : "Only by leafhoppers, chiefly the aster leafhopper, in a persistent propagative way: the insect feeds on an infected plant, then needs roughly 2-3 weeks of latent period before it can infect, after which it stays infective for life. Not seed-borne, not mechanically transmitted, not spread by touch or tools."
     },
     {
       "citations" : [
@@ -2532,11 +2507,7 @@
       "seed_borne" : true,
       "survival" : "Survives in infected bean seed between seasons; no soil or residue survival, and no perennial host reservoir in most of the US.",
       "symptoms" : "Light and dark green mosaic mottling with puckered, downward-cupped, narrowed leaves; stunted plants; few and misshapen pods; seed set cut sharply. BCMNV, or BCMV on a plant carrying the I gene under heat, causes systemic necrosis called black root: darkened veins, wilting, and rapid death of the whole plant.",
-      "transmission" : "Seed-borne at high rates (the main way it enters a garden) and pollen-transmitted; then spread plant to plant by many aphid species non-persistently, in seconds of probing, so insecticides do not prevent it.",
-      "vectors" : [
-        "green-peach-aphid",
-        "melon-aphid"
-      ]
+      "transmission" : "Seed-borne at high rates (the main way it enters a garden) and pollen-transmitted; then spread plant to plant by many aphid species non-persistently, in seconds of probing, so insecticides do not prevent it."
     }
   ],
   "meta" : {
@@ -2643,6 +2614,7 @@
       "scouting" : "No formal treatment threshold. Colonies start on the lowest leaves and move upward, so check lower leaf undersides first and act early, because the economic risk is virus spread rather than visible feeding damage.",
       "taxon" : "Hemiptera: Aphididae",
       "vector_of" : [
+        "bean-common-mosaic-virus",
         "cucumber-mosaic-virus",
         "potato-virus-y"
       ]
@@ -2680,6 +2652,7 @@
       "scouting" : "No established economic threshold. UC IPM suggests yellow sticky cards before planting, then direct foliage checks once aphids appear on traps.",
       "taxon" : "Hemiptera: Aphididae",
       "vector_of" : [
+        "bean-common-mosaic-virus",
         "cucumber-mosaic-virus"
       ]
     },

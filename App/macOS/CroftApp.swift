@@ -4,8 +4,16 @@ import SwiftUI
 @main
 struct CroftApp: App {
     private let stores = AppStores.open()
-    private let updaterController = SPUStandardUpdaterController(
-        startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    private let updaterPolicy: UpdaterPolicy
+    private let updaterController: SPUStandardUpdaterController
+
+    init() {
+        let policy = UpdaterPolicy.resolve(
+            bundleSignedForUpdates: BundleSignature.isDeveloperIDSigned())
+        updaterPolicy = policy
+        updaterController = SPUStandardUpdaterController(
+            startingUpdater: policy.startsUpdater, updaterDelegate: nil, userDriverDelegate: nil)
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -15,7 +23,9 @@ struct CroftApp: App {
         .defaultSize(width: 1040, height: 700)
         .commands {
             CommandGroup(after: .appInfo) {
-                CheckForUpdatesView(updater: updaterController.updater)
+                CheckForUpdatesView(
+                    updater: updaterController.updater,
+                    unavailableExplanation: updaterPolicy.unavailableExplanation)
             }
         }
 

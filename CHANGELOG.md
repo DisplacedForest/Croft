@@ -8,6 +8,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Before applying schema migrations to an existing garden database, Croft now
+  writes a rolling pre-migration backup beside it, and opening a database
+  written by a newer version of Croft explains that the app needs updating
+  instead of showing a raw migration error. Development builds keep to their
+  own croft-dev.sqlite and can never touch the installed app's data.
 - A search field on every crop page filters its varietals live by bare name,
   full vendor name, or binomial, with a plain empty state when nothing
   matches.
@@ -75,6 +80,10 @@ All notable changes to Croft are documented here. The format follows
 - The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
   the letter, and shows it back unchanged. A derived zone whose number matches
   your lettered entry no longer nags with a suggestion.
+- Development builds no longer pop an "Unable to Check For Updates" dialog
+  at launch. The updater only starts when the app carries a Developer ID
+  signature; otherwise Check for Updates stays visible but disabled, with a
+  note that updates need a signed build.
 - A fresh install shows the property setup sheet again on first launch; a
   capture plumbing change had stopped it from ever appearing.
 - Switching sections no longer washes the window in that section's color.

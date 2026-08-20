@@ -15,7 +15,7 @@ struct AppStores: Sendable {
     }
 
     static func open() -> AppStores? {
-        guard let url = try? AppDatabase.defaultURL(),
+        guard let url = try? DatabaseLocation.url(),
             let database = try? AppDatabase.open(at: url)
         else {
             return nil

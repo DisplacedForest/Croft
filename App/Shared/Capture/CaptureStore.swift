@@ -51,7 +51,7 @@ final class CaptureStore {
             return
         }
         let photoBase =
-            (try? AppDatabase.defaultURL().deletingLastPathComponent())
+            (try? DatabaseLocation.url().deletingLastPathComponent())
             .map { $0.appendingPathComponent("Photos", isDirectory: true) }
         context = CaptureContext(
             personal: stores.database,

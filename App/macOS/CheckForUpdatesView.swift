@@ -15,16 +15,19 @@ final class CheckForUpdatesViewModel: ObservableObject {
 struct CheckForUpdatesView: View {
     @ObservedObject private var viewModel: CheckForUpdatesViewModel
     private let updater: SPUUpdater
+    private let unavailableExplanation: String?
 
-    init(updater: SPUUpdater) {
+    init(updater: SPUUpdater, unavailableExplanation: String?) {
         self.updater = updater
+        self.unavailableExplanation = unavailableExplanation
         viewModel = CheckForUpdatesViewModel(updater: updater)
     }
 
     var body: some View {
-        Button("Check for Updates…") {
-            updater.checkForUpdates()
-        }
-        .disabled(!viewModel.canCheckForUpdates)
+        UpdateCommandContent(
+            canCheckForUpdates: viewModel.canCheckForUpdates,
+            unavailableExplanation: unavailableExplanation,
+            checkForUpdates: { updater.checkForUpdates() }
+        )
     }
 }

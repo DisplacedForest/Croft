@@ -23,14 +23,24 @@ final class GardenStore {
         refresh()
     }
 
+    static let newerDatabaseMessage =
+        "This garden database was written by a newer version of Croft. "
+        + "Update the app to open it."
+
+    static func startupMessage(for error: any Error) -> String {
+        if case MigrationError.unknownApplied = error {
+            return newerDatabaseMessage
+        }
+        return "Croft couldn't open its garden records. \(error.localizedDescription)"
+    }
+
     static func live() -> GardenStore {
         do {
-            let database = try AppDatabase.open(at: AppDatabase.defaultURL())
+            let database = try AppDatabase.open(at: DatabaseLocation.url())
             return GardenStore(database: database)
         } catch {
             let store = GardenStore(database: nil)
-            store.startupError =
-                "Croft couldn't open its garden records. \(error.localizedDescription)"
+            store.startupError = startupMessage(for: error)
             return store
         }
     }
