@@ -3,14 +3,17 @@ import XCTest
 final class SeasonGateWalkthroughTests: XCTestCase {
     private var app: XCUIApplication!
 
+    struct MissingIsolationError: Error {}
+
     override func setUpWithError() throws {
         continueAfterFailure = false
         app = XCUIApplication()
         let environment = ProcessInfo.processInfo.environment
         for key in ["CROFT_DATABASE_PATH", "CROFT_DEFAULTS_SUITE"] {
-            if let value = environment[key] {
-                app.launchEnvironment[key] = value
+            guard let value = environment[key], !value.isEmpty else {
+                throw MissingIsolationError()
             }
+            app.launchEnvironment[key] = value
         }
         app.launch()
         app.activate()
@@ -163,8 +166,9 @@ final class SeasonGateWalkthroughTests: XCTestCase {
 
     private func readHarvestTotals() {
         openPlantingDetail(bed: "South")
+        let pattern = ".*(from 1 harvest|across [0-9]+ harvests).*"
         let totals = app.staticTexts.containing(
-            NSPredicate(format: "value CONTAINS 'harvest' OR label CONTAINS 'harvest'")
+            NSPredicate(format: "value MATCHES %@ OR label MATCHES %@", pattern, pattern)
         ).firstMatch
         XCTAssertTrue(totals.waitForExistence(timeout: 5))
         capture("12-harvest-totals")

@@ -11,6 +11,17 @@ guard arguments.count >= 2 else {
 let url = URL(fileURLWithPath: arguments[1])
 let withProperty = arguments.contains("--with-property")
 
+let liveDirectory = try? FileManager.default
+    .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    .appendingPathComponent("Croft", isDirectory: true)
+    .resolvingSymlinksInPath()
+let targetDirectory = url.deletingLastPathComponent().resolvingSymlinksInPath()
+if let liveDirectory, targetDirectory.path == liveDirectory.path {
+    FileHandle.standardError.write(
+        Data("refusing to seed inside the live Croft support directory\n".utf8))
+    exit(64)
+}
+
 try FileManager.default.createDirectory(
     at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
 for suffix in ["", "-wal", "-shm", ".pre-migration"] {
