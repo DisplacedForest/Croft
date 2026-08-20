@@ -33,6 +33,8 @@ struct CroftShell: View {
 
     var body: some View {
         shell
+            .modifier(CaptureSheetHost())
+            .environment(captureStore)
             .sheet(isPresented: $showsPropertySetup) {
                 propertyForm?.commitSetupOutcome()
             } content: {
@@ -96,7 +98,6 @@ struct CroftShell: View {
             captureStore: captureStore,
             initialRoute: initialRoute
         )
-        .modifier(CaptureSheetHost())
         .environment(captureStore)
         .environment(gardenStore)
         .task {
