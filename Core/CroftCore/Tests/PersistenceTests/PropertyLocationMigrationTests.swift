@@ -129,10 +129,14 @@ struct PropertyDetailsRoundTripTests {
         let firstFrost = try #require(MonthDay(month: 9, day: 28))
         try structures.updatePropertyDetails(
             property.id,
-            location: location,
-            hardinessZone: HardinessZone(number: 4),
-            lastFrost: lastFrost,
-            firstFrost: firstFrost
+            PropertyDetails(
+                location: location,
+                hardinessZone: HardinessZone(number: 4),
+                lastFrost: lastFrost,
+                firstFrost: firstFrost,
+                zoneSource: .user,
+                frostDatesSource: .user
+            )
         )
 
         let loaded = try #require(try structures.property(id: property.id))
@@ -150,17 +154,25 @@ struct PropertyDetailsRoundTripTests {
         try structures.create(property)
         try structures.updatePropertyDetails(
             property.id,
-            location: GeoCoordinate(latitude: 1, longitude: 2),
-            hardinessZone: HardinessZone(number: 7),
-            lastFrost: MonthDay(month: 4, day: 1),
-            firstFrost: MonthDay(month: 10, day: 20)
+            PropertyDetails(
+                location: GeoCoordinate(latitude: 1, longitude: 2),
+                hardinessZone: HardinessZone(number: 7),
+                lastFrost: MonthDay(month: 4, day: 1),
+                firstFrost: MonthDay(month: 10, day: 20),
+                zoneSource: .user,
+                frostDatesSource: .user
+            )
         )
         try structures.updatePropertyDetails(
             property.id,
-            location: nil,
-            hardinessZone: nil,
-            lastFrost: nil,
-            firstFrost: nil
+            PropertyDetails(
+                location: nil,
+                hardinessZone: nil,
+                lastFrost: nil,
+                firstFrost: nil,
+                zoneSource: .user,
+                frostDatesSource: .user
+            )
         )
         let loaded = try #require(try structures.property(id: property.id))
         #expect(loaded.location == nil)
@@ -175,10 +187,14 @@ struct PropertyDetailsRoundTripTests {
         #expect(throws: GardenStructureError.self) {
             try structures.updatePropertyDetails(
                 Property.ID.generate(),
-                location: nil,
-                hardinessZone: nil,
-                lastFrost: nil,
-                firstFrost: nil
+                PropertyDetails(
+                    location: nil,
+                    hardinessZone: nil,
+                    lastFrost: nil,
+                    firstFrost: nil,
+                    zoneSource: .user,
+                    frostDatesSource: .user
+                )
             )
         }
     }
@@ -190,10 +206,14 @@ struct PropertyDetailsRoundTripTests {
         try structures.create(property)
         try structures.updatePropertyDetails(
             property.id,
-            location: nil,
-            hardinessZone: nil,
-            lastFrost: MonthDay(month: 9, day: 20),
-            firstFrost: MonthDay(month: 5, day: 10)
+            PropertyDetails(
+                location: nil,
+                hardinessZone: nil,
+                lastFrost: MonthDay(month: 9, day: 20),
+                firstFrost: MonthDay(month: 5, day: 10),
+                zoneSource: .user,
+                frostDatesSource: .user
+            )
         )
         let loaded = try #require(try structures.property(id: property.id))
         #expect(loaded.lastFrost?.month == 9)

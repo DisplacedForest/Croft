@@ -285,22 +285,21 @@ extension GardenStructureRepository {
 
     public func updatePropertyDetails(
         _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
+        _ details: PropertyDetails
     ) throws {
         try writer.write { db in
             guard var found = try PropertyRecord.fetchOne(db, key: id.rawValue) else {
                 throw GardenStructureError.structureNotFound(id.rawValue)
             }
-            found.latitude = location?.latitude
-            found.longitude = location?.longitude
-            found.hardinessZone = hardinessZone?.description
-            found.lastFrostMonth = lastFrost?.month
-            found.lastFrostDay = lastFrost?.day
-            found.firstFrostMonth = firstFrost?.month
-            found.firstFrostDay = firstFrost?.day
+            found.latitude = details.location?.latitude
+            found.longitude = details.location?.longitude
+            found.hardinessZone = details.hardinessZone?.description
+            found.lastFrostMonth = details.lastFrost?.month
+            found.lastFrostDay = details.lastFrost?.day
+            found.firstFrostMonth = details.firstFrost?.month
+            found.firstFrostDay = details.firstFrost?.day
+            found.zoneSource = details.zoneSource.rawValue
+            found.frostDatesSource = details.frostDatesSource.rawValue
             try found.update(db)
             try changes.record(.property, found.id, .update, in: db)
         }

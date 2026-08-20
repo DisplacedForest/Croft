@@ -51,12 +51,6 @@ public struct DerivedClimate: Codable, Equatable, Sendable {
     }
 }
 
-public enum PropertyClimateField: CaseIterable, Hashable, Sendable {
-    case zone
-    case lastFrost
-    case firstFrost
-}
-
 public struct ClimateCache {
     private let store: UserDefaults
     private static let keyPrefix = "climate.derived."

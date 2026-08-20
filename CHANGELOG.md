@@ -8,6 +8,12 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Property setup now reads as one decision: give Croft your location and it
+  derives your hardiness zone and frost dates, labeled with where they came
+  from. Adjust lets you override a value, which is then marked as set by you
+  and never silently replaced; Use Derived Value hands it back to derivation.
+  The per-field Apply suggestions are gone.
+
 - Before applying schema migrations to an existing garden database, Croft now
   writes a rolling pre-migration backup beside it, and opening a database
   written by a newer version of Croft explains that the app needs updating

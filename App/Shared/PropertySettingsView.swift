@@ -83,6 +83,7 @@ struct PropertySettingsView: View {
     private func editor(_ form: PropertyDetailsForm) -> some View {
         VStack(spacing: 0) {
             PropertyDetailsView(form: form)
+                .disabled(form.isSaving)
             HStack(spacing: CroftTheme.space(2)) {
                 if showsSaved {
                     Text("Saved.")
@@ -95,13 +96,16 @@ struct PropertySettingsView: View {
                 }
                 Spacer()
                 Button("Save") {
-                    if form.save() {
-                        saveCount += 1
-                        showsSaved = true
-                    } else {
-                        showsSaved = false
+                    Task {
+                        if await form.save() {
+                            saveCount += 1
+                            showsSaved = true
+                        } else {
+                            showsSaved = false
+                        }
                     }
                 }
+                .disabled(form.isSaving)
                 .keyboardShortcut(.defaultAction)
             }
             .padding(.horizontal, CroftTheme.space(5))
@@ -117,36 +121,34 @@ struct PropertySetupSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: CroftTheme.space(4)) {
-            VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-                Text("Set up your property")
-                    .font(CroftTheme.heading)
-                Text(
-                    "Tell Croft where your garden grows. Frost dates set your planting windows, "
-                        + "and your location brings in the weather."
-                )
-                .font(CroftTheme.supporting)
-                .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, CroftTheme.space(5))
-            .padding(.top, CroftTheme.space(6))
+            Text("Set up your property")
+                .font(CroftTheme.heading)
+                .padding(.horizontal, CroftTheme.space(5))
+                .padding(.top, CroftTheme.space(6))
             PropertyDetailsView(form: form)
+                .disabled(form.isSaving)
             HStack(spacing: CroftTheme.space(2)) {
                 Spacer()
                 Button("Not Now") {
                     form.declineSetup()
                     dismiss()
                 }
+                .disabled(form.isSaving)
                 Button("Save") {
-                    if form.save() {
-                        dismiss()
+                    Task {
+                        if await form.save() {
+                            dismiss()
+                        }
                     }
                 }
+                .disabled(form.isSaving)
                 .buttonStyle(.borderedProminent)
             }
             .padding(.horizontal, CroftTheme.space(5))
             .padding(.bottom, CroftTheme.space(5))
         }
         .croftScreenSurface()
+        .interactiveDismissDisabled(form.isSaving)
         #if os(macOS)
             .frame(width: 480, height: 600)
         #endif

@@ -156,6 +156,7 @@ struct MigrationPreservationTests {
                 "v013-harvests", "v014-garden-tasks", "v016-lifecycle-stages",
                 "v017-property-location", "v018-harvest-yield", "v019-daily-weather",
                 "v020-change-log", "v021-hardiness-zone-text",
+                "v022-climate-provenance",
             ])
     }
 

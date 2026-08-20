@@ -93,7 +93,7 @@ private func makeForm(
     #expect(form.addressSuggestions.isEmpty)
 }
 
-@Test @MainActor func selectingASuggestionFillsCoordinatesAndDerivesPrefills() async throws {
+@Test @MainActor func selectingASuggestionFillsCoordinatesAndDerivesValues() async throws {
     let form = try makeForm()
     form.load()
     form.addressQuery = "Montpelier"
@@ -103,30 +103,17 @@ private func makeForm(
     #expect(form.latitudeText == "44.26000")
     #expect(form.longitudeText == "-72.58000")
     #expect(form.addressQuery == "Montpelier, Vermont")
-    #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
+    #expect(form.zoneSource == .derived)
+    #expect(form.frostDatesSource == .derived)
     #expect(form.zoneText == "5")
     #expect(form.lastFrostMonth == 5)
     #expect(form.lastFrostDay == 5)
     #expect(form.firstFrostMonth == 10)
     #expect(form.firstFrostDay == 1)
-    #expect(form.climateSuggestions.isEmpty)
-    #expect(form.save())
+    #expect(await form.save())
 }
 
-@Test @MainActor func aLetteredZoneMatchingTheDerivedNumberOffersNoSuggestion() async throws {
-    let form = try makeForm()
-    form.load()
-    form.zoneText = "5b"
-    form.latitudeText = "44.26"
-    form.longitudeText = "-72.58"
-    await form.deriveClimate()
-
-    #expect(form.zoneText == "5b")
-    #expect(form.climateSuggestions.isEmpty)
-    #expect(form.derivedPrefilled == [.lastFrost, .firstFrost])
-}
-
-@Test @MainActor func occupiedFieldsGetSuggestionsNotOverwrites() async throws {
+@Test @MainActor func derivedSourcedValuesAreOverwrittenByRederivation() async throws {
     let form = try makeForm()
     form.load()
     form.zoneText = "7"
@@ -136,20 +123,104 @@ private func makeForm(
     form.longitudeText = "-72.58"
     await form.deriveClimate()
 
-    #expect(form.zoneText == "7")
-    #expect(form.lastFrostMonth == 4)
-    #expect(form.climateSuggestions == [.zone, .lastFrost])
-    #expect(form.derivedPrefilled == [.firstFrost])
-    #expect(form.firstFrostMonth == 10)
-
-    form.applySuggestion(.zone)
     #expect(form.zoneText == "5")
-    #expect(form.climateSuggestions == [.lastFrost])
-
-    form.applySuggestion(.lastFrost)
     #expect(form.lastFrostMonth == 5)
     #expect(form.lastFrostDay == 5)
-    #expect(form.climateSuggestions.isEmpty)
+    #expect(form.firstFrostMonth == 10)
+}
+
+@Test @MainActor func userSourcedGroupsSurviveDerivation() async throws {
+    let form = try makeForm()
+    form.load()
+    form.adjustZone()
+    form.zoneText = "8b"
+    form.adjustFrostDates()
+    form.lastFrostMonth = 4
+    form.lastFrostDay = 15
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+
+    #expect(form.zoneText == "8b")
+    #expect(form.lastFrostMonth == 4)
+    #expect(form.lastFrostDay == 15)
+    #expect(form.firstFrostMonth == nil)
+    #expect(form.derivedClimate != nil)
+}
+
+@Test @MainActor func aUserFrostAdjustmentSurvivesALocationChange() async throws {
+    let form = try makeForm()
+    form.load()
+    form.addressQuery = "Montpelier"
+    await form.searchAddresses()
+    await form.selectSuggestion(form.addressSuggestions[0])
+    #expect(form.lastFrostMonth == 5)
+
+    form.adjustFrostDates()
+    form.lastFrostMonth = 4
+    form.lastFrostDay = 20
+
+    form.latitudeText = "43.10000"
+    form.longitudeText = "-70.50000"
+    await form.deriveClimate()
+
+    #expect(form.lastFrostMonth == 4)
+    #expect(form.lastFrostDay == 20)
+    #expect(form.frostDatesSource == .user)
+    #expect(form.zoneSource == .derived)
+    #expect(form.zoneText == "5")
+}
+
+@Test @MainActor func adjustFlipsTheSourceAndRevertRestoresDerivation() async throws {
+    let form = try makeForm()
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+    #expect(form.zoneText == "5")
+
+    form.adjustZone()
+    #expect(form.zoneSource == .user)
+    form.zoneText = "6a"
+    await form.deriveClimate()
+    #expect(form.zoneText == "6a")
+
+    await form.useDerivedZone()
+    #expect(form.zoneSource == .derived)
+    #expect(form.zoneText == "5")
+}
+
+@Test @MainActor func revertingFrostDatesRestoresDerivedValues() async throws {
+    let form = try makeForm()
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+
+    form.adjustFrostDates()
+    form.lastFrostMonth = 3
+    form.lastFrostDay = 1
+
+    await form.useDerivedFrostDates()
+    #expect(form.frostDatesSource == .derived)
+    #expect(form.lastFrostMonth == 5)
+    #expect(form.lastFrostDay == 5)
+    #expect(form.firstFrostMonth == 10)
+}
+
+@Test @MainActor func revertingWithoutWeatherLeavesTheHonestMessage() async throws {
+    let form = try makeForm(series: nil)
+    form.load()
+    form.adjustZone()
+    form.zoneText = "8b"
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    await form.useDerivedZone()
+
+    #expect(form.zoneSource == .derived)
+    #expect(form.zoneText.isEmpty)
+    #expect(form.derivationMessage != nil)
 }
 
 @Test @MainActor func aFailedResolveLeavesManualEntryWorking() async throws {
@@ -165,7 +236,7 @@ private func makeForm(
     #expect(form.addressMessage != nil)
     form.latitudeText = "10"
     form.longitudeText = "10"
-    #expect(form.save())
+    #expect(await form.save())
 }
 
 @Test @MainActor func aFailedMinimaFetchSaysSoAndLeavesManualEntryWorking() async throws {
@@ -176,10 +247,9 @@ private func makeForm(
     await form.deriveClimate()
 
     #expect(form.derivedClimate == nil)
-    #expect(form.derivedPrefilled.isEmpty)
     #expect(form.zoneText.isEmpty)
     #expect(form.derivationMessage != nil)
-    #expect(form.save())
+    #expect(await form.save())
 }
 
 @Test @MainActor func anEmptyWeatherHistorySaysSo() async throws {
@@ -255,7 +325,7 @@ private func makeForm(
     #expect(form.longitudeText == "-72.58000")
     #expect(form.addressQuery == "Montpelier, Vermont")
     #expect(form.addressMessage == nil)
-    #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
+    #expect(form.zoneSource == .derived)
     #expect(form.zoneText == "5")
     #expect(form.lastFrostMonth == 5)
     #expect(form.firstFrostMonth == 10)
@@ -275,10 +345,10 @@ private func makeForm(
     #expect(form.addressQuery.isEmpty)
     #expect(form.addressMessage != nil)
     #expect(form.zoneText == "5")
-    #expect(form.derivedPrefilled == [.zone, .lastFrost, .firstFrost])
+    #expect(form.frostDatesSource == .derived)
 }
 
-@Test @MainActor func aNoFrostClimateOffersOnlyTheZone() async throws {
+@Test @MainActor func aNoFrostClimateDerivesOnlyTheZone() async throws {
     let subtropical = [
         DailyMinimum(date: day(2023, 1, 10), celsius: 8),
         DailyMinimum(date: day(2024, 1, 12), celsius: 10),
@@ -289,8 +359,7 @@ private func makeForm(
     form.longitudeText = "-82.5"
     await form.deriveClimate()
 
-    #expect(form.derivedPrefilled == [.zone])
+    #expect(form.zoneText == "11")
     #expect(form.lastFrostMonth == nil)
     #expect(form.firstFrostMonth == nil)
-    #expect(form.climateSuggestions.isEmpty)
 }

@@ -2,10 +2,12 @@ import Foundation
 import Observation
 import Persistence
 
+import enum Domain.ClimateSource
 import struct Domain.GeoCoordinate
 import struct Domain.HardinessZone
 import struct Domain.MonthDay
 import struct Domain.Property
+import struct Domain.PropertyDetails
 import func Domain.withDeadline
 
 public typealias CoordinateFill = @Sendable () async throws -> GeoCoordinate
@@ -46,13 +48,7 @@ public enum PropertySourceState: Equatable, Sendable {
 protocol PropertyStoring {
     func firstProperty() throws -> Property?
     func ensureHomeProperty() throws -> Property
-    func updateDetails(
-        _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
-    ) throws
+    func updateDetails(_ id: Property.ID, _ details: PropertyDetails) throws
 }
 
 @MainActor
@@ -73,20 +69,8 @@ private struct DatabasePropertyStore: PropertyStoring {
         try editor.homeProperty()
     }
 
-    func updateDetails(
-        _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
-    ) throws {
-        try structures.updatePropertyDetails(
-            id,
-            location: location,
-            hardinessZone: hardinessZone,
-            lastFrost: lastFrost,
-            firstFrost: firstFrost
-        )
+    func updateDetails(_ id: Property.ID, _ details: PropertyDetails) throws {
+        try structures.updatePropertyDetails(id, details)
     }
 }
 
@@ -112,8 +96,14 @@ public final class PropertyDetailsForm {
     public internal(set) var isDerivingClimate = false
     public internal(set) var derivationMessage: String?
     public internal(set) var derivedClimate: DerivedClimate?
-    public internal(set) var derivedPrefilled: Set<PropertyClimateField> = []
-    public internal(set) var climateSuggestions: [PropertyClimateField] = []
+    public internal(set) var zoneSource: ClimateSource = .derived
+    public internal(set) var frostDatesSource: ClimateSource = .derived
+    public private(set) var isSaving = false
+    var climateCoordinate: GeoCoordinate?
+    var derivationTask: Task<Void, Never>?
+    var derivationCoordinate: GeoCoordinate?
+    var derivationFlight = 0
+    var pendingDerivation = false
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -202,39 +192,65 @@ public final class PropertyDetailsForm {
         lastFrostDay = property?.lastFrost?.day
         firstFrostMonth = property?.firstFrost?.month
         firstFrostDay = property?.firstFrost?.day
+        zoneSource = property?.zoneSource ?? .derived
+        frostDatesSource = property?.frostDatesSource ?? .derived
+        climateCoordinate = nil
         validationMessage = nil
         locationMessage = nil
     }
 
     @discardableResult
-    public func save() -> Bool {
+    public func save() async -> Bool {
+        let saved = await performSave()
+        await replayPendingDerivation()
+        return saved
+    }
+
+    private func replayPendingDerivation() async {
+        guard pendingDerivation, !isSaving else {
+            return
+        }
+        pendingDerivation = false
+        await deriveClimate()
+    }
+
+    private func performSave() async -> Bool {
+        guard !isSaving else {
+            return false
+        }
+        isSaving = true
+        defer { isSaving = false }
+        retireDerivationFlight()
         validationMessage = nil
         guard sourceState != .unreadable else {
             validationMessage = "The property record can't be read, so saving is disabled."
             return false
         }
         do {
+            let inputs = saveInputs
             let location = try parsedCoordinate()
-            let zone = try parsedZone()
-            let lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
-            let firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
-            let home = try store.ensureHomeProperty()
-            try store.updateDetails(
-                home.id,
+            var zone = try parsedZone()
+            var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
+            var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
+            var fetched: DerivedClimate?
+            if needsDerivationBeforeSave(location) {
+                fetched = await resolveDerivedForSave(location, &zone, &lastFrost, &firstFrost)
+                guard saveInputs == inputs else {
+                    return false
+                }
+            }
+            let details = PropertyDetails(
                 location: location,
                 hardinessZone: zone,
                 lastFrost: lastFrost,
-                firstFrost: firstFrost
+                firstFrost: firstFrost,
+                zoneSource: zoneSource,
+                frostDatesSource: frostDatesSource
             )
-            defaults.hasBeenPrompted = true
-            setupOutcome = .saved
-            var saved = home
-            saved.location = location
-            saved.hardinessZone = zone
-            saved.lastFrost = lastFrost
-            saved.firstFrost = firstFrost
-            property = saved
-            sourceState = .loaded
+            try persist(details)
+            if let fetched, let location {
+                climateCache.remember(fetched, for: location)
+            }
             return true
         } catch let error as PropertyDetailsError {
             validationMessage = error.message
@@ -243,6 +259,22 @@ public final class PropertyDetailsForm {
             validationMessage = "Could not save the property details."
             return false
         }
+    }
+
+    private func persist(_ details: PropertyDetails) throws {
+        let home = try store.ensureHomeProperty()
+        try store.updateDetails(home.id, details)
+        defaults.hasBeenPrompted = true
+        setupOutcome = .saved
+        var saved = home
+        saved.location = details.location
+        saved.hardinessZone = details.hardinessZone
+        saved.lastFrost = details.lastFrost
+        saved.firstFrost = details.firstFrost
+        saved.zoneSource = details.zoneSource
+        saved.frostDatesSource = details.frostDatesSource
+        property = saved
+        sourceState = .loaded
     }
 
     public func declineSetup() {
@@ -290,7 +322,9 @@ public final class PropertyDetailsForm {
         }
         await deriveClimate()
     }
+}
 
+extension PropertyDetailsForm {
     func parsedCoordinate() throws -> GeoCoordinate? {
         let latText = latitudeText.trimmingCharacters(in: .whitespaces)
         let lonText = longitudeText.trimmingCharacters(in: .whitespaces)
@@ -339,5 +373,19 @@ public final class PropertyDetailsForm {
 
     static func format(_ value: Double) -> String {
         String(format: "%.5f", value)
+    }
+
+    var saveInputs: SaveInputs {
+        SaveInputs(
+            latitudeText: latitudeText,
+            longitudeText: longitudeText,
+            zoneSource: zoneSource,
+            frostDatesSource: frostDatesSource,
+            customZone: zoneSource == .user ? zoneText : nil,
+            customLastMonth: frostDatesSource == .user ? lastFrostMonth : nil,
+            customLastDay: frostDatesSource == .user ? lastFrostDay : nil,
+            customFirstMonth: frostDatesSource == .user ? firstFrostMonth : nil,
+            customFirstDay: frostDatesSource == .user ? firstFrostDay : nil
+        )
     }
 }

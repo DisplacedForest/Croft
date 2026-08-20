@@ -7,6 +7,7 @@ import struct Domain.MonthDay
 struct PropertyDetailsView: View {
     @Bindable var form: PropertyDetailsForm
     @State private var searchTask: Task<Void, Never>?
+    @State private var deriveTask: Task<Void, Never>?
     @State private var ignoresQueryChange = false
 
     var body: some View {
@@ -31,7 +32,13 @@ struct PropertyDetailsView: View {
                 addressSearchField
             }
             TextField("Latitude", text: $form.latitudeText)
+                .onChange(of: form.latitudeText) { _, _ in
+                    scheduleDerive()
+                }
             TextField("Longitude", text: $form.longitudeText)
+                .onChange(of: form.longitudeText) { _, _ in
+                    scheduleDerive()
+                }
             if form.canFillLocation {
                 HStack(spacing: CroftTheme.space(2)) {
                     Button("Use Current Location") {
@@ -101,6 +108,17 @@ struct PropertyDetailsView: View {
         }
     }
 
+    private func scheduleDerive() {
+        deriveTask?.cancel()
+        deriveTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else {
+                return
+            }
+            await form.deriveClimate()
+        }
+    }
+
     private func suggestionRow(_ suggestion: AddressSuggestion) -> some View {
         Button {
             searchTask?.cancel()
@@ -127,78 +145,100 @@ struct PropertyDetailsView: View {
 
     private var zoneSection: some View {
         Section("Hardiness Zone") {
-            TextField("Zone", text: $form.zoneText)
-            if form.derivedPrefilled.contains(.zone) {
-                derivedCaption
+            if form.zoneSource == .user {
+                TextField("Zone", text: $form.zoneText)
+                caption("Custom")
+                sourceButton(
+                    "Use Derived Value",
+                    accessibility: "Use derived hardiness zone"
+                ) {
+                    await form.useDerivedZone()
+                }
+            } else {
+                LabeledContent("Zone", value: zoneDisplay)
+                caption(derivedMark)
+                adjustButton(accessibility: "Adjust hardiness zone") {
+                    form.adjustZone()
+                }
             }
-            if let zone = suggestedZone {
-                suggestionOffer("Derived: \(zone)", field: .zone)
-            }
-            Text("Shown for reference. Planting windows use your frost dates.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 
     private var frostSection: some View {
         Section("Frost Dates") {
-            frostRow(
-                "Last frost",
-                month: $form.lastFrostMonth,
-                day: $form.lastFrostDay
-            )
-            frostRow(
-                "First frost",
-                month: $form.firstFrostMonth,
-                day: $form.firstFrostDay
-            )
-            if hasDerivedFrost {
-                derivedCaption
-            }
-            if let last = suggested(.lastFrost) {
-                suggestionOffer("Derived: \(Self.label(for: last))", field: .lastFrost)
-            }
-            if let first = suggested(.firstFrost) {
-                suggestionOffer("Derived: \(Self.label(for: first))", field: .firstFrost)
+            if form.frostDatesSource == .user {
+                frostRow(
+                    "Last frost",
+                    month: $form.lastFrostMonth,
+                    day: $form.lastFrostDay
+                )
+                frostRow(
+                    "First frost",
+                    month: $form.firstFrostMonth,
+                    day: $form.firstFrostDay
+                )
+                caption("Custom")
+                sourceButton(
+                    "Use Derived Values",
+                    accessibility: "Use derived frost dates"
+                ) {
+                    await form.useDerivedFrostDates()
+                }
+            } else {
+                LabeledContent(
+                    "Last frost",
+                    value: frostDisplay(form.lastFrostMonth, form.lastFrostDay))
+                LabeledContent(
+                    "First frost",
+                    value: frostDisplay(form.firstFrostMonth, form.firstFrostDay))
+                caption(derivedMark)
+                adjustButton(accessibility: "Adjust frost dates") {
+                    form.adjustFrostDates()
+                }
             }
         }
     }
 
-    private var hasDerivedFrost: Bool {
-        form.derivedPrefilled.contains(.lastFrost) || form.derivedPrefilled.contains(.firstFrost)
+}
+
+extension PropertyDetailsView {
+    private var zoneDisplay: String {
+        form.zoneText.isEmpty ? "Not set" : form.zoneText
     }
 
-    private var suggestedZone: Int? {
-        guard form.climateSuggestions.contains(.zone) else {
-            return nil
+    private func frostDisplay(_ month: Int?, _ day: Int?) -> String {
+        guard let month, let day, let value = MonthDay(month: month, day: day) else {
+            return "Not set"
         }
-        return form.derivedClimate?.zone
+        return Self.label(for: value)
     }
 
-    private func suggested(_ field: PropertyClimateField) -> MonthDay? {
-        guard form.climateSuggestions.contains(field) else {
-            return nil
-        }
-        return field == .lastFrost
-            ? form.derivedClimate?.lastFrost : form.derivedClimate?.firstFrost
+    private var derivedMark: String {
+        form.derivationMessage ?? "Derived"
     }
 
-    private var derivedCaption: some View {
-        Text("Derived from ten years of weather at this location.")
+    private func caption(_ text: String) -> some View {
+        Text(text)
             .font(.caption)
             .foregroundStyle(.secondary)
     }
 
-    private func suggestionOffer(_ title: String, field: PropertyClimateField) -> some View {
-        HStack(spacing: CroftTheme.space(2)) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer(minLength: CroftTheme.space(2))
-            Button("Apply") {
-                form.applySuggestion(field)
+    private func adjustButton(
+        accessibility: String, action: @escaping () -> Void
+    ) -> some View {
+        Button("Adjust", action: action)
+            .accessibilityLabel(accessibility)
+    }
+
+    private func sourceButton(
+        _ title: String, accessibility: String, action: @escaping () async -> Void
+    ) -> some View {
+        Button(title) {
+            Task {
+                await action()
             }
         }
+        .accessibilityLabel(accessibility)
     }
 
     private static func label(for value: MonthDay) -> String {
@@ -222,7 +262,7 @@ struct PropertyDetailsView: View {
                 }
             }
             if let selected = month.wrappedValue, let last = MonthDay.lastDay(ofMonth: selected) {
-                Picker("Day", selection: day) {
+                Picker("\(title) day", selection: day) {
                     Text("None").tag(Int?.none)
                     ForEach(1...last, id: \.self) { value in
                         Text(String(value)).tag(Int?.some(value))
@@ -251,7 +291,6 @@ struct PropertyDetailsView: View {
         }
     }
 }
-
 private struct MonthChoice: Identifiable {
     let number: Int
     let name: String

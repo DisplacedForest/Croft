@@ -1,7 +1,156 @@
 import Domain
 import Foundation
 
+enum DerivedFetch {
+    case unavailable
+    case empty
+    case derived(DerivedClimate)
+}
+
 extension PropertyDetailsForm {
+    public func adjustZone() {
+        zoneSource = .user
+    }
+
+    public func adjustFrostDates() {
+        frostDatesSource = .user
+    }
+
+    public func useDerivedZone() async {
+        zoneSource = .derived
+        syncDerivedGroupsToCurrentClimate()
+        await deriveClimate()
+    }
+
+    public func useDerivedFrostDates() async {
+        frostDatesSource = .derived
+        syncDerivedGroupsToCurrentClimate()
+        await deriveClimate()
+    }
+
+    func retireDerivationFlight() {
+        derivationTask?.cancel()
+        derivationTask = nil
+        derivationCoordinate = nil
+        isDerivingClimate = false
+    }
+
+    func needsDerivationBeforeSave(_ location: GeoCoordinate?) -> Bool {
+        location != climateCoordinate
+            && (zoneSource == .derived || frostDatesSource == .derived)
+    }
+
+    func resolveDerivedForSave(
+        _ location: GeoCoordinate?,
+        _ zone: inout HardinessZone?,
+        _ lastFrost: inout MonthDay?,
+        _ firstFrost: inout MonthDay?
+    ) async -> DerivedClimate? {
+        guard let location, minima != nil else {
+            dropStaleDerived(location, &zone, &lastFrost, &firstFrost)
+            return nil
+        }
+        switch await fetchDerived(location) {
+        case .derived(let derived):
+            if zoneSource == .derived {
+                zone = derived.zone.flatMap { HardinessZone(number: $0) }
+            }
+            if frostDatesSource == .derived {
+                lastFrost = derived.lastFrost
+                firstFrost = derived.firstFrost
+            }
+            if ((try? parsedCoordinate()) ?? nil) == location {
+                derivedClimate = derived
+                climateCoordinate = location
+                applyDerivedValues(derived)
+            }
+            return derived
+        case .unavailable:
+            dropUnderived(
+                location, &zone, &lastFrost, &firstFrost,
+                message: "Weather history is unavailable for this location, so zone and frost "
+                    + "dates were not derived. Enter them manually or try again later.")
+            return nil
+        case .empty:
+            dropUnderived(
+                location, &zone, &lastFrost, &firstFrost,
+                message: "Weather history had nothing usable for this location, so zone and frost "
+                    + "dates were not derived. Enter them manually.")
+            return nil
+        }
+    }
+
+    private func dropUnderived(
+        _ location: GeoCoordinate,
+        _ zone: inout HardinessZone?,
+        _ lastFrost: inout MonthDay?,
+        _ firstFrost: inout MonthDay?,
+        message: String
+    ) {
+        derivationMessage = message
+        guard location != persistedDisplayLocation else {
+            return
+        }
+        if zoneSource == .derived {
+            zone = nil
+        }
+        if frostDatesSource == .derived {
+            lastFrost = nil
+            firstFrost = nil
+        }
+        if ((try? parsedCoordinate()) ?? nil) == location {
+            derivedClimate = nil
+            climateCoordinate = nil
+            clearDerivedGroups()
+        }
+    }
+
+    var persistedDisplayLocation: GeoCoordinate? {
+        guard let location = property?.location else {
+            return nil
+        }
+        guard
+            let latitude = Double(PropertyDetailsForm.format(location.latitude)),
+            let longitude = Double(PropertyDetailsForm.format(location.longitude)),
+            let display = GeoCoordinate(latitude: latitude, longitude: longitude)
+        else {
+            return location
+        }
+        return display
+    }
+
+    func dropStaleDerived(
+        _ location: GeoCoordinate?,
+        _ zone: inout HardinessZone?,
+        _ lastFrost: inout MonthDay?,
+        _ firstFrost: inout MonthDay?
+    ) {
+        guard location != climateCoordinate else {
+            return
+        }
+        if zoneSource == .derived {
+            zone = nil
+            zoneText = ""
+        }
+        if frostDatesSource == .derived {
+            lastFrost = nil
+            firstFrost = nil
+            lastFrostMonth = nil
+            lastFrostDay = nil
+            firstFrostMonth = nil
+            firstFrostDay = nil
+        }
+    }
+
+    private func syncDerivedGroupsToCurrentClimate() {
+        let current = (try? parsedCoordinate()) ?? nil
+        if let derivedClimate, let climateCoordinate, climateCoordinate == current {
+            applyDerivedValues(derivedClimate)
+        } else {
+            clearDerivedGroups()
+        }
+    }
+
     public var canSearchAddresses: Bool {
         addressSearch != nil
     }
@@ -36,106 +185,124 @@ extension PropertyDetailsForm {
     }
 
     public func deriveClimate() async {
-        guard let minima else {
+        guard !isSaving else {
+            pendingDerivation = true
+            return
+        }
+        guard minima != nil else {
             return
         }
         guard let coordinate = try? parsedCoordinate() else {
             return
         }
-        derivationMessage = nil
-        isDerivingClimate = true
-        defer { isDerivingClimate = false }
-        let derived: DerivedClimate
-        if let cached = climateCache.cached(for: coordinate) {
-            derived = cached
+        let flight: Int
+        if let derivationTask, derivationCoordinate == coordinate {
+            flight = derivationFlight
+            await derivationTask.value
         } else {
-            let deadline = minimaDeadline
-            let series = try? await withDeadline(deadline) {
-                try await minima(coordinate)
-            }
-            guard let series, !series.isEmpty else {
-                derivationMessage =
-                    "Weather history is unavailable for this location, so zone and frost "
-                    + "dates were not derived. Enter them manually or try again later."
-                return
-            }
-            let southern = coordinate.latitude < 0
-            let frost = ClimateDerivation.frostDates(
-                minima: series, southernHemisphere: southern)
-            let zone = ClimateDerivation.estimatedZone(
-                minima: series, southernHemisphere: southern)
-            derived = DerivedClimate(
-                zone: zone, lastFrost: frost.lastFrost, firstFrost: frost.firstFrost)
-            climateCache.remember(derived, for: coordinate)
+            derivationTask?.cancel()
+            derivationFlight += 1
+            flight = derivationFlight
+            derivationMessage = nil
+            isDerivingClimate = true
+            let task = Task { await self.performDerivation(coordinate) }
+            derivationTask = task
+            derivationCoordinate = coordinate
+            await task.value
         }
-        derivedClimate = derived.isEmpty ? nil : derived
-        guard derivedClimate != nil else {
-            derivationMessage =
+        if derivationFlight == flight {
+            derivationTask = nil
+            derivationCoordinate = nil
+        }
+    }
+
+    private func performDerivation(_ coordinate: GeoCoordinate) async {
+        guard !Task.isCancelled else {
+            return
+        }
+        defer {
+            if !Task.isCancelled {
+                isDerivingClimate = false
+            }
+        }
+        let fetched = await fetchDerived(coordinate)
+        guard !Task.isCancelled, ((try? parsedCoordinate()) ?? nil) == coordinate else {
+            return
+        }
+        switch fetched {
+        case .unavailable:
+            failDerivation(
+                coordinate,
+                "Weather history is unavailable for this location, so zone and frost "
+                    + "dates were not derived. Enter them manually or try again later.")
+        case .empty:
+            failDerivation(
+                coordinate,
                 "Weather history had nothing usable for this location, so zone and frost "
-                + "dates were not derived. Enter them manually."
+                    + "dates were not derived. Enter them manually.")
+        case .derived(let derived):
+            climateCache.remember(derived, for: coordinate)
+            derivedClimate = derived
+            climateCoordinate = coordinate
+            applyDerivedValues(derived)
+        }
+    }
+
+    func fetchDerived(_ coordinate: GeoCoordinate) async -> DerivedFetch {
+        guard let minima else {
+            return .unavailable
+        }
+        if let cached = climateCache.cached(for: coordinate) {
+            return cached.isEmpty ? .empty : .derived(cached)
+        }
+        let deadline = minimaDeadline
+        let series = try? await withDeadline(deadline) {
+            try await minima(coordinate)
+        }
+        guard let series, !series.isEmpty else {
+            return .unavailable
+        }
+        let southern = coordinate.latitude < 0
+        let frost = ClimateDerivation.frostDates(
+            minima: series, southernHemisphere: southern)
+        let zone = ClimateDerivation.estimatedZone(
+            minima: series, southernHemisphere: southern)
+        let derived = DerivedClimate(
+            zone: zone, lastFrost: frost.lastFrost, firstFrost: frost.firstFrost)
+        return derived.isEmpty ? .empty : .derived(derived)
+    }
+
+    private func failDerivation(_ coordinate: GeoCoordinate, _ message: String) {
+        derivationMessage = message
+        derivedClimate = nil
+        climateCoordinate = nil
+        guard coordinate != persistedDisplayLocation else {
             return
         }
-        offerDerivedValues(derived)
+        clearDerivedGroups()
     }
 
-    public func applySuggestion(_ field: PropertyClimateField) {
-        guard let derivedClimate else {
-            return
+    private func clearDerivedGroups() {
+        if zoneSource == .derived {
+            zoneText = ""
         }
-        switch field {
-        case .zone:
-            if let zone = derivedClimate.zone {
-                zoneText = String(zone)
-            }
-        case .lastFrost:
-            if let last = derivedClimate.lastFrost {
-                lastFrostMonth = last.month
-                lastFrostDay = last.day
-            }
-        case .firstFrost:
-            if let first = derivedClimate.firstFrost {
-                firstFrostMonth = first.month
-                firstFrostDay = first.day
-            }
-        }
-        climateSuggestions.removeAll { $0 == field }
-        derivedPrefilled.insert(field)
-    }
-
-    private func offerDerivedValues(_ derived: DerivedClimate) {
-        derivedPrefilled = []
-        climateSuggestions = []
-        if let zone = derived.zone {
-            let current = zoneText.trimmingCharacters(in: .whitespaces)
-            if current.isEmpty {
-                zoneText = String(zone)
-                derivedPrefilled.insert(.zone)
-            } else if HardinessZone(parsing: current)?.number != zone {
-                climateSuggestions.append(.zone)
-            }
-        }
-        if let last = derived.lastFrost {
-            offerFrost(
-                last, field: .lastFrost, month: &lastFrostMonth, day: &lastFrostDay)
-        }
-        if let first = derived.firstFrost {
-            offerFrost(
-                first, field: .firstFrost, month: &firstFrostMonth, day: &firstFrostDay)
+        if frostDatesSource == .derived {
+            lastFrostMonth = nil
+            lastFrostDay = nil
+            firstFrostMonth = nil
+            firstFrostDay = nil
         }
     }
 
-    private func offerFrost(
-        _ value: MonthDay,
-        field: PropertyClimateField,
-        month: inout Int?,
-        day: inout Int?
-    ) {
-        if month == nil, day == nil {
-            month = value.month
-            day = value.day
-            derivedPrefilled.insert(field)
-        } else if month != value.month || day != value.day {
-            climateSuggestions.append(field)
+    private func applyDerivedValues(_ derived: DerivedClimate) {
+        if zoneSource == .derived {
+            zoneText = derived.zone.map(String.init) ?? ""
+        }
+        if frostDatesSource == .derived {
+            lastFrostMonth = derived.lastFrost?.month
+            lastFrostDay = derived.lastFrost?.day
+            firstFrostMonth = derived.firstFrost?.month
+            firstFrostDay = derived.firstFrost?.day
         }
     }
 }

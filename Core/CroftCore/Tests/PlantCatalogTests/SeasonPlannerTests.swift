@@ -44,10 +44,14 @@ private struct SeasonFixture {
         if frostDates {
             try fixture.structures.updatePropertyDetails(
                 homeProperty.id,
-                location: nil,
-                hardinessZone: nil,
-                lastFrost: MonthDay(month: 5, day: 10),
-                firstFrost: MonthDay(month: 9, day: 28)
+                PropertyDetails(
+                    location: nil,
+                    hardinessZone: nil,
+                    lastFrost: MonthDay(month: 5, day: 10),
+                    firstFrost: MonthDay(month: 9, day: 28),
+                    zoneSource: .user,
+                    frostDatesSource: .user
+                )
             )
         }
         planner = SeasonPlanner(fixture.database)

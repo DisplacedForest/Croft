@@ -22,19 +22,21 @@ private func makeForm(
     )
 }
 
-@Test @MainActor func savingFullDetailsPersistsThem() throws {
+@Test @MainActor func savingFullDetailsPersistsThem() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.latitudeText = "44.5"
     form.longitudeText = "-72.8"
+    form.adjustZone()
+    form.adjustFrostDates()
     form.zoneText = "4"
     form.lastFrostMonth = 5
     form.lastFrostDay = 15
     form.firstFrostMonth = 9
     form.firstFrostDay = 28
 
-    #expect(form.save())
+    #expect(await form.save())
     #expect(form.validationMessage == nil)
 
     let structures = GardenStructureRepository(database)
@@ -45,12 +47,12 @@ private func makeForm(
     #expect(property.firstFrost == MonthDay(month: 9, day: 28))
 }
 
-@Test @MainActor func savingWithNoPropertyCreatesTheHomeProperty() throws {
+@Test @MainActor func savingWithNoPropertyCreatesTheHomeProperty() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     #expect(form.property == nil)
-    #expect(form.save())
+    #expect(await form.save())
 
     let structures = GardenStructureRepository(database)
     let names = try structures.properties(includeArchived: true).map(\.name)
@@ -58,83 +60,83 @@ private func makeForm(
     #expect(form.property?.name == "Home")
 }
 
-@Test @MainActor func emptyFieldsSaveAsNil() throws {
+@Test @MainActor func emptyFieldsSaveAsNil() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
-    #expect(form.save())
+    #expect(await form.save())
     let property = try #require(form.property)
     #expect(property.missingAnchors == [.location, .hardinessZone, .frostDates])
 }
 
-@Test @MainActor func unpairedCoordinateIsRejected() throws {
+@Test @MainActor func unpairedCoordinateIsRejected() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.latitudeText = "44.5"
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.validationMessage == PropertyDetailsError.unpairedCoordinate.message)
 }
 
-@Test @MainActor func malformedLatitudeIsRejected() throws {
+@Test @MainActor func malformedLatitudeIsRejected() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.latitudeText = "north"
     form.longitudeText = "-72.8"
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.validationMessage == PropertyDetailsError.invalidLatitude.message)
 }
 
-@Test @MainActor func outOfRangeLongitudeIsRejected() throws {
+@Test @MainActor func outOfRangeLongitudeIsRejected() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.latitudeText = "44.5"
     form.longitudeText = "181"
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.validationMessage == PropertyDetailsError.invalidLongitude.message)
 }
 
-@Test @MainActor func unpairedFrostDateIsRejected() throws {
+@Test @MainActor func unpairedFrostDateIsRejected() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.lastFrostMonth = 5
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(
         form.validationMessage == PropertyDetailsError.unpairedFrostDate("last frost").message)
 }
 
-@Test @MainActor func invalidFrostDateIsRejected() throws {
+@Test @MainActor func invalidFrostDateIsRejected() async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.firstFrostMonth = 2
     form.firstFrostDay = 30
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(
         form.validationMessage == PropertyDetailsError.invalidFrostDate("first frost").message)
 }
 
 @Test(arguments: ["8c", "0b", "14a", "text", "b"])
-@MainActor func malformedZoneIsRejected(_ text: String) throws {
+@MainActor func malformedZoneIsRejected(_ text: String) async throws {
     let database = try AppDatabase.inMemory()
     let form = makeForm(database: database)
     form.load()
     form.zoneText = text
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.validationMessage == PropertyDetailsError.invalidZone.message)
 }
 
 @Test(arguments: ["8", "8a", "8b"])
-@MainActor func letteredZonesSaveAndRoundTrip(_ text: String) throws {
+@MainActor func letteredZonesSaveAndRoundTrip(_ text: String) async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let saving = makeForm(database: database, defaults: defaults)
     saving.load()
     saving.zoneText = text
-    #expect(saving.save())
+    #expect(await saving.save())
     #expect(saving.validationMessage == nil)
 
     let reloaded = makeForm(database: database, defaults: defaults)
@@ -142,20 +144,22 @@ private func makeForm(
     #expect(reloaded.zoneText == text)
 }
 
-@Test @MainActor func loadRoundTripsSavedValuesIntoTheFields() throws {
+@Test @MainActor func loadRoundTripsSavedValuesIntoTheFields() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let saving = makeForm(database: database, defaults: defaults)
     saving.load()
     saving.latitudeText = "44.5"
     saving.longitudeText = "-72.8"
+    saving.adjustZone()
+    saving.adjustFrostDates()
     saving.zoneText = "4"
     saving.lastFrostMonth = 5
     saving.lastFrostDay = 15
-    #expect(saving.save())
+    #expect(await saving.save())
     saving.lastFrostDay = nil
     saving.lastFrostMonth = nil
-    #expect(saving.save())
+    #expect(await saving.save())
 
     let reloaded = makeForm(database: database, defaults: defaults)
     reloaded.load()
@@ -187,7 +191,7 @@ private func makeForm(
     #expect(form.isFillingLocation == false)
 }
 
-@Test @MainActor func setupIsOfferedOnlyUntilPromptedOrSaved() throws {
+@Test @MainActor func setupIsOfferedOnlyUntilPromptedOrSaved() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
 
@@ -206,7 +210,7 @@ private func makeForm(
     #expect(!fresh.shouldOfferSetup)
 }
 
-@Test @MainActor func commitWithoutAnOutcomeWritesNothing() throws {
+@Test @MainActor func commitWithoutAnOutcomeWritesNothing() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let form = makeForm(database: database, defaults: defaults)
@@ -219,7 +223,7 @@ private func makeForm(
     #expect(form.shouldOfferSetup)
 }
 
-@Test @MainActor func decliningRecordsAnOutcomeAndCommitWritesTheFlag() throws {
+@Test @MainActor func decliningRecordsAnOutcomeAndCommitWritesTheFlag() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let form = makeForm(database: database, defaults: defaults)
@@ -234,52 +238,72 @@ private func makeForm(
     #expect(form.setupOutcome == nil)
 }
 
-@Test @MainActor func savingRecordsAnOutcome() throws {
+@Test @MainActor func savingRecordsAnOutcome() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let form = makeForm(database: database, defaults: defaults)
     form.load()
-    #expect(form.save())
+    #expect(await form.save())
     #expect(form.setupOutcome == .saved)
     form.commitSetupOutcome()
     #expect(form.setupOutcome == nil)
     #expect(defaults.hasBeenPrompted)
 }
 
-@Test @MainActor func aFailedSaveRecordsNoOutcome() throws {
+@Test @MainActor func aFailedSaveRecordsNoOutcome() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let form = makeForm(database: database, defaults: defaults)
     form.load()
     form.zoneText = "14a"
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.setupOutcome == nil)
     form.commitSetupOutcome()
     #expect(!defaults.hasBeenPrompted)
 }
 
-@Test @MainActor func savingCountsAsPrompted() throws {
+@Test @MainActor func savingCountsAsPrompted() async throws {
     let database = try AppDatabase.inMemory()
     let defaults = makeDefaults()
     let form = makeForm(database: database, defaults: defaults)
     form.load()
     #expect(form.shouldOfferSetup)
-    #expect(form.save())
+    #expect(await form.save())
     #expect(!form.shouldOfferSetup)
     #expect(defaults.hasBeenPrompted)
 }
 
-@Test @MainActor func setupIsNotOfferedWhenFrostDatesExist() throws {
+@Test @MainActor func savingPersistsTheClimateSources() async throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let saving = makeForm(database: database, defaults: defaults)
+    saving.load()
+    saving.adjustZone()
+    saving.zoneText = "8b"
+    #expect(await saving.save())
+
+    let reloaded = makeForm(database: database, defaults: defaults)
+    reloaded.load()
+    #expect(reloaded.zoneSource == .user)
+    #expect(reloaded.frostDatesSource == .derived)
+    #expect(reloaded.zoneText == "8b")
+}
+
+@Test @MainActor func setupIsNotOfferedWhenFrostDatesExist() async throws {
     let database = try AppDatabase.inMemory()
     let structures = GardenStructureRepository(database)
     let property = Property(name: "Home")
     try structures.create(property)
     try structures.updatePropertyDetails(
         property.id,
-        location: nil,
-        hardinessZone: nil,
-        lastFrost: MonthDay(month: 5, day: 15),
-        firstFrost: MonthDay(month: 9, day: 28)
+        PropertyDetails(
+            location: nil,
+            hardinessZone: nil,
+            lastFrost: MonthDay(month: 5, day: 15),
+            firstFrost: MonthDay(month: 9, day: 28),
+            zoneSource: .user,
+            frostDatesSource: .user
+        )
     )
 
     let form = makeForm(database: database)
