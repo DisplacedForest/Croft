@@ -84,7 +84,8 @@ final class TodayFeedStore {
 
     init(stores: AppStores?) {
         self.stores = stores
-        formatter = QuantityFormatter(system: CaptureDefaults().preferredUnitSystem)
+        formatter = QuantityFormatter(
+            system: CaptureDefaults(store: AppDefaultsStore.current).preferredUnitSystem)
         guard let stores else {
             tasks = nil
             photos = nil
