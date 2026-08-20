@@ -45,14 +45,13 @@ extension PropertyDetailsForm {
         _ zone: inout HardinessZone?,
         _ lastFrost: inout MonthDay?,
         _ firstFrost: inout MonthDay?
-    ) async {
+    ) async -> DerivedClimate? {
         guard let location, minima != nil else {
             dropStaleDerived(location, &zone, &lastFrost, &firstFrost)
-            return
+            return nil
         }
         switch await fetchDerived(location) {
         case .derived(let derived):
-            climateCache.remember(derived, for: location)
             if zoneSource == .derived {
                 zone = derived.zone.flatMap { HardinessZone(number: $0) }
             }
@@ -65,16 +64,19 @@ extension PropertyDetailsForm {
                 climateCoordinate = location
                 applyDerivedValues(derived)
             }
+            return derived
         case .unavailable:
             dropUnderived(
                 location, &zone, &lastFrost, &firstFrost,
                 message: "Weather history is unavailable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually or try again later.")
+            return nil
         case .empty:
             dropUnderived(
                 location, &zone, &lastFrost, &firstFrost,
                 message: "Weather history had nothing usable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually.")
+            return nil
         }
     }
 

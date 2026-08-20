@@ -232,8 +232,9 @@ public final class PropertyDetailsForm {
             var zone = try parsedZone()
             var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
+            var fetched: DerivedClimate?
             if needsDerivationBeforeSave(location) {
-                await resolveDerivedForSave(location, &zone, &lastFrost, &firstFrost)
+                fetched = await resolveDerivedForSave(location, &zone, &lastFrost, &firstFrost)
                 guard saveInputs == inputs else {
                     return false
                 }
@@ -247,6 +248,9 @@ public final class PropertyDetailsForm {
                 frostDatesSource: frostDatesSource
             )
             try persist(details)
+            if let fetched, let location {
+                climateCache.remember(fetched, for: location)
+            }
             return true
         } catch let error as PropertyDetailsError {
             validationMessage = error.message
@@ -384,16 +388,4 @@ extension PropertyDetailsForm {
             customFirstDay: frostDatesSource == .user ? firstFrostDay : nil
         )
     }
-}
-
-struct SaveInputs: Equatable {
-    var latitudeText: String
-    var longitudeText: String
-    var zoneSource: ClimateSource
-    var frostDatesSource: ClimateSource
-    var customZone: String?
-    var customLastMonth: Int?
-    var customLastDay: Int?
-    var customFirstMonth: Int?
-    var customFirstDay: Int?
 }
