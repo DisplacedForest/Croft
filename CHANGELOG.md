@@ -83,6 +83,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Recording from the toolbar works on the Mac. Add Planting, the compose
+  menu, and the planting page's quick actions now open their sheets; the
+  sheet host had been attached inside the split view's detail column, where
+  macOS never presented it.
 - First-run property setup can no longer vanish forever: the prompted flag is
   written only when you save or choose Not Now, so a setup sheet closed by
   anything other than you returns on the next launch. If the sheet ever opens
