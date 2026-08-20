@@ -269,6 +269,22 @@ private func makeForm(
     #expect(defaults.hasBeenPrompted)
 }
 
+@Test @MainActor func savingPersistsTheClimateSources() throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let saving = makeForm(database: database, defaults: defaults)
+    saving.load()
+    saving.adjustZone()
+    saving.zoneText = "8b"
+    #expect(saving.save())
+
+    let reloaded = makeForm(database: database, defaults: defaults)
+    reloaded.load()
+    #expect(reloaded.zoneSource == .user)
+    #expect(reloaded.frostDatesSource == .derived)
+    #expect(reloaded.zoneText == "8b")
+}
+
 @Test @MainActor func setupIsNotOfferedWhenFrostDatesExist() throws {
     let database = try AppDatabase.inMemory()
     let structures = GardenStructureRepository(database)
@@ -276,10 +292,14 @@ private func makeForm(
     try structures.create(property)
     try structures.updatePropertyDetails(
         property.id,
-        location: nil,
-        hardinessZone: nil,
-        lastFrost: MonthDay(month: 5, day: 15),
-        firstFrost: MonthDay(month: 9, day: 28)
+        PropertyDetails(
+            location: nil,
+            hardinessZone: nil,
+            lastFrost: MonthDay(month: 5, day: 15),
+            firstFrost: MonthDay(month: 9, day: 28),
+            zoneSource: .user,
+            frostDatesSource: .user
+        )
     )
 
     let form = makeForm(database: database)

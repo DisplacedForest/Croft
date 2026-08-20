@@ -2,10 +2,12 @@ import Foundation
 import Observation
 import Persistence
 
+import enum Domain.ClimateSource
 import struct Domain.GeoCoordinate
 import struct Domain.HardinessZone
 import struct Domain.MonthDay
 import struct Domain.Property
+import struct Domain.PropertyDetails
 import func Domain.withDeadline
 
 public typealias CoordinateFill = @Sendable () async throws -> GeoCoordinate
@@ -46,13 +48,7 @@ public enum PropertySourceState: Equatable, Sendable {
 protocol PropertyStoring {
     func firstProperty() throws -> Property?
     func ensureHomeProperty() throws -> Property
-    func updateDetails(
-        _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
-    ) throws
+    func updateDetails(_ id: Property.ID, _ details: PropertyDetails) throws
 }
 
 @MainActor
@@ -73,20 +69,8 @@ private struct DatabasePropertyStore: PropertyStoring {
         try editor.homeProperty()
     }
 
-    func updateDetails(
-        _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
-    ) throws {
-        try structures.updatePropertyDetails(
-            id,
-            location: location,
-            hardinessZone: hardinessZone,
-            lastFrost: lastFrost,
-            firstFrost: firstFrost
-        )
+    func updateDetails(_ id: Property.ID, _ details: PropertyDetails) throws {
+        try structures.updatePropertyDetails(id, details)
     }
 }
 
@@ -112,8 +96,8 @@ public final class PropertyDetailsForm {
     public internal(set) var isDerivingClimate = false
     public internal(set) var derivationMessage: String?
     public internal(set) var derivedClimate: DerivedClimate?
-    public internal(set) var derivedPrefilled: Set<PropertyClimateField> = []
-    public internal(set) var climateSuggestions: [PropertyClimateField] = []
+    public internal(set) var zoneSource: ClimateSource = .derived
+    public internal(set) var frostDatesSource: ClimateSource = .derived
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -202,6 +186,8 @@ public final class PropertyDetailsForm {
         lastFrostDay = property?.lastFrost?.day
         firstFrostMonth = property?.firstFrost?.month
         firstFrostDay = property?.firstFrost?.day
+        zoneSource = property?.zoneSource ?? .derived
+        frostDatesSource = property?.frostDatesSource ?? .derived
         validationMessage = nil
         locationMessage = nil
     }
@@ -219,13 +205,15 @@ public final class PropertyDetailsForm {
             let lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             let firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
             let home = try store.ensureHomeProperty()
-            try store.updateDetails(
-                home.id,
+            let details = PropertyDetails(
                 location: location,
                 hardinessZone: zone,
                 lastFrost: lastFrost,
-                firstFrost: firstFrost
+                firstFrost: firstFrost,
+                zoneSource: zoneSource,
+                frostDatesSource: frostDatesSource
             )
+            try store.updateDetails(home.id, details)
             defaults.hasBeenPrompted = true
             setupOutcome = .saved
             var saved = home
@@ -233,6 +221,8 @@ public final class PropertyDetailsForm {
             saved.hardinessZone = zone
             saved.lastFrost = lastFrost
             saved.firstFrost = firstFrost
+            saved.zoneSource = zoneSource
+            saved.frostDatesSource = frostDatesSource
             property = saved
             sourceState = .loaded
             return true

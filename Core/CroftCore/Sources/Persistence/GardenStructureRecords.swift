@@ -36,6 +36,8 @@ struct PropertyRecord: StructureRecord {
     var lastFrostDay: Int?
     var firstFrostMonth: Int?
     var firstFrostDay: Int?
+    var zoneSource: String
+    var frostDatesSource: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -49,6 +51,8 @@ struct PropertyRecord: StructureRecord {
         case lastFrostDay = "last_frost_day"
         case firstFrostMonth = "first_frost_month"
         case firstFrostDay = "first_frost_day"
+        case zoneSource = "zone_source"
+        case frostDatesSource = "frost_dates_source"
     }
 
     init(_ model: Property) {
@@ -63,6 +67,8 @@ struct PropertyRecord: StructureRecord {
         lastFrostDay = model.lastFrost?.day
         firstFrostMonth = model.firstFrost?.month
         firstFrostDay = model.firstFrost?.day
+        zoneSource = model.zoneSource.rawValue
+        frostDatesSource = model.frostDatesSource.rawValue
     }
 
     func model() throws -> Property {
@@ -74,8 +80,17 @@ struct PropertyRecord: StructureRecord {
             location: try coordinate(),
             hardinessZone: try zone(),
             lastFrost: try frost(lastFrostMonth, lastFrostDay, column: "last_frost"),
-            firstFrost: try frost(firstFrostMonth, firstFrostDay, column: "first_frost")
+            firstFrost: try frost(firstFrostMonth, firstFrostDay, column: "first_frost"),
+            zoneSource: try source(zoneSource, column: "zone_source"),
+            frostDatesSource: try source(frostDatesSource, column: "frost_dates_source")
         )
+    }
+
+    private func source(_ raw: String, column: String) throws -> ClimateSource {
+        guard let parsed = ClimateSource(rawValue: raw) else {
+            throw GardenStructureError.invalidPropertyDetails("\(column) \(raw)")
+        }
+        return parsed
     }
 
     private func zone() throws -> HardinessZone? {

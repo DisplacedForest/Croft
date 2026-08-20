@@ -64,10 +64,14 @@ private struct Season {
         try structures.create(property)
         try structures.updatePropertyDetails(
             property.id,
-            location: GeoCoordinate(latitude: 44.5, longitude: -72.8),
-            hardinessZone: HardinessZone(number: 4),
-            lastFrost: MonthDay(month: 5, day: 15),
-            firstFrost: MonthDay(month: 9, day: 28)
+            PropertyDetails(
+                location: GeoCoordinate(latitude: 44.5, longitude: -72.8),
+                hardinessZone: HardinessZone(number: 4),
+                lastFrost: MonthDay(month: 5, day: 15),
+                firstFrost: MonthDay(month: 9, day: 28),
+                zoneSource: .user,
+                frostDatesSource: .user
+            )
         )
         let garden = Garden(name: "Kitchen Garden")
         try structures.create(garden, in: property.id)

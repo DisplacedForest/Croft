@@ -33,13 +33,7 @@ private final class ThrowingReloadStore: PropertyStoring {
         home
     }
 
-    func updateDetails(
-        _ id: Property.ID,
-        location: GeoCoordinate?,
-        hardinessZone: HardinessZone?,
-        lastFrost: MonthDay?,
-        firstFrost: MonthDay?
-    ) throws {
+    func updateDetails(_ id: Property.ID, _ details: PropertyDetails) throws {
         updates += 1
     }
 }

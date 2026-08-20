@@ -2,6 +2,29 @@ import Domain
 import Foundation
 
 extension PropertyDetailsForm {
+    public func adjustZone() {
+        zoneSource = .user
+    }
+
+    public func adjustFrostDates() {
+        frostDatesSource = .user
+    }
+
+    public func useDerivedZone() async {
+        zoneSource = .derived
+        zoneText = derivedClimate?.zone.map(String.init) ?? ""
+        await deriveClimate()
+    }
+
+    public func useDerivedFrostDates() async {
+        frostDatesSource = .derived
+        lastFrostMonth = derivedClimate?.lastFrost?.month
+        lastFrostDay = derivedClimate?.lastFrost?.day
+        firstFrostMonth = derivedClimate?.firstFrost?.month
+        firstFrostDay = derivedClimate?.firstFrost?.day
+        await deriveClimate()
+    }
+
     public var canSearchAddresses: Bool {
         addressSearch != nil
     }
@@ -75,67 +98,22 @@ extension PropertyDetailsForm {
                 + "dates were not derived. Enter them manually."
             return
         }
-        offerDerivedValues(derived)
+        applyDerivedValues(derived)
     }
 
-    public func applySuggestion(_ field: PropertyClimateField) {
-        guard let derivedClimate else {
-            return
+    private func applyDerivedValues(_ derived: DerivedClimate) {
+        if zoneSource == .derived, let zone = derived.zone {
+            zoneText = String(zone)
         }
-        switch field {
-        case .zone:
-            if let zone = derivedClimate.zone {
-                zoneText = String(zone)
-            }
-        case .lastFrost:
-            if let last = derivedClimate.lastFrost {
+        if frostDatesSource == .derived {
+            if let last = derived.lastFrost {
                 lastFrostMonth = last.month
                 lastFrostDay = last.day
             }
-        case .firstFrost:
-            if let first = derivedClimate.firstFrost {
+            if let first = derived.firstFrost {
                 firstFrostMonth = first.month
                 firstFrostDay = first.day
             }
-        }
-        climateSuggestions.removeAll { $0 == field }
-        derivedPrefilled.insert(field)
-    }
-
-    private func offerDerivedValues(_ derived: DerivedClimate) {
-        derivedPrefilled = []
-        climateSuggestions = []
-        if let zone = derived.zone {
-            let current = zoneText.trimmingCharacters(in: .whitespaces)
-            if current.isEmpty {
-                zoneText = String(zone)
-                derivedPrefilled.insert(.zone)
-            } else if HardinessZone(parsing: current)?.number != zone {
-                climateSuggestions.append(.zone)
-            }
-        }
-        if let last = derived.lastFrost {
-            offerFrost(
-                last, field: .lastFrost, month: &lastFrostMonth, day: &lastFrostDay)
-        }
-        if let first = derived.firstFrost {
-            offerFrost(
-                first, field: .firstFrost, month: &firstFrostMonth, day: &firstFrostDay)
-        }
-    }
-
-    private func offerFrost(
-        _ value: MonthDay,
-        field: PropertyClimateField,
-        month: inout Int?,
-        day: inout Int?
-    ) {
-        if month == nil, day == nil {
-            month = value.month
-            day = value.day
-            derivedPrefilled.insert(field)
-        } else if month != value.month || day != value.day {
-            climateSuggestions.append(field)
         }
     }
 }
