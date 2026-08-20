@@ -15,6 +15,11 @@ public struct PropertySetupDefaults {
     }
 }
 
+public enum PropertySetupOutcome: Equatable, Sendable {
+    case saved
+    case declined
+}
+
 public enum PropertySetupGate {
     public static func shouldOffer(
         property: Property?,

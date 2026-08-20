@@ -197,12 +197,65 @@ private func makeForm(
     form.load()
     #expect(form.shouldOfferSetup)
 
-    form.markPrompted()
+    form.declineSetup()
+    form.commitSetupOutcome()
     #expect(!form.shouldOfferSetup)
 
     let fresh = makeForm(database: database, defaults: defaults)
     fresh.load()
     #expect(!fresh.shouldOfferSetup)
+}
+
+@Test @MainActor func commitWithoutAnOutcomeWritesNothing() throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let form = makeForm(database: database, defaults: defaults)
+    form.load()
+    #expect(form.setupOutcome == nil)
+
+    form.commitSetupOutcome()
+
+    #expect(!defaults.hasBeenPrompted)
+    #expect(form.shouldOfferSetup)
+}
+
+@Test @MainActor func decliningRecordsAnOutcomeAndCommitWritesTheFlag() throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let form = makeForm(database: database, defaults: defaults)
+    form.load()
+
+    form.declineSetup()
+    #expect(form.setupOutcome == .declined)
+    #expect(!defaults.hasBeenPrompted)
+
+    form.commitSetupOutcome()
+    #expect(defaults.hasBeenPrompted)
+    #expect(form.setupOutcome == nil)
+}
+
+@Test @MainActor func savingRecordsAnOutcome() throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let form = makeForm(database: database, defaults: defaults)
+    form.load()
+    #expect(form.save())
+    #expect(form.setupOutcome == .saved)
+    form.commitSetupOutcome()
+    #expect(form.setupOutcome == nil)
+    #expect(defaults.hasBeenPrompted)
+}
+
+@Test @MainActor func aFailedSaveRecordsNoOutcome() throws {
+    let database = try AppDatabase.inMemory()
+    let defaults = makeDefaults()
+    let form = makeForm(database: database, defaults: defaults)
+    form.load()
+    form.zoneText = "14a"
+    #expect(!form.save())
+    #expect(form.setupOutcome == nil)
+    form.commitSetupOutcome()
+    #expect(!defaults.hasBeenPrompted)
 }
 
 @Test @MainActor func savingCountsAsPrompted() throws {

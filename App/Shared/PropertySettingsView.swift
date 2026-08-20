@@ -133,6 +133,7 @@ struct PropertySetupSheet: View {
             HStack(spacing: CroftTheme.space(2)) {
                 Spacer()
                 Button("Not Now") {
+                    form.declineSetup()
                     dismiss()
                 }
                 Button("Save") {
@@ -145,6 +146,22 @@ struct PropertySetupSheet: View {
             .padding(.horizontal, CroftTheme.space(5))
             .padding(.bottom, CroftTheme.space(5))
         }
+        .croftScreenSurface()
+        #if os(macOS)
+            .frame(width: 480, height: 600)
+        #endif
+    }
+}
+
+struct PropertySetupLoadingView: View {
+    var body: some View {
+        VStack(spacing: CroftTheme.space(3)) {
+            ProgressView()
+            Text("Getting your property details ready")
+                .font(CroftTheme.supporting)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .croftScreenSurface()
         #if os(macOS)
             .frame(width: 480, height: 600)

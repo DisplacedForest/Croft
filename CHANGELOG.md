@@ -77,6 +77,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- First-run property setup can no longer vanish forever: the prompted flag is
+  written only when you save or choose Not Now, so a setup sheet closed by
+  anything other than you returns on the next launch. If the sheet ever opens
+  before its form is ready, it shows a loading indicator instead of an empty
+  card.
 - The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
   the letter, and shows it back unchanged. A derived zone whose number matches
   your lettered entry no longer nags with a suggestion.
