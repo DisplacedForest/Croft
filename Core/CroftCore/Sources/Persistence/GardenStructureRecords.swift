@@ -31,7 +31,7 @@ struct PropertyRecord: StructureRecord {
     var archived: Bool
     var latitude: Double?
     var longitude: Double?
-    var hardinessZone: Int?
+    var hardinessZone: String?
     var lastFrostMonth: Int?
     var lastFrostDay: Int?
     var firstFrostMonth: Int?
@@ -58,7 +58,7 @@ struct PropertyRecord: StructureRecord {
         archived = model.isArchived
         latitude = model.location?.latitude
         longitude = model.location?.longitude
-        hardinessZone = model.hardinessZone
+        hardinessZone = model.hardinessZone?.description
         lastFrostMonth = model.lastFrost?.month
         lastFrostDay = model.lastFrost?.day
         firstFrostMonth = model.firstFrost?.month
@@ -72,10 +72,20 @@ struct PropertyRecord: StructureRecord {
             notes: notes,
             isArchived: archived,
             location: try coordinate(),
-            hardinessZone: hardinessZone,
+            hardinessZone: try zone(),
             lastFrost: try frost(lastFrostMonth, lastFrostDay, column: "last_frost"),
             firstFrost: try frost(firstFrostMonth, firstFrostDay, column: "first_frost")
         )
+    }
+
+    private func zone() throws -> HardinessZone? {
+        guard let hardinessZone else {
+            return nil
+        }
+        guard let parsed = HardinessZone(parsing: hardinessZone) else {
+            throw GardenStructureError.invalidPropertyDetails("hardiness zone \(hardinessZone)")
+        }
+        return parsed
     }
 
     private func coordinate() throws -> GeoCoordinate? {

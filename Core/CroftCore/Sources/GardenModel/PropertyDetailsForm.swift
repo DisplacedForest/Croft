@@ -3,6 +3,7 @@ import Observation
 import Persistence
 
 import struct Domain.GeoCoordinate
+import struct Domain.HardinessZone
 import struct Domain.MonthDay
 import struct Domain.Property
 
@@ -29,7 +30,7 @@ public enum PropertyDetailsError: Error, Equatable {
         case .invalidFrostDate(let label):
             "The \(label) date is not a valid month and day."
         case .invalidZone:
-            "Hardiness zone must be a whole number."
+            "Hardiness zone must be a number from 1 to 13, optionally followed by a or b, like 8 or 8b."
         }
     }
 }
@@ -47,7 +48,7 @@ protocol PropertyStoring {
     func updateDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws
@@ -74,7 +75,7 @@ private struct DatabasePropertyStore: PropertyStoring {
     func updateDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws {
@@ -184,7 +185,7 @@ public final class PropertyDetailsForm {
         }
         latitudeText = property?.location.map { Self.format($0.latitude) } ?? ""
         longitudeText = property?.location.map { Self.format($0.longitude) } ?? ""
-        zoneText = property?.hardinessZone.map(String.init) ?? ""
+        zoneText = property?.hardinessZone?.description ?? ""
         lastFrostMonth = property?.lastFrost?.month
         lastFrostDay = property?.lastFrost?.day
         firstFrostMonth = property?.firstFrost?.month
@@ -287,12 +288,12 @@ public final class PropertyDetailsForm {
         return coordinate
     }
 
-    private func parsedZone() throws -> Int? {
+    private func parsedZone() throws -> HardinessZone? {
         let text = zoneText.trimmingCharacters(in: .whitespaces)
         if text.isEmpty {
             return nil
         }
-        guard let zone = Int(text) else {
+        guard let zone = HardinessZone(parsing: text) else {
             throw PropertyDetailsError.invalidZone
         }
         return zone

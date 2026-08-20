@@ -77,6 +77,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
+  the letter, and shows it back unchanged. A derived zone whose number matches
+  your lettered entry no longer nags with a suggestion.
 - Development builds no longer pop an "Unable to Check For Updates" dialog
   at launch. The updater only starts when the app carries a Developer ID
   signature; otherwise Check for Updates stays visible but disabled, with a
