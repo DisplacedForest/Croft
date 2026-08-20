@@ -7,6 +7,7 @@ import struct Domain.MonthDay
 struct PropertyDetailsView: View {
     @Bindable var form: PropertyDetailsForm
     @State private var searchTask: Task<Void, Never>?
+    @State private var deriveTask: Task<Void, Never>?
     @State private var ignoresQueryChange = false
 
     var body: some View {
@@ -31,7 +32,13 @@ struct PropertyDetailsView: View {
                 addressSearchField
             }
             TextField("Latitude", text: $form.latitudeText)
+                .onChange(of: form.latitudeText) { _, _ in
+                    scheduleDerive()
+                }
             TextField("Longitude", text: $form.longitudeText)
+                .onChange(of: form.longitudeText) { _, _ in
+                    scheduleDerive()
+                }
             if form.canFillLocation {
                 HStack(spacing: CroftTheme.space(2)) {
                     Button("Use Current Location") {
@@ -98,6 +105,17 @@ struct PropertyDetailsView: View {
             Text(message)
                 .font(.caption)
                 .foregroundStyle(.secondary)
+        }
+    }
+
+    private func scheduleDerive() {
+        deriveTask?.cancel()
+        deriveTask = Task {
+            try? await Task.sleep(for: .milliseconds(500))
+            guard !Task.isCancelled else {
+                return
+            }
+            await form.deriveClimate()
         }
     }
 

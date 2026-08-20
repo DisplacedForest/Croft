@@ -98,6 +98,8 @@ public final class PropertyDetailsForm {
     public internal(set) var derivedClimate: DerivedClimate?
     public internal(set) var zoneSource: ClimateSource = .derived
     public internal(set) var frostDatesSource: ClimateSource = .derived
+    var climateCoordinate: GeoCoordinate?
+    var derivationGeneration = 0
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -188,6 +190,7 @@ public final class PropertyDetailsForm {
         firstFrostDay = property?.firstFrost?.day
         zoneSource = property?.zoneSource ?? .derived
         frostDatesSource = property?.frostDatesSource ?? .derived
+        climateCoordinate = property?.location
         validationMessage = nil
         locationMessage = nil
     }
@@ -201,9 +204,10 @@ public final class PropertyDetailsForm {
         }
         do {
             let location = try parsedCoordinate()
-            let zone = try parsedZone()
-            let lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
-            let firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
+            var zone = try parsedZone()
+            var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
+            var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
+            dropStaleDerived(location, &zone, &lastFrost, &firstFrost)
             let home = try store.ensureHomeProperty()
             let details = PropertyDetails(
                 location: location,

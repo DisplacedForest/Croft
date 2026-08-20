@@ -28,6 +28,8 @@ private func makeForm(
     form.load()
     form.latitudeText = "44.5"
     form.longitudeText = "-72.8"
+    form.adjustZone()
+    form.adjustFrostDates()
     form.zoneText = "4"
     form.lastFrostMonth = 5
     form.lastFrostDay = 15
@@ -149,6 +151,8 @@ private func makeForm(
     saving.load()
     saving.latitudeText = "44.5"
     saving.longitudeText = "-72.8"
+    saving.adjustZone()
+    saving.adjustFrostDates()
     saving.zoneText = "4"
     saving.lastFrostMonth = 5
     saving.lastFrostDay = 15
