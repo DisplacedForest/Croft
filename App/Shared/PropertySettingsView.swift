@@ -117,18 +117,10 @@ struct PropertySetupSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: CroftTheme.space(4)) {
-            VStack(alignment: .leading, spacing: CroftTheme.space(2)) {
-                Text("Set up your property")
-                    .font(CroftTheme.heading)
-                Text(
-                    "Tell Croft where your garden grows. Frost dates set your planting windows, "
-                        + "and your location brings in the weather."
-                )
-                .font(CroftTheme.supporting)
-                .foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, CroftTheme.space(5))
-            .padding(.top, CroftTheme.space(6))
+            Text("Set up your property")
+                .font(CroftTheme.heading)
+                .padding(.horizontal, CroftTheme.space(5))
+                .padding(.top, CroftTheme.space(6))
             PropertyDetailsView(form: form)
             HStack(spacing: CroftTheme.space(2)) {
                 Spacer()

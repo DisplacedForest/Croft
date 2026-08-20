@@ -129,7 +129,7 @@ struct PropertyDetailsView: View {
         Section("Hardiness Zone") {
             if form.zoneSource == .user {
                 TextField("Zone", text: $form.zoneText)
-                caption("Set by you.")
+                caption("Custom")
                 sourceButton(
                     "Use Derived Value",
                     accessibility: "Use derived hardiness zone"
@@ -138,14 +138,11 @@ struct PropertyDetailsView: View {
                 }
             } else {
                 LabeledContent("Zone", value: zoneDisplay)
-                caption(derivedCaption(hasValue: !form.zoneText.isEmpty))
+                caption(derivedMark)
                 adjustButton(accessibility: "Adjust hardiness zone") {
                     form.adjustZone()
                 }
             }
-            Text("Shown for reference. Planting windows use your frost dates.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
     }
 
@@ -162,7 +159,7 @@ struct PropertyDetailsView: View {
                     month: $form.firstFrostMonth,
                     day: $form.firstFrostDay
                 )
-                caption("Set by you.")
+                caption("Custom")
                 sourceButton(
                     "Use Derived Values",
                     accessibility: "Use derived frost dates"
@@ -176,7 +173,7 @@ struct PropertyDetailsView: View {
                 LabeledContent(
                     "First frost",
                     value: frostDisplay(form.firstFrostMonth, form.firstFrostDay))
-                caption(derivedCaption(hasValue: form.lastFrostMonth != nil))
+                caption(derivedMark)
                 adjustButton(accessibility: "Adjust frost dates") {
                     form.adjustFrostDates()
                 }
@@ -198,14 +195,8 @@ extension PropertyDetailsView {
         return Self.label(for: value)
     }
 
-    private func derivedCaption(hasValue: Bool) -> String {
-        if let message = form.derivationMessage {
-            return message
-        }
-        if hasValue {
-            return "Derived from ten years of weather at this location."
-        }
-        return "Derives from weather history once your location is set."
+    private var derivedMark: String {
+        form.derivationMessage ?? "Derived"
     }
 
     private func caption(_ text: String) -> some View {
