@@ -44,14 +44,18 @@ public struct AppDatabase: Sendable {
         guard !Set(SchemaMigrations.identifiers).isSubset(of: applied) else {
             return
         }
-        try? pool.writeWithoutTransaction { try $0.checkpoint(.truncate) }
         let backup = url.deletingLastPathComponent()
             .appendingPathComponent(url.lastPathComponent + ".pre-migration", isDirectory: false)
-        let manager = FileManager.default
-        if manager.fileExists(atPath: backup.path) {
-            try manager.removeItem(at: backup)
+        let staging = url.deletingLastPathComponent()
+            .appendingPathComponent(
+                url.lastPathComponent + ".pre-migration-staging", isDirectory: false)
+        try? FileManager.default.removeItem(at: staging)
+        let destination = try DatabaseQueue(path: staging.path, configuration: makeConfiguration())
+        try pool.backup(to: destination)
+        try destination.close()
+        guard rename(staging.path, backup.path) == 0 else {
+            throw CocoaError(.fileWriteUnknown, userInfo: [NSFilePathErrorKey: backup.path])
         }
-        try manager.copyItem(at: url, to: backup)
     }
 
     static func verifyHeader(at url: URL) throws {
