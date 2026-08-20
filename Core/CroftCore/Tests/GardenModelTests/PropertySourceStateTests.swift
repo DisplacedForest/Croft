@@ -36,7 +36,7 @@ private final class ThrowingReloadStore: PropertyStoring {
     func updateDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws {
@@ -101,7 +101,7 @@ private func corruptedDatabase() throws -> (AppDatabase, row: Row) {
     #expect(store.updates == 1)
     #expect(form.validationMessage == nil)
     #expect(form.sourceState == .loaded)
-    #expect(form.property?.hardinessZone == 4)
+    #expect(form.property?.hardinessZone == HardinessZone(number: 4))
     #expect(form.property?.lastFrost == MonthDay(month: 5, day: 15))
 }
 

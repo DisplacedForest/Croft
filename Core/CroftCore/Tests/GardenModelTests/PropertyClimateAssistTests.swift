@@ -113,6 +113,19 @@ private func makeForm(
     #expect(form.save())
 }
 
+@Test @MainActor func aLetteredZoneMatchingTheDerivedNumberOffersNoSuggestion() async throws {
+    let form = try makeForm()
+    form.load()
+    form.zoneText = "5b"
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+    await form.deriveClimate()
+
+    #expect(form.zoneText == "5b")
+    #expect(form.climateSuggestions.isEmpty)
+    #expect(form.derivedPrefilled == [.lastFrost, .firstFrost])
+}
+
 @Test @MainActor func occupiedFieldsGetSuggestionsNotOverwrites() async throws {
     let form = try makeForm()
     form.load()

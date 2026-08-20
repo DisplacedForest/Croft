@@ -3,8 +3,10 @@ import Observation
 import Persistence
 
 import struct Domain.GeoCoordinate
+import struct Domain.HardinessZone
 import struct Domain.MonthDay
 import struct Domain.Property
+import func Domain.withDeadline
 
 public typealias CoordinateFill = @Sendable () async throws -> GeoCoordinate
 
@@ -29,7 +31,7 @@ public enum PropertyDetailsError: Error, Equatable {
         case .invalidFrostDate(let label):
             "The \(label) date is not a valid month and day."
         case .invalidZone:
-            "Hardiness zone must be a whole number."
+            "Hardiness zone must be a number from 1 to 13, optionally followed by a or b, like 8 or 8b."
         }
     }
 }
@@ -47,7 +49,7 @@ protocol PropertyStoring {
     func updateDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws
@@ -74,7 +76,7 @@ private struct DatabasePropertyStore: PropertyStoring {
     func updateDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws {
@@ -120,6 +122,8 @@ public final class PropertyDetailsForm {
     private let reverseGeocode: ReverseGeocode?
     let minima: HistoricalMinima?
     let climateCache: ClimateCache
+    private let geocodeDeadline: Duration
+    let minimaDeadline: Duration
 
     public convenience init(
         database: AppDatabase,
@@ -128,7 +132,9 @@ public final class PropertyDetailsForm {
         addressSearch: (any AddressSearching)? = nil,
         reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
-        climateCache: ClimateCache = ClimateCache()
+        climateCache: ClimateCache = ClimateCache(),
+        geocodeDeadline: Duration = .seconds(10),
+        minimaDeadline: Duration = .seconds(30)
     ) {
         self.init(
             store: DatabasePropertyStore(database: database),
@@ -137,7 +143,9 @@ public final class PropertyDetailsForm {
             addressSearch: addressSearch,
             reverseGeocode: reverseGeocode,
             minima: minima,
-            climateCache: climateCache
+            climateCache: climateCache,
+            geocodeDeadline: geocodeDeadline,
+            minimaDeadline: minimaDeadline
         )
     }
 
@@ -148,7 +156,9 @@ public final class PropertyDetailsForm {
         addressSearch: (any AddressSearching)? = nil,
         reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
-        climateCache: ClimateCache = ClimateCache()
+        climateCache: ClimateCache = ClimateCache(),
+        geocodeDeadline: Duration = .seconds(10),
+        minimaDeadline: Duration = .seconds(30)
     ) {
         self.store = store
         self.defaults = defaults
@@ -157,6 +167,8 @@ public final class PropertyDetailsForm {
         self.reverseGeocode = reverseGeocode
         self.minima = minima
         self.climateCache = climateCache
+        self.geocodeDeadline = geocodeDeadline
+        self.minimaDeadline = minimaDeadline
     }
 
     public var canFillLocation: Bool {
@@ -184,7 +196,7 @@ public final class PropertyDetailsForm {
         }
         latitudeText = property?.location.map { Self.format($0.latitude) } ?? ""
         longitudeText = property?.location.map { Self.format($0.longitude) } ?? ""
-        zoneText = property?.hardinessZone.map(String.init) ?? ""
+        zoneText = property?.hardinessZone?.description ?? ""
         lastFrostMonth = property?.lastFrost?.month
         lastFrostDay = property?.lastFrost?.day
         firstFrostMonth = property?.firstFrost?.month
@@ -255,7 +267,10 @@ public final class PropertyDetailsForm {
         if let reverseGeocode {
             addressMessage = nil
             do {
-                let place = try await reverseGeocode(coordinate)
+                let deadline = geocodeDeadline
+                let place = try await withDeadline(deadline) {
+                    try await reverseGeocode(coordinate)
+                }
                 addressQuery = place.name
                 addressSuggestions = []
             } catch {
@@ -287,12 +302,12 @@ public final class PropertyDetailsForm {
         return coordinate
     }
 
-    private func parsedZone() throws -> Int? {
+    private func parsedZone() throws -> HardinessZone? {
         let text = zoneText.trimmingCharacters(in: .whitespaces)
         if text.isEmpty {
             return nil
         }
-        guard let zone = Int(text) else {
+        guard let zone = HardinessZone(parsing: text) else {
             throw PropertyDetailsError.invalidZone
         }
         return zone

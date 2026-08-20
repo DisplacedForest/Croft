@@ -155,7 +155,7 @@ struct MigrationPreservationTests {
                 "v011-knowledge-types", "v015-edge-cardinality", "v012-observations",
                 "v013-harvests", "v014-garden-tasks", "v016-lifecycle-stages",
                 "v017-property-location", "v018-harvest-yield", "v019-daily-weather",
-                "v020-change-log",
+                "v020-change-log", "v021-hardiness-zone-text",
             ])
     }
 

@@ -49,7 +49,11 @@ extension PropertyDetailsForm {
         if let cached = climateCache.cached(for: coordinate) {
             derived = cached
         } else {
-            guard let series = try? await minima(coordinate), !series.isEmpty else {
+            let deadline = minimaDeadline
+            let series = try? await withDeadline(deadline) {
+                try await minima(coordinate)
+            }
+            guard let series, !series.isEmpty else {
                 derivationMessage =
                     "Weather history is unavailable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually or try again later."
@@ -106,7 +110,7 @@ extension PropertyDetailsForm {
             if current.isEmpty {
                 zoneText = String(zone)
                 derivedPrefilled.insert(.zone)
-            } else if current != String(zone) {
+            } else if HardinessZone(parsing: current)?.number != zone {
                 climateSuggestions.append(.zone)
             }
         }

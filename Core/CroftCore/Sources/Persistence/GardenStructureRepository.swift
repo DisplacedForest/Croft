@@ -286,7 +286,7 @@ extension GardenStructureRepository {
     public func updatePropertyDetails(
         _ id: Property.ID,
         location: GeoCoordinate?,
-        hardinessZone: Int?,
+        hardinessZone: HardinessZone?,
         lastFrost: MonthDay?,
         firstFrost: MonthDay?
     ) throws {
@@ -296,7 +296,7 @@ extension GardenStructureRepository {
             }
             found.latitude = location?.latitude
             found.longitude = location?.longitude
-            found.hardinessZone = hardinessZone
+            found.hardinessZone = hardinessZone?.description
             found.lastFrostMonth = lastFrost?.month
             found.lastFrostDay = lastFrost?.day
             found.firstFrostMonth = firstFrost?.month

@@ -3,6 +3,7 @@ import Foundation
 import WeatherKit
 
 import struct Domain.DailyMinimum
+import func Domain.withDeadline
 
 public struct SystemWeatherProvider: WeatherProviding, ForecastProviding {
     public init() {}
@@ -110,25 +111,4 @@ public struct SystemLocationProvider: LocationProviding {
 enum LocationFailure: Error {
     case denied
     case unavailable
-    case timedOut
-}
-
-private func withDeadline<T: Sendable>(
-    _ limit: Duration,
-    operation: @escaping @Sendable () async throws -> T
-) async throws -> T {
-    try await withThrowingTaskGroup(of: T.self) { group in
-        group.addTask {
-            try await operation()
-        }
-        group.addTask {
-            try await Task.sleep(for: limit)
-            throw LocationFailure.timedOut
-        }
-        guard let first = try await group.next() else {
-            throw LocationFailure.unavailable
-        }
-        group.cancelAll()
-        return first
-    }
 }
