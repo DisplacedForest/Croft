@@ -103,6 +103,7 @@ public final class PropertyDetailsForm {
     var derivationTask: Task<Void, Never>?
     var derivationCoordinate: GeoCoordinate?
     var derivationFlight = 0
+    var pendingDerivation = false
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -200,6 +201,20 @@ public final class PropertyDetailsForm {
 
     @discardableResult
     public func save() async -> Bool {
+        let saved = await performSave()
+        await replayPendingDerivation()
+        return saved
+    }
+
+    private func replayPendingDerivation() async {
+        guard pendingDerivation, !isSaving else {
+            return
+        }
+        pendingDerivation = false
+        await deriveClimate()
+    }
+
+    private func performSave() async -> Bool {
         guard !isSaving else {
             return false
         }

@@ -33,11 +33,12 @@ private final class MinimaCounter: @unchecked Sendable {
 private final class MinimaGate: @unchecked Sendable {
     private let lock = NSLock()
     private var held = false
+    private var released = false
     private var continuation: CheckedContinuation<Void, Never>?
 
     func holdFirstCaller() async {
         let shouldHold: Bool = lock.withLock {
-            if held {
+            if held || released {
                 return false
             }
             held = true
@@ -47,12 +48,22 @@ private final class MinimaGate: @unchecked Sendable {
             return
         }
         await withCheckedContinuation { continuation in
-            lock.withLock { self.continuation = continuation }
+            let resumeNow: Bool = lock.withLock {
+                if released {
+                    return true
+                }
+                self.continuation = continuation
+                return false
+            }
+            if resumeNow {
+                continuation.resume()
+            }
         }
     }
 
     func release() {
-        let continuation = lock.withLock {
+        let continuation: CheckedContinuation<Void, Never>? = lock.withLock {
+            released = true
             let held = self.continuation
             self.continuation = nil
             return held
@@ -202,7 +213,7 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
     form.longitudeText = "-72.58"
 
     let flight = Task { await form.deriveClimate() }
-    while !form.isDerivingClimate {
+    while counter.count < 1 {
         await Task.yield()
     }
 
@@ -217,4 +228,94 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
     #expect(form.property?.hardinessZone == HardinessZone(number: 5))
     #expect(form.zoneText == "5")
     #expect(counter.count == 2)
+}
+
+@Test @MainActor func aRetiredFlightNeverPoisonsTheSharedCache() async throws {
+    let gate = MinimaGate()
+    let counter = MinimaCounter()
+    let subtropical = [
+        DailyMinimum(date: day(2023, 1, 10), celsius: 8),
+        DailyMinimum(date: day(2024, 1, 12), celsius: 10),
+    ]
+    let database = try AppDatabase.inMemory()
+    let suiteName = "climate-lifecycle-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    let minima: HistoricalMinima = { _ in
+        counter.bump()
+        if counter.count == 1 {
+            await gate.holdFirstCaller()
+            return subtropical
+        }
+        return temperateSeries
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let flight = Task { await form.deriveClimate() }
+    while counter.count < 1 {
+        await Task.yield()
+    }
+    #expect(await form.save())
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+
+    gate.release()
+    await flight.value
+
+    let fresh = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    fresh.load()
+    await fresh.useDerivedZone()
+    #expect(fresh.zoneText == "5")
+}
+
+@Test @MainActor func aDerivationDroppedDuringSaveReplaysAfterward() async throws {
+    let gate = MinimaGate()
+    let counter = MinimaCounter()
+    let subtropical = [
+        DailyMinimum(date: day(2023, 1, 10), celsius: 8),
+        DailyMinimum(date: day(2024, 1, 12), celsius: 10),
+    ]
+    let database = try AppDatabase.inMemory()
+    let defaults = UserDefaults(suiteName: "climate-lifecycle-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { coordinate in
+        counter.bump()
+        if coordinate.latitude > 40 {
+            await gate.holdFirstCaller()
+            return temperateSeries
+        }
+        return subtropical
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let saving = Task { await form.save() }
+    try await Task.sleep(for: .milliseconds(50))
+    form.latitudeText = "27.90000"
+    form.longitudeText = "-82.50000"
+    await form.deriveClimate()
+    #expect(form.isDerivingClimate == false)
+    gate.release()
+
+    #expect(await saving.value == false)
+    #expect(form.property == nil)
+    #expect(form.zoneText == "11")
+    #expect(form.lastFrostMonth == nil)
 }

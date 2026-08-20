@@ -52,6 +52,7 @@ extension PropertyDetailsForm {
         }
         switch await fetchDerived(location) {
         case .derived(let derived):
+            climateCache.remember(derived, for: location)
             if zoneSource == .derived {
                 zone = derived.zone.flatMap { HardinessZone(number: $0) }
             }
@@ -183,6 +184,7 @@ extension PropertyDetailsForm {
 
     public func deriveClimate() async {
         guard !isSaving else {
+            pendingDerivation = true
             return
         }
         guard minima != nil else {
@@ -237,6 +239,7 @@ extension PropertyDetailsForm {
                 "Weather history had nothing usable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually.")
         case .derived(let derived):
+            climateCache.remember(derived, for: coordinate)
             derivedClimate = derived
             climateCoordinate = coordinate
             applyDerivedValues(derived)
@@ -264,7 +267,6 @@ extension PropertyDetailsForm {
             minima: series, southernHemisphere: southern)
         let derived = DerivedClimate(
             zone: zone, lastFrost: frost.lastFrost, firstFrost: frost.firstFrost)
-        climateCache.remember(derived, for: coordinate)
         return derived.isEmpty ? .empty : .derived(derived)
     }
 
