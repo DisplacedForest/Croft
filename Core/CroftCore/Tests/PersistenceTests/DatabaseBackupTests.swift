@@ -60,14 +60,18 @@ struct DatabaseBackupTests {
         try SchemaMigrations.migrator(through: first).migrate(fixture)
         try fixture.write { db in
             try db.execute(sql: "CREATE TABLE backupProbe(id INTEGER PRIMARY KEY)")
-            try db.execute(sql: "INSERT INTO backupProbe(id) VALUES (1)")
         }
-        try fixture.writeWithoutTransaction { db in
+        let reader = try DatabaseQueue(path: url.path, configuration: configuration)
+        try reader.writeWithoutTransaction { db in
             try db.execute(sql: "BEGIN")
             _ = try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM backupProbe")
+            try fixture.write { fixtureDb in
+                try fixtureDb.execute(sql: "INSERT INTO backupProbe(id) VALUES (1)")
+            }
             _ = try AppDatabase.open(at: url)
             try db.execute(sql: "COMMIT")
         }
+        try reader.close()
         let backup = backupURL(for: url)
         let queue = try DatabaseQueue(path: backup.path, configuration: Configuration())
         defer { try? queue.close() }
