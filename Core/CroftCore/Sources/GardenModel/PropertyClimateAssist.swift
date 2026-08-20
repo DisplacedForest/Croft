@@ -93,18 +93,35 @@ extension PropertyDetailsForm {
     }
 
     public func deriveClimate() async {
-        guard let minima else {
+        guard minima != nil else {
             return
         }
         guard let coordinate = try? parsedCoordinate() else {
             return
         }
-        derivationGeneration += 1
-        let generation = derivationGeneration
+        if let derivationTask, derivationCoordinate == coordinate {
+            await derivationTask.value
+            return
+        }
+        derivationTask?.cancel()
+        let task = Task { await self.performDerivation(coordinate) }
+        derivationTask = task
+        derivationCoordinate = coordinate
+        await task.value
+        if derivationCoordinate == coordinate {
+            derivationTask = nil
+            derivationCoordinate = nil
+        }
+    }
+
+    private func performDerivation(_ coordinate: GeoCoordinate) async {
+        guard let minima else {
+            return
+        }
         derivationMessage = nil
         isDerivingClimate = true
         defer {
-            if generation == derivationGeneration {
+            if !Task.isCancelled {
                 isDerivingClimate = false
             }
         }
@@ -116,7 +133,7 @@ extension PropertyDetailsForm {
             let series = try? await withDeadline(deadline) {
                 try await minima(coordinate)
             }
-            guard generation == derivationGeneration else {
+            guard !Task.isCancelled else {
                 return
             }
             guard let series, !series.isEmpty else {

@@ -104,6 +104,7 @@ struct PropertySettingsView: View {
                         }
                     }
                 }
+                .disabled(form.isSaving)
                 .keyboardShortcut(.defaultAction)
             }
             .padding(.horizontal, CroftTheme.space(5))
@@ -130,6 +131,7 @@ struct PropertySetupSheet: View {
                     form.declineSetup()
                     dismiss()
                 }
+                .disabled(form.isSaving)
                 Button("Save") {
                     Task {
                         if await form.save() {
@@ -137,12 +139,14 @@ struct PropertySetupSheet: View {
                         }
                     }
                 }
+                .disabled(form.isSaving)
                 .buttonStyle(.borderedProminent)
             }
             .padding(.horizontal, CroftTheme.space(5))
             .padding(.bottom, CroftTheme.space(5))
         }
         .croftScreenSurface()
+        .interactiveDismissDisabled(form.isSaving)
         #if os(macOS)
             .frame(width: 480, height: 600)
         #endif

@@ -266,3 +266,68 @@ private func makeForm(
     #expect(reloaded.property?.hardinessZone == HardinessZone(number: 5))
     #expect(reloaded.property?.lastFrost != nil)
 }
+
+@MainActor
+private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
+    let database = try AppDatabase.inMemory()
+    let defaults = UserDefaults(suiteName: "climate-consistency-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { _ in
+        try? await Task.sleep(for: .milliseconds(delayMilliseconds))
+        return temperateSeries
+    }
+    return PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+}
+
+@Test @MainActor func aDebouncedDerivationJoinsTheSaveInsteadOfInvalidatingIt() async throws {
+    let form = try slowForm(delayMilliseconds: 300)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let saving = Task { await form.save() }
+    try await Task.sleep(for: .milliseconds(100))
+    await form.deriveClimate()
+
+    #expect(await saving.value)
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+    #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
+    #expect(form.property?.location == GeoCoordinate(latitude: 44.26, longitude: -72.58))
+}
+
+@Test @MainActor func anEditDuringSavePersistsTheCapturedCoordinate() async throws {
+    let form = try slowForm(delayMilliseconds: 300)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let saving = Task { await form.save() }
+    try await Task.sleep(for: .milliseconds(100))
+    form.latitudeText = "10.00000"
+    form.longitudeText = "10.00000"
+
+    #expect(await saving.value)
+    #expect(form.property?.location == GeoCoordinate(latitude: 44.26, longitude: -72.58))
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+}
+
+@Test @MainActor func saveIsSingleFlight() async throws {
+    let form = try slowForm(delayMilliseconds: 300)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let first = Task { await form.save() }
+    try await Task.sleep(for: .milliseconds(50))
+    #expect(form.isSaving)
+    let second = await form.save()
+
+    #expect(second == false)
+    #expect(await first.value)
+    #expect(form.isSaving == false)
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+}

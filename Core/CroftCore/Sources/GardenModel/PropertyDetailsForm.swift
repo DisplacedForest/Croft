@@ -98,8 +98,10 @@ public final class PropertyDetailsForm {
     public internal(set) var derivedClimate: DerivedClimate?
     public internal(set) var zoneSource: ClimateSource = .derived
     public internal(set) var frostDatesSource: ClimateSource = .derived
+    public private(set) var isSaving = false
     var climateCoordinate: GeoCoordinate?
-    var derivationGeneration = 0
+    var derivationTask: Task<Void, Never>?
+    var derivationCoordinate: GeoCoordinate?
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -197,16 +199,20 @@ public final class PropertyDetailsForm {
 
     @discardableResult
     public func save() async -> Bool {
+        guard !isSaving else {
+            return false
+        }
+        isSaving = true
+        defer { isSaving = false }
         validationMessage = nil
         guard sourceState != .unreadable else {
             validationMessage = "The property record can't be read, so saving is disabled."
             return false
         }
         do {
-            var location = try parsedCoordinate()
+            let location = try parsedCoordinate()
             if needsDerivationBeforeSave(location) {
                 await deriveClimate()
-                location = try parsedCoordinate()
             }
             var zone = try parsedZone()
             var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
@@ -288,7 +294,9 @@ public final class PropertyDetailsForm {
         }
         await deriveClimate()
     }
+}
 
+extension PropertyDetailsForm {
     func parsedCoordinate() throws -> GeoCoordinate? {
         let latText = latitudeText.trimmingCharacters(in: .whitespaces)
         let lonText = longitudeText.trimmingCharacters(in: .whitespaces)
