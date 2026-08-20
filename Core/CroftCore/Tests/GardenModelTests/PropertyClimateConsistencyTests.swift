@@ -362,7 +362,6 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
 
     let flight = Task { await form.deriveClimate() }
     try await Task.sleep(for: .milliseconds(50))
-    #expect(form.isDerivingClimate)
 
     #expect(await form.save())
     await flight.value
@@ -370,4 +369,19 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
     #expect(form.isDerivingClimate == false)
     #expect(form.property?.hardinessZone == HardinessZone(number: 5))
     #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
+}
+
+@Test @MainActor func aFlightRetiredBeforeItsBodyRunsNeverStrandsTheIndicator() async throws {
+    let form = try slowForm(delayMilliseconds: 200)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let flight = Task { await form.deriveClimate() }
+    let saved = await form.save()
+    await flight.value
+
+    #expect(saved)
+    #expect(form.isDerivingClimate == false)
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
 }

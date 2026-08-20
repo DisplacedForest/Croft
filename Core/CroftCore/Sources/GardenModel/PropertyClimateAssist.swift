@@ -196,6 +196,8 @@ extension PropertyDetailsForm {
             derivationTask?.cancel()
             derivationFlight += 1
             flight = derivationFlight
+            derivationMessage = nil
+            isDerivingClimate = true
             let task = Task { await self.performDerivation(coordinate) }
             derivationTask = task
             derivationCoordinate = coordinate
@@ -208,8 +210,9 @@ extension PropertyDetailsForm {
     }
 
     private func performDerivation(_ coordinate: GeoCoordinate) async {
-        derivationMessage = nil
-        isDerivingClimate = true
+        guard !Task.isCancelled else {
+            return
+        }
         defer {
             if !Task.isCancelled {
                 isDerivingClimate = false
