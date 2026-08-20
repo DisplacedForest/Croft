@@ -64,10 +64,12 @@ private func splitForm(slowNorthMilliseconds: Int) throws -> PropertyDetailsForm
     form.latitudeText = "27.90000"
     form.longitudeText = "-82.50000"
     await form.deriveClimate()
-    #expect(form.zoneText == "11")
+    #expect(form.isDerivingClimate == false)
 
     #expect(await saving.value == false)
     #expect(form.property == nil)
+
+    await form.deriveClimate()
     #expect(form.zoneText == "11")
 
     #expect(await form.save())

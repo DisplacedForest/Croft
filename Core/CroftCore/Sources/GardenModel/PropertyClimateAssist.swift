@@ -182,6 +182,9 @@ extension PropertyDetailsForm {
     }
 
     public func deriveClimate() async {
+        guard !isSaving else {
+            return
+        }
         guard minima != nil else {
             return
         }
