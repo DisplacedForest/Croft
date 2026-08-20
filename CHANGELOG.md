@@ -77,6 +77,10 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- Use Current Location always finishes. Reverse geocoding and the weather
+  history fetch behind zone and frost derivation now time out (10 and 30
+  seconds), ending in the same honest messages as any other failure instead
+  of a spinner that never stops.
 - The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
   the letter, and shows it back unchanged. A derived zone whose number matches
   your lettered entry no longer nags with a suggestion.
