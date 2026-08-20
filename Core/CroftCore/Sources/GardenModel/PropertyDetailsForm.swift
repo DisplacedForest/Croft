@@ -114,6 +114,7 @@ public final class PropertyDetailsForm {
     public internal(set) var derivedClimate: DerivedClimate?
     public internal(set) var derivedPrefilled: Set<PropertyClimateField> = []
     public internal(set) var climateSuggestions: [PropertyClimateField] = []
+    public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
     private let defaults: PropertySetupDefaults
@@ -226,6 +227,7 @@ public final class PropertyDetailsForm {
                 firstFrost: firstFrost
             )
             defaults.hasBeenPrompted = true
+            setupOutcome = .saved
             var saved = home
             saved.location = location
             saved.hardinessZone = zone
@@ -243,8 +245,16 @@ public final class PropertyDetailsForm {
         }
     }
 
-    public func markPrompted() {
+    public func declineSetup() {
+        setupOutcome = .declined
+    }
+
+    public func commitSetupOutcome() {
+        guard setupOutcome != nil else {
+            return
+        }
         defaults.hasBeenPrompted = true
+        setupOutcome = nil
     }
 
     public func useCurrentLocation() async {

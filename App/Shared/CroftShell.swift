@@ -11,44 +11,53 @@ struct CroftShell: View {
     @State private var propertyForm: PropertyDetailsForm?
     @State private var showsPropertySetup = false
     private let initialRoute: SectionRoute?
+    private let setupDefaults: PropertySetupDefaults
 
     init(
         gardenStore: GardenStore? = nil,
         captureStore: CaptureStore? = nil,
         initialSection: AppSection = .today,
-        initialRoute: SectionRoute? = nil
+        initialRoute: SectionRoute? = nil,
+        setupDefaults: PropertySetupDefaults = PropertySetupDefaults(
+            store: AppDefaultsStore.current),
+        propertyForm: PropertyDetailsForm? = nil
     ) {
         _selection = State(initialValue: initialSection)
         _gardenStore = State(initialValue: gardenStore ?? .live())
         _captureStore = State(initialValue: captureStore ?? CaptureStore(stores: nil))
         _captureReady = State(initialValue: captureStore != nil)
         self.initialRoute = initialRoute
+        self.setupDefaults = setupDefaults
+        _propertyForm = State(initialValue: propertyForm)
     }
 
     var body: some View {
         shell
             .sheet(isPresented: $showsPropertySetup) {
-                propertyForm?.markPrompted()
+                propertyForm?.commitSetupOutcome()
             } content: {
                 if let propertyForm {
                     PropertySetupSheet(form: propertyForm)
+                } else {
+                    PropertySetupLoadingView()
                 }
             }
             .task {
-                guard propertyForm == nil, let database = appStores?.database else {
-                    return
+                if propertyForm == nil, let database = appStores?.database {
+                    let form = PropertyDetailsForm(
+                        database: database,
+                        defaults: setupDefaults,
+                        fillCoordinate: PropertyLocationFill.system,
+                        addressSearch: SystemAddressSearch(),
+                        reverseGeocode: SystemAddressSearch.reverseGeocode,
+                        minima: PropertyClimateHistory.system
+                    )
+                    form.load()
+                    propertyForm = form
                 }
-                let form = PropertyDetailsForm(
-                    database: database,
-                    defaults: PropertySetupDefaults(store: AppDefaultsStore.current),
-                    fillCoordinate: PropertyLocationFill.system,
-                    addressSearch: SystemAddressSearch(),
-                    reverseGeocode: SystemAddressSearch.reverseGeocode,
-                    minima: PropertyClimateHistory.system
-                )
-                form.load()
-                propertyForm = form
-                showsPropertySetup = form.shouldOfferSetup
+                if let propertyForm {
+                    showsPropertySetup = propertyForm.shouldOfferSetup
+                }
             }
     }
 

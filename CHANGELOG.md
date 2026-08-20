@@ -77,6 +77,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- First-run property setup can no longer vanish forever: the prompted flag is
+  written only when you save or choose Not Now, so a setup sheet closed by
+  anything other than you returns on the next launch. If the sheet ever opens
+  before its form is ready, it shows a loading indicator instead of an empty
+  card.
 - The Today weather chip and forecast popover show whole-degree temperatures
   instead of raw float precision like 72.748449, with halves rounding away
   from zero; stored weather data keeps its full precision.
