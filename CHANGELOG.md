@@ -77,6 +77,9 @@ All notable changes to Croft are documented here. The format follows
 
 ### Fixed
 
+- The Today weather chip and forecast popover show whole-degree temperatures
+  instead of raw float precision like 72.748449, with halves rounding away
+  from zero; stored weather data keeps its full precision.
 - Use Current Location always finishes. Reverse geocoding and the weather
   history fetch behind zone and frost derivation now time out (10 and 30
   seconds), ending in the same honest messages as any other failure instead
