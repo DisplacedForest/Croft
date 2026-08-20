@@ -106,7 +106,7 @@ struct TodayView: View {
                     VStack(alignment: .leading, spacing: 1) {
                         Text(
                             snapshot.temperature,
-                            format: .measurement(width: .abbreviated, usage: .weather)
+                            format: WeatherDisplay.temperatureStyle(width: .abbreviated)
                         )
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Color.domainWater)
@@ -316,9 +316,9 @@ private struct ForecastPopover: View {
                     .font(.caption2)
                     .foregroundStyle(Color.domainWater)
             }
-            Text(day.high, format: .measurement(width: .narrow, usage: .weather))
+            Text(day.high, format: WeatherDisplay.temperatureStyle(width: .narrow))
                 .font(.caption)
-            Text(day.low, format: .measurement(width: .narrow, usage: .weather))
+            Text(day.low, format: WeatherDisplay.temperatureStyle(width: .narrow))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

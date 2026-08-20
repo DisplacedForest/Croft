@@ -57,6 +57,7 @@ let package = Package(
             ]
         ),
         .executableTarget(name: "knowledge-importer", dependencies: ["Knowledge"]),
+        .executableTarget(name: "walkthrough-seed", dependencies: ["Domain", "Persistence"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain"]),
         .testTarget(
             name: "CaptureTests",

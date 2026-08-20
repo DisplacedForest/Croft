@@ -6,6 +6,10 @@ Development builds skip starting the Sparkle updater by design: the updater only
 
 The same Developer ID verdict picks the database: signed builds open the live `croft.sqlite`, every other build opens `croft-dev.sqlite` beside it (or the file named by `CROFT_DATABASE_PATH`, honored only in non-Developer-ID builds), so a dev launch can never migrate the installed app's data. Before applying pending migrations to an existing database, the app writes a rolling `<name>.pre-migration` backup beside it.
 
+## Season gate walkthrough
+
+`mise run gate-walkthrough` runs the scripted season walkthrough that gates a release: it seeds a fresh walkthrough database (`walkthrough-seed`, honoring `CROFT_GATE_DB` for the path and `CROFT_GATE_SEED_FLAGS` for seed options such as `--with-property`), clears the walkthrough defaults suite, and drives the unsigned macOS app end to end via `SeasonGateWalkthroughTests` in the `Croft-macOS-Gate` scheme, attaching a window screenshot at every step. The app window appears on the desktop while the test runs. The steps: first-run property setup, the plantable list, planning a planting into a bed with rotation history and reading the warning, logging a lifecycle stage away from the planting page, recording harvests in grams and in pounds on different days, the Today flag for a planting past expected maturity with no harvest, and harvest totals in one unit system. The result bundle lands under `.gate/` (gitignored); open it with Xcode or `xcrun xcresulttool` to review the screenshots. Non-Developer-ID builds honor `CROFT_DATABASE_PATH` for the seeded database and `CROFT_DEFAULTS_SUITE` for an isolated defaults domain, so a gate run never reads or writes the live database or the user's real preferences; Developer ID builds ignore both.
+
 ## Cutting a release
 
 1. Make sure `main` is green and the changelog is curated.

@@ -61,7 +61,7 @@ final class CaptureStore {
                     ?? FileManager.default.temporaryDirectory
                     .appendingPathComponent("CroftPhotos", isDirectory: true)
             ),
-            defaults: CaptureDefaults()
+            defaults: CaptureDefaults(store: AppDefaultsStore.current)
         )
     }
 

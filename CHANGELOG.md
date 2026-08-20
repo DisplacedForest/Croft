@@ -82,6 +82,13 @@ All notable changes to Croft are documented here. The format follows
   anything other than you returns on the next launch. If the sheet ever opens
   before its form is ready, it shows a loading indicator instead of an empty
   card.
+- The Today weather chip and forecast popover show whole-degree temperatures
+  instead of raw float precision like 72.748449, with halves rounding away
+  from zero; stored weather data keeps its full precision.
+- Use Current Location always finishes. Reverse geocoding and the weather
+  history fetch behind zone and frost derivation now time out (10 and 30
+  seconds), ending in the same honest messages as any other failure instead
+  of a spinner that never stops.
 - The hardiness zone field accepts lettered USDA zones like 8a and 8b, stores
   the letter, and shows it back unchanged. A derived zone whose number matches
   your lettered entry no longer nags with a suggestion.

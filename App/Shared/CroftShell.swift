@@ -18,7 +18,8 @@ struct CroftShell: View {
         captureStore: CaptureStore? = nil,
         initialSection: AppSection = .today,
         initialRoute: SectionRoute? = nil,
-        setupDefaults: PropertySetupDefaults = PropertySetupDefaults(),
+        setupDefaults: PropertySetupDefaults = PropertySetupDefaults(
+            store: AppDefaultsStore.current),
         propertyForm: PropertyDetailsForm? = nil
     ) {
         _selection = State(initialValue: initialSection)
