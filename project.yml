@@ -143,6 +143,16 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
+  Croft-macOS-UITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - App/MacUITests
+    dependencies:
+      - target: Croft-macOS
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
   Croft-iOS-UITests:
     type: bundle.ui-testing
     platform: iOS
@@ -164,6 +174,15 @@ schemes:
       targets:
         - DesignRuntimeTests
         - AppSurfaceTests
+  Croft-macOS-Gate:
+    build:
+      targets:
+        Croft-macOS: all
+    run:
+      config: Debug
+    test:
+      targets:
+        - Croft-macOS-UITests
   Croft-iOS:
     build:
       targets:

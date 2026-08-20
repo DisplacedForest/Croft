@@ -40,6 +40,7 @@ struct CroftShell: View {
                 }
                 let form = PropertyDetailsForm(
                     database: database,
+                    defaults: PropertySetupDefaults(store: AppDefaultsStore.current),
                     fillCoordinate: PropertyLocationFill.system,
                     addressSearch: SystemAddressSearch(),
                     reverseGeocode: SystemAddressSearch.reverseGeocode,

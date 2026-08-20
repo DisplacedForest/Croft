@@ -135,6 +135,26 @@ cp project.resolved Croft.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Pac
 [tasks.ci]
 depends = ["check", "test-runtime-tokens", "check-resolved"]
 
+[tasks."gate-walkthrough"]
+depends = ["generate"]
+run = '''
+set -euo pipefail
+db="${CROFT_GATE_DB:-$PWD/.gate/walkthrough.sqlite}"
+suite="com.displacedforest.croft.gate"
+swift run --package-path Core/CroftCore -c release walkthrough-seed "$db" ${CROFT_GATE_SEED_FLAGS:-}
+defaults delete "$suite" 2>/dev/null || true
+result="$PWD/.gate/walkthrough-$(date +%Y%m%d-%H%M%S).xcresult"
+TEST_RUNNER_CROFT_DATABASE_PATH="$db" \
+TEST_RUNNER_CROFT_DEFAULTS_SUITE="$suite" \
+xcodebuild test \
+  -project Croft.xcodeproj -scheme Croft-macOS-Gate \
+  -destination 'platform=macOS' \
+  CODE_SIGN_ENTITLEMENTS= CODE_SIGN_IDENTITY=- \
+  -only-testing:Croft-macOS-UITests/SeasonGateWalkthroughTests \
+  -resultBundlePath "$result" -quiet
+echo "gate result bundle: $result"
+'''
+
 [tasks."changelog-draft"]
 run = '''
 set -euo pipefail
