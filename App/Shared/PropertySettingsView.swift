@@ -83,6 +83,7 @@ struct PropertySettingsView: View {
     private func editor(_ form: PropertyDetailsForm) -> some View {
         VStack(spacing: 0) {
             PropertyDetailsView(form: form)
+                .disabled(form.isSaving)
             HStack(spacing: CroftTheme.space(2)) {
                 if showsSaved {
                     Text("Saved.")
@@ -125,6 +126,7 @@ struct PropertySetupSheet: View {
                 .padding(.horizontal, CroftTheme.space(5))
                 .padding(.top, CroftTheme.space(6))
             PropertyDetailsView(form: form)
+                .disabled(form.isSaving)
             HStack(spacing: CroftTheme.space(2)) {
                 Spacer()
                 Button("Not Now") {

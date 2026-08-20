@@ -78,6 +78,9 @@ extension PropertyDetailsForm {
         message: String
     ) {
         derivationMessage = message
+        guard location != property?.location else {
+            return
+        }
         if zoneSource == .derived {
             zone = nil
         }
@@ -198,10 +201,12 @@ extension PropertyDetailsForm {
         switch fetched {
         case .unavailable:
             failDerivation(
+                coordinate,
                 "Weather history is unavailable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually or try again later.")
         case .empty:
             failDerivation(
+                coordinate,
                 "Weather history had nothing usable for this location, so zone and frost "
                     + "dates were not derived. Enter them manually.")
         case .derived(let derived):
@@ -236,10 +241,13 @@ extension PropertyDetailsForm {
         return derived.isEmpty ? .empty : .derived(derived)
     }
 
-    private func failDerivation(_ message: String) {
+    private func failDerivation(_ coordinate: GeoCoordinate, _ message: String) {
         derivationMessage = message
         derivedClimate = nil
         climateCoordinate = nil
+        guard coordinate != property?.location else {
+            return
+        }
         clearDerivedGroups()
     }
 

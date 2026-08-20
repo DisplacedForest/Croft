@@ -193,7 +193,7 @@ public final class PropertyDetailsForm {
         firstFrostDay = property?.firstFrost?.day
         zoneSource = property?.zoneSource ?? .derived
         frostDatesSource = property?.frostDatesSource ?? .derived
-        climateCoordinate = derivedGroupsHaveValues ? ((try? parsedCoordinate()) ?? nil) : nil
+        climateCoordinate = nil
         validationMessage = nil
         locationMessage = nil
     }
@@ -211,14 +211,17 @@ public final class PropertyDetailsForm {
             return false
         }
         do {
+            let inputs = saveInputs
             let location = try parsedCoordinate()
             var zone = try parsedZone()
             var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
             if needsDerivationBeforeSave(location) {
                 await resolveDerivedForSave(location, &zone, &lastFrost, &firstFrost)
+                guard saveInputs == inputs else {
+                    return false
+                }
             }
-            let home = try store.ensureHomeProperty()
             let details = PropertyDetails(
                 location: location,
                 hardinessZone: zone,
@@ -227,18 +230,7 @@ public final class PropertyDetailsForm {
                 zoneSource: zoneSource,
                 frostDatesSource: frostDatesSource
             )
-            try store.updateDetails(home.id, details)
-            defaults.hasBeenPrompted = true
-            setupOutcome = .saved
-            var saved = home
-            saved.location = location
-            saved.hardinessZone = zone
-            saved.lastFrost = lastFrost
-            saved.firstFrost = firstFrost
-            saved.zoneSource = zoneSource
-            saved.frostDatesSource = frostDatesSource
-            property = saved
-            sourceState = .loaded
+            try persist(details)
             return true
         } catch let error as PropertyDetailsError {
             validationMessage = error.message
@@ -247,6 +239,22 @@ public final class PropertyDetailsForm {
             validationMessage = "Could not save the property details."
             return false
         }
+    }
+
+    private func persist(_ details: PropertyDetails) throws {
+        let home = try store.ensureHomeProperty()
+        try store.updateDetails(home.id, details)
+        defaults.hasBeenPrompted = true
+        setupOutcome = .saved
+        var saved = home
+        saved.location = details.location
+        saved.hardinessZone = details.hardinessZone
+        saved.lastFrost = details.lastFrost
+        saved.firstFrost = details.firstFrost
+        saved.zoneSource = details.zoneSource
+        saved.frostDatesSource = details.frostDatesSource
+        property = saved
+        sourceState = .loaded
     }
 
     public func declineSetup() {
@@ -347,8 +355,29 @@ extension PropertyDetailsForm {
         String(format: "%.5f", value)
     }
 
-    var derivedGroupsHaveValues: Bool {
-        (zoneSource == .user || !zoneText.isEmpty)
-            && (frostDatesSource == .user || lastFrostMonth != nil)
+    var saveInputs: SaveInputs {
+        SaveInputs(
+            latitudeText: latitudeText,
+            longitudeText: longitudeText,
+            zoneSource: zoneSource,
+            frostDatesSource: frostDatesSource,
+            customZone: zoneSource == .user ? zoneText : nil,
+            customLastMonth: frostDatesSource == .user ? lastFrostMonth : nil,
+            customLastDay: frostDatesSource == .user ? lastFrostDay : nil,
+            customFirstMonth: frostDatesSource == .user ? firstFrostMonth : nil,
+            customFirstDay: frostDatesSource == .user ? firstFrostDay : nil
+        )
     }
+}
+
+struct SaveInputs: Equatable {
+    var latitudeText: String
+    var longitudeText: String
+    var zoneSource: ClimateSource
+    var frostDatesSource: ClimateSource
+    var customZone: String?
+    var customLastMonth: Int?
+    var customLastDay: Int?
+    var customFirstMonth: Int?
+    var customFirstDay: Int?
 }

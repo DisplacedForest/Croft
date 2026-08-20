@@ -299,7 +299,7 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
     #expect(form.property?.location == GeoCoordinate(latitude: 44.26, longitude: -72.58))
 }
 
-@Test @MainActor func anEditDuringSavePersistsTheCapturedCoordinate() async throws {
+@Test @MainActor func anEditDuringSaveAbortsInsteadOfPersistingStaleState() async throws {
     let form = try slowForm(delayMilliseconds: 300)
     form.load()
     form.latitudeText = "44.26"
@@ -310,9 +310,31 @@ private func slowForm(delayMilliseconds: Int) throws -> PropertyDetailsForm {
     form.latitudeText = "10.00000"
     form.longitudeText = "10.00000"
 
-    #expect(await saving.value)
-    #expect(form.property?.location == GeoCoordinate(latitude: 44.26, longitude: -72.58))
-    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+    #expect(await saving.value == false)
+    #expect(form.property == nil)
+    #expect(form.latitudeText == "10.00000")
+}
+
+@Test @MainActor func aSourceFlipDuringSaveAbortsAndTheRetryPersistsTheCustomValue() async throws {
+    let form = try slowForm(delayMilliseconds: 300)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    let saving = Task { await form.save() }
+    try await Task.sleep(for: .milliseconds(100))
+    form.adjustZone()
+    form.zoneText = "8b"
+
+    #expect(await saving.value == false)
+    #expect(form.property == nil)
+    #expect(form.zoneText == "8b")
+
+    #expect(await form.save())
+    #expect(form.property?.hardinessZone == HardinessZone(parsing: "8b"))
+    #expect(form.property?.zoneSource == .user)
+    #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
+    #expect(form.property?.frostDatesSource == .derived)
 }
 
 @Test @MainActor func saveIsSingleFlight() async throws {

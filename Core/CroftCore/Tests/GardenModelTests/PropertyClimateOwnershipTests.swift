@@ -53,7 +53,7 @@ private func splitForm(slowNorthMilliseconds: Int) throws -> PropertyDetailsForm
     )
 }
 
-@Test @MainActor func saveOwnsItsDerivationAgainstACompetingLocation() async throws {
+@Test @MainActor func aCompetingLocationDuringSaveAbortsAndTheRetryPersistsIt() async throws {
     let form = try splitForm(slowNorthMilliseconds: 300)
     form.load()
     form.latitudeText = "44.26"
@@ -66,10 +66,14 @@ private func splitForm(slowNorthMilliseconds: Int) throws -> PropertyDetailsForm
     await form.deriveClimate()
     #expect(form.zoneText == "11")
 
-    #expect(await saving.value)
-    #expect(form.property?.location == GeoCoordinate(latitude: 44.26, longitude: -72.58))
-    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
-    #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
+    #expect(await saving.value == false)
+    #expect(form.property == nil)
+    #expect(form.zoneText == "11")
+
+    #expect(await form.save())
+    #expect(form.property?.location == GeoCoordinate(latitude: 27.9, longitude: -82.5))
+    #expect(form.property?.hardinessZone == HardinessZone(number: 11))
+    #expect(form.property?.lastFrost == nil)
 }
 
 @Test @MainActor func aCancelledFlightNeverClearsANewerFlightForTheSameCoordinate() async throws {
@@ -129,4 +133,40 @@ private func splitForm(slowNorthMilliseconds: Int) throws -> PropertyDetailsForm
     #expect(form.property?.hardinessZone == HardinessZone(number: 5))
     #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
     #expect(form.property?.zoneSource == .derived)
+}
+
+@Test @MainActor func aPartialDerivedRecordSurvivesReloadWithWeatherUnavailable() async throws {
+    struct MinimaFailure: Error {}
+    let database = try AppDatabase.inMemory()
+    let structures = GardenStructureRepository(database)
+    let property = Property(name: "Home")
+    try structures.create(property)
+    try structures.updatePropertyDetails(
+        property.id,
+        PropertyDetails(
+            location: GeoCoordinate(latitude: 27.9, longitude: -82.5),
+            hardinessZone: HardinessZone(number: 11),
+            zoneSource: .derived,
+            frostDatesSource: .derived
+        )
+    )
+    let defaults = UserDefaults(suiteName: "climate-ownership-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { _ in
+        throw MinimaFailure()
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    #expect(form.zoneText == "11")
+
+    #expect(await form.save())
+
+    #expect(form.property?.hardinessZone == HardinessZone(number: 11))
+    #expect(form.property?.zoneSource == .derived)
+    #expect(form.derivationMessage != nil)
+    #expect(form.zoneText == "11")
 }
