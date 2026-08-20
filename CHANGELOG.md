@@ -8,6 +8,11 @@ All notable changes to Croft are documented here. The format follows
 
 ### Added
 
+- Before applying schema migrations to an existing garden database, Croft now
+  writes a rolling pre-migration backup beside it, and opening a database
+  written by a newer version of Croft explains that the app needs updating
+  instead of showing a raw migration error. Development builds keep to their
+  own croft-dev.sqlite and can never touch the installed app's data.
 - A search field on every crop page filters its varietals live by bare name,
   full vendor name, or binomial, with a plain empty state when nothing
   matches.
