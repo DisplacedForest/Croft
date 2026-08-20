@@ -25,7 +25,7 @@ let property =
     ? Property(
         name: "Home",
         location: GeoCoordinate(latitude: 44.98, longitude: -93.26),
-        hardinessZone: 5,
+        hardinessZone: HardinessZone(number: 5),
         lastFrost: MonthDay(month: 5, day: 10),
         firstFrost: MonthDay(month: 10, day: 1)
     )
