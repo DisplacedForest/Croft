@@ -6,6 +6,7 @@ import struct Domain.GeoCoordinate
 import struct Domain.HardinessZone
 import struct Domain.MonthDay
 import struct Domain.Property
+import func Domain.withDeadline
 
 public typealias CoordinateFill = @Sendable () async throws -> GeoCoordinate
 
@@ -121,6 +122,8 @@ public final class PropertyDetailsForm {
     private let reverseGeocode: ReverseGeocode?
     let minima: HistoricalMinima?
     let climateCache: ClimateCache
+    private let geocodeDeadline: Duration
+    let minimaDeadline: Duration
 
     public convenience init(
         database: AppDatabase,
@@ -129,7 +132,9 @@ public final class PropertyDetailsForm {
         addressSearch: (any AddressSearching)? = nil,
         reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
-        climateCache: ClimateCache = ClimateCache()
+        climateCache: ClimateCache = ClimateCache(),
+        geocodeDeadline: Duration = .seconds(10),
+        minimaDeadline: Duration = .seconds(30)
     ) {
         self.init(
             store: DatabasePropertyStore(database: database),
@@ -138,7 +143,9 @@ public final class PropertyDetailsForm {
             addressSearch: addressSearch,
             reverseGeocode: reverseGeocode,
             minima: minima,
-            climateCache: climateCache
+            climateCache: climateCache,
+            geocodeDeadline: geocodeDeadline,
+            minimaDeadline: minimaDeadline
         )
     }
 
@@ -149,7 +156,9 @@ public final class PropertyDetailsForm {
         addressSearch: (any AddressSearching)? = nil,
         reverseGeocode: ReverseGeocode? = nil,
         minima: HistoricalMinima? = nil,
-        climateCache: ClimateCache = ClimateCache()
+        climateCache: ClimateCache = ClimateCache(),
+        geocodeDeadline: Duration = .seconds(10),
+        minimaDeadline: Duration = .seconds(30)
     ) {
         self.store = store
         self.defaults = defaults
@@ -158,6 +167,8 @@ public final class PropertyDetailsForm {
         self.reverseGeocode = reverseGeocode
         self.minima = minima
         self.climateCache = climateCache
+        self.geocodeDeadline = geocodeDeadline
+        self.minimaDeadline = minimaDeadline
     }
 
     public var canFillLocation: Bool {
@@ -256,7 +267,10 @@ public final class PropertyDetailsForm {
         if let reverseGeocode {
             addressMessage = nil
             do {
-                let place = try await reverseGeocode(coordinate)
+                let deadline = geocodeDeadline
+                let place = try await withDeadline(deadline) {
+                    try await reverseGeocode(coordinate)
+                }
                 addressQuery = place.name
                 addressSuggestions = []
             } catch {
