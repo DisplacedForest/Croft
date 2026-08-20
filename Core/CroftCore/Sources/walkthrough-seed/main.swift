@@ -11,15 +11,45 @@ guard arguments.count >= 2 else {
 let url = URL(fileURLWithPath: arguments[1])
 let withProperty = arguments.contains("--with-property")
 
+func refuse(_ reason: String) -> Never {
+    FileHandle.standardError.write(Data((reason + "\n").utf8))
+    exit(64)
+}
+
 let liveDirectory = try? FileManager.default
     .url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
     .appendingPathComponent("Croft", isDirectory: true)
     .resolvingSymlinksInPath()
-let targetDirectory = url.deletingLastPathComponent().resolvingSymlinksInPath()
-if let liveDirectory, targetDirectory.path == liveDirectory.path {
-    FileHandle.standardError.write(
-        Data("refusing to seed inside the live Croft support directory\n".utf8))
-    exit(64)
+
+func refersToLiveDirectory(_ candidate: URL) -> Bool {
+    guard let liveDirectory else {
+        return false
+    }
+    let resolved = candidate.resolvingSymlinksInPath()
+    if resolved.path == liveDirectory.path {
+        return true
+    }
+    guard
+        let candidateIdentity = try? resolved.resourceValues(
+            forKeys: [.fileResourceIdentifierKey]
+        ).fileResourceIdentifier,
+        let liveIdentity = try? liveDirectory.resourceValues(
+            forKeys: [.fileResourceIdentifierKey]
+        ).fileResourceIdentifier
+    else {
+        return false
+    }
+    return candidateIdentity.isEqual(liveIdentity)
+}
+
+var targetIsDirectory: ObjCBool = false
+let targetExists = FileManager.default.fileExists(
+    atPath: url.path, isDirectory: &targetIsDirectory)
+if targetExists, targetIsDirectory.boolValue {
+    refuse("refusing to seed: the target path is a directory")
+}
+if refersToLiveDirectory(url) || refersToLiveDirectory(url.deletingLastPathComponent()) {
+    refuse("refusing to seed inside the live Croft support directory")
 }
 
 try FileManager.default.createDirectory(
