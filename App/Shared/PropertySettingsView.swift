@@ -95,11 +95,13 @@ struct PropertySettingsView: View {
                 }
                 Spacer()
                 Button("Save") {
-                    if form.save() {
-                        saveCount += 1
-                        showsSaved = true
-                    } else {
-                        showsSaved = false
+                    Task {
+                        if await form.save() {
+                            saveCount += 1
+                            showsSaved = true
+                        } else {
+                            showsSaved = false
+                        }
                     }
                 }
                 .keyboardShortcut(.defaultAction)
@@ -129,8 +131,10 @@ struct PropertySetupSheet: View {
                     dismiss()
                 }
                 Button("Save") {
-                    if form.save() {
-                        dismiss()
+                    Task {
+                        if await form.save() {
+                            dismiss()
+                        }
                     }
                 }
                 .buttonStyle(.borderedProminent)

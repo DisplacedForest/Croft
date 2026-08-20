@@ -110,7 +110,7 @@ private func makeForm(
     #expect(form.lastFrostDay == 5)
     #expect(form.firstFrostMonth == 10)
     #expect(form.firstFrostDay == 1)
-    #expect(form.save())
+    #expect(await form.save())
 }
 
 @Test @MainActor func derivedSourcedValuesAreOverwrittenByRederivation() async throws {
@@ -236,7 +236,7 @@ private func makeForm(
     #expect(form.addressMessage != nil)
     form.latitudeText = "10"
     form.longitudeText = "10"
-    #expect(form.save())
+    #expect(await form.save())
 }
 
 @Test @MainActor func aFailedMinimaFetchSaysSoAndLeavesManualEntryWorking() async throws {
@@ -249,7 +249,7 @@ private func makeForm(
     #expect(form.derivedClimate == nil)
     #expect(form.zoneText.isEmpty)
     #expect(form.derivationMessage != nil)
-    #expect(form.save())
+    #expect(await form.save())
 }
 
 @Test @MainActor func anEmptyWeatherHistorySaysSo() async throws {

@@ -54,7 +54,21 @@ private func makeForm(
 }
 
 @Test @MainActor func aManualCoordinateEditNeverSavesStaleDerivedClimate() async throws {
-    let form = try makeForm()
+    struct MinimaFailure: Error {}
+    let database = try AppDatabase.inMemory()
+    let defaults = UserDefaults(suiteName: "climate-consistency-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { coordinate in
+        guard coordinate.latitude > 40 else {
+            throw MinimaFailure()
+        }
+        return temperateSeries
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
     form.load()
     form.latitudeText = "44.26"
     form.longitudeText = "-72.58"
@@ -63,13 +77,14 @@ private func makeForm(
 
     form.latitudeText = "10.00000"
     form.longitudeText = "10.00000"
-    #expect(form.save())
+    #expect(await form.save())
 
     #expect(form.zoneText.isEmpty)
     #expect(form.lastFrostMonth == nil)
     #expect(form.property?.hardinessZone == nil)
     #expect(form.property?.lastFrost == nil)
     #expect(form.property?.zoneSource == .derived)
+    #expect(form.derivationMessage != nil)
 }
 
 @Test @MainActor func aMatchingDerivationStillSavesItsValues() async throws {
@@ -78,7 +93,7 @@ private func makeForm(
     form.latitudeText = "44.26"
     form.longitudeText = "-72.58"
     await form.deriveClimate()
-    #expect(form.save())
+    #expect(await form.save())
     #expect(form.property?.hardinessZone == HardinessZone(number: 5))
     #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
     #expect(form.property?.firstFrost == MonthDay(month: 10, day: 1))
@@ -188,4 +203,66 @@ private func makeForm(
     await slow.value
     #expect(form.zoneText == "11")
     #expect(form.lastFrostMonth == nil)
+}
+
+@Test @MainActor func anImmediateSaveDerivesForTheCoordinateBeingSaved() async throws {
+    let form = try makeForm()
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    #expect(await form.save())
+
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+    #expect(form.property?.lastFrost == MonthDay(month: 5, day: 5))
+    #expect(form.property?.zoneSource == .derived)
+}
+
+@Test @MainActor func anImmediateSaveWithoutWeatherPersistsHonestEmptiness() async throws {
+    let form = try makeForm(series: nil)
+    form.load()
+    form.latitudeText = "44.26"
+    form.longitudeText = "-72.58"
+
+    #expect(await form.save())
+
+    #expect(form.property?.hardinessZone == nil)
+    #expect(form.property?.lastFrost == nil)
+    #expect(form.derivationMessage != nil)
+}
+
+@Test @MainActor func highPrecisionCoordinatesSurviveReloadAndResave() async throws {
+    let counter = MinimaCounter()
+    let database = try AppDatabase.inMemory()
+    let suiteName = "climate-consistency-\(UUID().uuidString)"
+    let defaults = UserDefaults(suiteName: suiteName)!
+    let minima: HistoricalMinima = { _ in
+        counter.bump()
+        return temperateSeries
+    }
+    let saving = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    saving.load()
+    saving.latitudeText = "44.123456789"
+    saving.longitudeText = "-72.987654321"
+    await saving.deriveClimate()
+    #expect(saving.zoneText == "5")
+    #expect(await saving.save())
+
+    let reloaded = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    reloaded.load()
+    #expect(reloaded.zoneText == "5")
+    #expect(await reloaded.save())
+
+    #expect(reloaded.property?.hardinessZone == HardinessZone(number: 5))
+    #expect(reloaded.property?.lastFrost != nil)
 }

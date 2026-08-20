@@ -22,6 +22,11 @@ extension PropertyDetailsForm {
         await deriveClimate()
     }
 
+    func needsDerivationBeforeSave(_ location: GeoCoordinate?) -> Bool {
+        location != climateCoordinate
+            && (zoneSource == .derived || frostDatesSource == .derived)
+    }
+
     func dropStaleDerived(
         _ location: GeoCoordinate?,
         _ zone: inout HardinessZone?,

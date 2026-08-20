@@ -57,7 +57,7 @@ private func corruptedDatabase() throws -> (AppDatabase, row: Row) {
     return (database, try #require(row))
 }
 
-@Test @MainActor func aCorruptedRowSurfacesAsUnreadableAndStaysUntouched() throws {
+@Test @MainActor func aCorruptedRowSurfacesAsUnreadableAndStaysUntouched() async throws {
     let (database, before) = try corruptedDatabase()
     let form = PropertyDetailsForm(database: database, defaults: scratchDefaults())
     form.load()
@@ -69,20 +69,20 @@ private func corruptedDatabase() throws -> (AppDatabase, row: Row) {
 
     form.latitudeText = "1"
     form.longitudeText = "1"
-    #expect(!form.save())
+    #expect(await form.save() == false)
     #expect(form.validationMessage != nil)
 
-    let after = try database.writer.read { db in
+    let after = try await database.writer.read { db in
         try Row.fetchOne(db, sql: "SELECT * FROM property WHERE id = 'p1'")
     }
     #expect(try #require(after) == before)
-    let count = try database.writer.read { db in
+    let count = try await database.writer.read { db in
         try Int.fetchOne(db, sql: "SELECT COUNT(*) FROM property")
     }
     #expect(count == 1)
 }
 
-@Test @MainActor func aCommittedWriteReportsSuccessEvenIfARereadWouldFail() throws {
+@Test @MainActor func aCommittedWriteReportsSuccessEvenIfARereadWouldFail() async throws {
     let store = ThrowingReloadStore()
     let form = PropertyDetailsForm(store: store, defaults: scratchDefaults())
     form.load()
@@ -91,7 +91,7 @@ private func corruptedDatabase() throws -> (AppDatabase, row: Row) {
     form.lastFrostMonth = 5
     form.lastFrostDay = 15
 
-    #expect(form.save())
+    #expect(await form.save())
     #expect(store.updates == 1)
     #expect(form.validationMessage == nil)
     #expect(form.sourceState == .loaded)
@@ -99,7 +99,7 @@ private func corruptedDatabase() throws -> (AppDatabase, row: Row) {
     #expect(form.property?.lastFrost == MonthDay(month: 5, day: 15))
 }
 
-@Test @MainActor func aMissingPropertyStillOffersSetup() throws {
+@Test @MainActor func aMissingPropertyStillOffersSetup() async throws {
     let database = try AppDatabase.inMemory()
     let form = PropertyDetailsForm(database: database, defaults: scratchDefaults())
     form.load()

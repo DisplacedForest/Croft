@@ -190,20 +190,24 @@ public final class PropertyDetailsForm {
         firstFrostDay = property?.firstFrost?.day
         zoneSource = property?.zoneSource ?? .derived
         frostDatesSource = property?.frostDatesSource ?? .derived
-        climateCoordinate = property?.location
+        climateCoordinate = (try? parsedCoordinate()) ?? nil
         validationMessage = nil
         locationMessage = nil
     }
 
     @discardableResult
-    public func save() -> Bool {
+    public func save() async -> Bool {
         validationMessage = nil
         guard sourceState != .unreadable else {
             validationMessage = "The property record can't be read, so saving is disabled."
             return false
         }
         do {
-            let location = try parsedCoordinate()
+            var location = try parsedCoordinate()
+            if needsDerivationBeforeSave(location) {
+                await deriveClimate()
+                location = try parsedCoordinate()
+            }
             var zone = try parsedZone()
             var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
