@@ -102,6 +102,7 @@ public final class PropertyDetailsForm {
     var climateCoordinate: GeoCoordinate?
     var derivationTask: Task<Void, Never>?
     var derivationCoordinate: GeoCoordinate?
+    var derivationFlight = 0
     public private(set) var setupOutcome: PropertySetupOutcome?
 
     private let store: any PropertyStoring
@@ -192,7 +193,7 @@ public final class PropertyDetailsForm {
         firstFrostDay = property?.firstFrost?.day
         zoneSource = property?.zoneSource ?? .derived
         frostDatesSource = property?.frostDatesSource ?? .derived
-        climateCoordinate = (try? parsedCoordinate()) ?? nil
+        climateCoordinate = derivedGroupsHaveValues ? ((try? parsedCoordinate()) ?? nil) : nil
         validationMessage = nil
         locationMessage = nil
     }
@@ -211,13 +212,12 @@ public final class PropertyDetailsForm {
         }
         do {
             let location = try parsedCoordinate()
-            if needsDerivationBeforeSave(location) {
-                await deriveClimate()
-            }
             var zone = try parsedZone()
             var lastFrost = try parsedFrost(lastFrostMonth, lastFrostDay, label: "last frost")
             var firstFrost = try parsedFrost(firstFrostMonth, firstFrostDay, label: "first frost")
-            dropStaleDerived(location, &zone, &lastFrost, &firstFrost)
+            if needsDerivationBeforeSave(location) {
+                await resolveDerivedForSave(location, &zone, &lastFrost, &firstFrost)
+            }
             let home = try store.ensureHomeProperty()
             let details = PropertyDetails(
                 location: location,
@@ -345,5 +345,10 @@ extension PropertyDetailsForm {
 
     static func format(_ value: Double) -> String {
         String(format: "%.5f", value)
+    }
+
+    var derivedGroupsHaveValues: Bool {
+        (zoneSource == .user || !zoneText.isEmpty)
+            && (frostDatesSource == .user || lastFrostMonth != nil)
     }
 }
