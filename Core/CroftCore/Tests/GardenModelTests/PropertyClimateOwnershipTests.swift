@@ -170,3 +170,92 @@ private func splitForm(slowNorthMilliseconds: Int) throws -> PropertyDetailsForm
     #expect(form.derivationMessage != nil)
     #expect(form.zoneText == "11")
 }
+
+@Test @MainActor func aStaleFlightNeverWritesValuesForADifferentVisibleCoordinate() async throws {
+    struct MinimaFailure: Error {}
+    let database = try AppDatabase.inMemory()
+    let structures = GardenStructureRepository(database)
+    let property = Property(name: "Home")
+    try structures.create(property)
+    try structures.updatePropertyDetails(
+        property.id,
+        PropertyDetails(
+            location: GeoCoordinate(latitude: 27.9, longitude: -82.5),
+            hardinessZone: HardinessZone(number: 11),
+            zoneSource: .derived,
+            frostDatesSource: .derived
+        )
+    )
+    let defaults = UserDefaults(suiteName: "climate-ownership-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { coordinate in
+        if coordinate.latitude > 40 {
+            try? await Task.sleep(for: .milliseconds(250))
+            return temperateSeries
+        }
+        throw MinimaFailure()
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    #expect(form.zoneText == "11")
+
+    form.latitudeText = "44.26000"
+    form.longitudeText = "-72.58000"
+    let flight = Task { await form.deriveClimate() }
+    try await Task.sleep(for: .milliseconds(50))
+    form.latitudeText = "27.90000"
+    form.longitudeText = "-82.50000"
+    await flight.value
+    #expect(form.zoneText == "11")
+
+    let second = Task { await form.deriveClimate() }
+    try await Task.sleep(for: .milliseconds(50))
+    form.latitudeText = "27.90000"
+    form.longitudeText = "-82.50000"
+    #expect(await form.save())
+    await second.value
+
+    #expect(form.property?.hardinessZone == HardinessZone(number: 11))
+    #expect(form.zoneText == "11")
+}
+
+@Test @MainActor func aHighPrecisionPartialRecordSurvivesDegradedWeather() async throws {
+    struct MinimaFailure: Error {}
+    let database = try AppDatabase.inMemory()
+    let structures = GardenStructureRepository(database)
+    let property = Property(name: "Home")
+    try structures.create(property)
+    try structures.updatePropertyDetails(
+        property.id,
+        PropertyDetails(
+            location: GeoCoordinate(latitude: 44.123456789, longitude: -72.987654321),
+            hardinessZone: HardinessZone(number: 5),
+            zoneSource: .derived,
+            frostDatesSource: .derived
+        )
+    )
+    let defaults = UserDefaults(suiteName: "climate-ownership-\(UUID().uuidString)")!
+    let minima: HistoricalMinima = { _ in
+        throw MinimaFailure()
+    }
+    let form = PropertyDetailsForm(
+        database: database,
+        defaults: PropertySetupDefaults(store: defaults),
+        minima: minima,
+        climateCache: ClimateCache(store: defaults)
+    )
+    form.load()
+    #expect(form.zoneText == "5")
+
+    await form.deriveClimate()
+    #expect(form.zoneText == "5")
+    #expect(form.derivationMessage != nil)
+
+    #expect(await form.save())
+    #expect(form.property?.hardinessZone == HardinessZone(number: 5))
+    #expect(form.zoneText == "5")
+}

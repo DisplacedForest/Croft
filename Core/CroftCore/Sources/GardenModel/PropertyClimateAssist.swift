@@ -78,7 +78,7 @@ extension PropertyDetailsForm {
         message: String
     ) {
         derivationMessage = message
-        guard location != property?.location else {
+        guard location != persistedDisplayLocation else {
             return
         }
         if zoneSource == .derived {
@@ -93,6 +93,20 @@ extension PropertyDetailsForm {
             climateCoordinate = nil
             clearDerivedGroups()
         }
+    }
+
+    var persistedDisplayLocation: GeoCoordinate? {
+        guard let location = property?.location else {
+            return nil
+        }
+        guard
+            let latitude = Double(PropertyDetailsForm.format(location.latitude)),
+            let longitude = Double(PropertyDetailsForm.format(location.longitude)),
+            let display = GeoCoordinate(latitude: latitude, longitude: longitude)
+        else {
+            return location
+        }
+        return display
     }
 
     func dropStaleDerived(
@@ -195,7 +209,7 @@ extension PropertyDetailsForm {
             }
         }
         let fetched = await fetchDerived(coordinate)
-        guard !Task.isCancelled else {
+        guard !Task.isCancelled, ((try? parsedCoordinate()) ?? nil) == coordinate else {
             return
         }
         switch fetched {
@@ -245,7 +259,7 @@ extension PropertyDetailsForm {
         derivationMessage = message
         derivedClimate = nil
         climateCoordinate = nil
-        guard coordinate != property?.location else {
+        guard coordinate != persistedDisplayLocation else {
             return
         }
         clearDerivedGroups()
