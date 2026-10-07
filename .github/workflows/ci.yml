@@ -32,7 +32,7 @@ jobs:
           else
             echo "code=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: jdx/mise-action@7e36c90d9ab29c415a2384db3006f3ec8a8cc654
+      - uses: jdx/mise-action@7a4e45a543138629540c9a1616d08632b893e492
         if: steps.diff.outputs.code == 'true'
         with:
           install_args: xcodegen swiftlint jq
